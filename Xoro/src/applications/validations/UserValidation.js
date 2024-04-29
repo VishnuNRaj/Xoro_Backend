@@ -12,13 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LoginValidate = exports.RegisterValidate = void 0;
+exports.ProfileSettingsValidate = exports.EditProfileValidate = exports.CountryValidate = exports.ImageValidate = exports.LoginValidate = exports.RegisterValidate = void 0;
 const joi_1 = __importDefault(require("joi"));
 const console_1 = require("console");
 const RegisterValidate = (data) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-        // const usernameRegex = /^[a-zA-Z0-9_]{3,30}$/;
         const nameRegex = /^[a-zA-Z\s]+$/;
         const errors = [
             'Name is required and should not contain numbers',
@@ -77,3 +76,97 @@ const LoginValidate = (data) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.LoginValidate = LoginValidate;
+const ImageValidate = (_a) => __awaiter(void 0, [_a], void 0, function* ({ filename, mimetype }) {
+    try {
+        const imageSchema = joi_1.default.object({
+            filename: joi_1.default.string().required(),
+            mimetype: joi_1.default.string().valid('image/jpeg', 'image/png', 'image/gif').required(),
+        });
+        const { error } = imageSchema.validate({ filename, mimetype });
+        if (error) {
+            return { status: false, message: error.details[0].message };
+        }
+        return { status: true, message: 'Image Validated successfully' };
+    }
+    catch (e) {
+        console.error(e);
+        return { status: false, message: 'Internal Server Error' };
+    }
+});
+exports.ImageValidate = ImageValidate;
+const CountryValidate = (data) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const countryList = [
+            'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 'Armenia', 'Australia', 'Austria',
+            'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin', 'Bhutan', 'Bolivia',
+            'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Brunei', 'Bulgaria', 'Burkina Faso', 'Burundi', 'Cabo Verde', 'Cambodia',
+            'Cameroon', 'Canada', 'Central African Republic', 'Chad', 'Chile', 'China', 'Colombia', 'Comoros', 'Congo (Congo-Brazzaville)',
+            'Costa Rica', 'Croatia', 'Cuba', 'Cyprus', 'Czechia (Czech Republic)', 'Democratic Republic of the Congo', 'Denmark', 'Djibouti',
+            'Dominica', 'Dominican Republic', 'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini (fmr. "Swaziland")',
+            'Ethiopia', 'Fiji', 'Finland', 'France', 'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada', 'Guatemala', 'Guinea',
+            'Guinea-Bissau', 'Guyana', 'Haiti', 'Holy See', 'Honduras', 'Hungary', 'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel',
+            'Italy', 'Jamaica', 'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Kuwait', 'Kyrgyzstan', 'Laos', 'Latvia', 'Lebanon', 'Lesotho',
+            'Liberia', 'Libya', 'Liechtenstein', 'Lithuania', 'Luxembourg', 'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands',
+            'Mauritania', 'Mauritius', 'Mexico', 'Micronesia', 'Moldova', 'Monaco', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar (formerly Burma)',
+            'Namibia', 'Nauru', 'Nepal', 'Netherlands', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea', 'North Macedonia (formerly Macedonia)', 'Norway',
+            'Oman', 'Pakistan', 'Palau', 'Palestine State', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal', 'Qatar', 'Romania',
+            'Russia', 'Rwanda', 'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'San Marino', 'Sao Tome and Principe', 'Saudi Arabia',
+            'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore', 'Slovakia', 'Slovenia', 'Solomon Islands', 'Somalia', 'South Africa', 'South Korea', 'South Sudan',
+            'Spain', 'Sri Lanka', 'Sudan', 'Suriname', 'Sweden', 'Switzerland', 'Syria', 'Tajikistan', 'Tanzania', 'Thailand', 'Timor-Leste', 'Togo', 'Tonga', 'Trinidad and Tobago',
+            'Tunisia', 'Turkey', 'Turkmenistan', 'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom', 'United States of America', 'Uruguay', 'Uzbekistan', 'Vanuatu',
+            'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe'
+        ];
+        const countrySchema = joi_1.default.string().valid(...countryList).insensitive().trim().required();
+        const { error } = countrySchema.validate(data);
+        if (error) {
+            return { status: false, message: error.details[0].message };
+        }
+        return { status: true, message: 'Country Valid' };
+    }
+    catch (e) {
+        console.log(e);
+        return { status: false, message: 'Internal Server Error' };
+    }
+});
+exports.CountryValidate = CountryValidate;
+const EditProfileValidate = (data) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const usernameRegex = /^[a-zA-Z0-9_]{3,30}$/;
+        const nameRegex = /^[a-zA-Z\s]+$/;
+        const schema = joi_1.default.object({
+            Name: joi_1.default.string().regex(nameRegex).required(),
+            Username: joi_1.default.string().regex(usernameRegex).required(),
+            Gender: joi_1.default.string().valid('Male', 'Female', 'Other', 'Not Provided').required(),
+            Age: joi_1.default.number().integer().min(10).optional(),
+            Description: joi_1.default.array().items(joi_1.default.string()).optional()
+        });
+        const { error } = schema.validate(data);
+        if (error) {
+            return { status: false, message: error.details[0].message };
+        }
+        return { status: true, message: 'Validation successful' };
+    }
+    catch (e) {
+        console.error(e);
+        return { status: false, message: 'Internal Server Error' };
+    }
+});
+exports.EditProfileValidate = EditProfileValidate;
+const ProfileSettingsValidate = (data) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const schema = joi_1.default.object({
+            Private: joi_1.default.boolean().required(),
+            Notification: joi_1.default.boolean().required(),
+            ProfileLock: joi_1.default.boolean().required()
+        });
+        const { error } = schema.validate(data);
+        if (error) {
+            return { status: false, message: error.details[0].message };
+        }
+        return { status: true, message: 'Validation successful' };
+    }
+    catch (e) {
+        return { status: false, message: 'Internal Server Error' };
+    }
+});
+exports.ProfileSettingsValidate = ProfileSettingsValidate;

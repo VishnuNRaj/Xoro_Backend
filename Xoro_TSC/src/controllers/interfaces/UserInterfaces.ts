@@ -1,4 +1,4 @@
-import { File } from "buffer";
+import UserDocument from "../../entities/User";
 
 export interface Register {
     Name: string;
@@ -42,4 +42,60 @@ export interface OTPData {
 
 export interface UserOTP {
     UserId?:string;
+}
+
+export interface GetSecurity {
+    user:UserDocument;
+}
+
+export interface EditBanner {
+    Image:Express.Multer.File;
+    user:UserDocument;
+}
+
+export interface EditProfilePic {
+    Image:Express.Multer.File;
+    user:UserDocument;
+}
+
+export interface SecureAccount {
+    user:UserDocument;
+    Password:string;
+}
+
+export interface ProfileSettings {
+    user:UserDocument;
+    Private:boolean;
+    Notification:boolean;
+    ProfileLock:boolean;
+}
+
+export interface EditProfileData {
+    user:UserDocument;
+    Name:string;
+    Username:string;
+    Gender:string;
+    Age:number;
+    Country:string;
+    Description:string[];
+}
+
+export interface FollowUser {
+    user:UserDocument;
+    UserId:string;
+}
+
+export interface UnFollowUser {
+    user:UserDocument;
+    UserId:string;
+}
+
+export interface SearchUser {
+    user:UserDocument;
+    Search:string;
+}
+
+export interface GetUserProfile {
+    ProfileLink:string;
+    user:UserDocument;
 }

@@ -58,3 +58,86 @@ export const ResendOTPRes: Function = async (data:Responses.UserOTPResponse) => 
         status:data.status
     }
 }
+
+export const GetSecurityRes: Function = async (data:Responses.GetSecurityResponse) => {
+    return <Responses.GetSecurityResponse>{
+        user:data.user,
+        TwoStepVerification:data.TwoStepVerification,
+        message:data.message,
+        status:data.status
+    }
+}
+
+export const EditBannerRes:Function = async(data:Responses.EditBannerResponse) => {
+    return <Responses.EditBannerResponse>{
+        user:data.user,
+        status:data.status,
+        message:data.message
+    }
+}
+
+export const EditProfilePicRes:Function = async(data:Responses.EditProfilePicResponse) => {
+    return <Responses.EditProfilePicResponse>{
+        user:data.user,
+        status:data.status,
+        message:data.message
+    }
+}
+
+export const SecureAccountRes:Function = async (data:Responses.SecureAccountResponse) => {
+    return <Responses.SecureAccountResponse>{
+        user:data.user,
+        status:data.status,
+        message:data.message
+    }
+}
+
+export const ProfileSettingsRes:Function = async (data:Responses.ProfileSettingsResponse) => {
+    return <Responses.ProfileSettingsResponse>{
+        message:data.message,
+        status:data.status,
+        user:data.user
+    }
+}
+
+export const EditProfileDataRes:Function = async (data:Responses.EditProfileDataResponse) => {
+    return <Responses.EditProfileDataResponse>{
+        message:data.message,
+        status:data.status,
+        user:data.user,
+    }
+}
+
+export const FollowUserRes: Function = async (data:Responses.FollowUserResponse) => {
+    return <Responses.FollowUserResponse>{
+        message:data.message,
+        status:data.status,
+        user:data.user
+    }
+}
+
+export const UnFollowUserRes: Function = async (data:Responses.FollowUserResponse) => {
+    return <Responses.FollowUserResponse>{
+        message:data.message,
+        status:data.status,
+        user:data.user
+    }
+}
+
+export const SearchUserRes: Function = async (data:Responses.SearchUserResponse) => {
+    return <Responses.FollowUserResponse>{
+        message:data.message,
+        status:data.status,
+        user:data.user,
+        users:data.users
+    }
+}
+
+export const GetUserProfileRes: Function = async (data:Responses.GetProfileResponse) => {
+    return <Responses.GetProfileResponse>{
+        message:data.message,
+        status:data.status,
+        user:data.user,
+        userData:data.userData
+    }
+}

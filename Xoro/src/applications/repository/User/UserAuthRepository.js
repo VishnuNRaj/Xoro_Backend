@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ResendOTP = exports.verifyUserAuthRepository = exports.OTPVerifyRepository = exports.AddProfilePicRepository = exports.VerifyAccountRepository = exports.LoginRepository = exports.RegisterRepository = void 0;
+exports.getTwoStep = exports.ResendOTP = exports.verifyUserAuthRepository = exports.OTPVerifyRepository = exports.AddProfilePicRepository = exports.VerifyAccountRepository = exports.LoginRepository = exports.RegisterRepository = void 0;
 const DatabaseFunctions = __importStar(require("../../functions/DatabaseFunctions"));
 const UnverifiedUsers_1 = __importDefault(require("../../../frameworks/database/models/UnverifiedUsers"));
 const ResponseFunctions = __importStar(require("../../responses/Response/UserResponse"));
@@ -45,6 +45,7 @@ const JWT_1 = require("../../functions/JWT");
 const User_1 = __importDefault(require("../../../frameworks/database/models/User"));
 const auth_1 = __importDefault(require("../../../config/auth"));
 const UserFunctions_1 = require("../../functions/UserFunctions");
+const Connetions_1 = __importDefault(require("../../../frameworks/database/models/Connetions"));
 const RegisterRepository = (data) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { Name, Email, Phone } = data;
@@ -93,10 +94,10 @@ exports.RegisterRepository = RegisterRepository;
 const LoginRepository = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Email, Password }) {
     try {
         const user = yield DatabaseFunctions.findOneData(UnverifiedUsers_1.default, { Email: Email });
-        const auth = yield (0, UserFunctions_1.VerifyUser)(user);
-        if (!auth.status) {
+        const userauth = yield (0, UserFunctions_1.VerifyUser)(user);
+        if (!userauth.status) {
             return ResponseFunctions.VerityAccountAuthRes({
-                message: auth.message,
+                message: userauth.message,
                 status: 202,
                 user: null
             });
@@ -111,14 +112,14 @@ const LoginRepository = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Ema
         let VerificationLink = '';
         if (user && !user.Verified) {
             VerificationLink = CommonFunctions.generateVerificationLink();
-            const link = `${auth.baseLink}/${auth.verifyAccount}/${VerificationLink}/`;
+            const link = `${auth_1.default.baseLink}/${auth_1.default.verifyAccount}/${VerificationLink}/`;
             const LinkTimeout = CommonFunctions.CalculateTime(2);
             yield DatabaseFunctions.updateById(UnverifiedUsers_1.default, user._id, { VerificationLink: VerificationLink, LinkTimeout: LinkTimeout });
             yield (0, SendMail_1.SendVerificationLink)(Email, link + user._id);
             return ResponseFunctions.LoginRes({
                 errors: [],
                 message: 'Account Not Yet Verified. Please Verify Account Through Link Shared Via Email',
-                status: 200
+                status: 204
             });
         }
         if (!user.TwoStepVerification) {
@@ -176,7 +177,19 @@ const VerifyAccountRepository = (_b) => __awaiter(void 0, [_b], void 0, function
             });
         }
         yield DatabaseFunctions.updateById(UnverifiedUsers_1.default, user._id, { Verified: true });
-        yield DatabaseFunctions.insertData(User_1.default, user);
+        const ProfileLink = yield CommonFunctions.generateVerificationLink();
+        const [res] = yield DatabaseFunctions.insertData(Connetions_1.default, { UserId: user._id });
+        // const data = {...user,Connections: res._id, ProfileLink: ProfileLink}
+        yield DatabaseFunctions.insertData(User_1.default, {
+            _id: user._id,
+            Name: user.Name,
+            Username: user.Username,
+            Suspended: user.Suspended,
+            SuspendedTill: user.SuspendedTill,
+            Connections: res._id,
+            ProfileLink: ProfileLink,
+            Profile: user.Profile,
+        });
         const token = yield (0, JWT_1.CreatePayload)({ Payload: { UserId: user._id, Email: user.Email, Admin: false }, RememberMe: false });
         return ResponseFunctions.VerifyAccountRes({
             message: 'Verified Succesfully',
@@ -211,6 +224,17 @@ const AddProfilePicRepository = (_c, _d, _e) => __awaiter(void 0, [_c, _d, _e], 
                 token: ''
             });
         }
+        const dataFound = yield DatabaseFunctions.findOneData(UnverifiedUsers_1.default, {
+            Username: Username,
+            Email: { $ne: user.Email }
+        });
+        if (dataFound) {
+            return ResponseFunctions.AddProfileRes({
+                message: 'Username Already Exists',
+                status: 202,
+                token: ''
+            });
+        }
         user.Username = Username ? Username : user.Username;
         user.Profile = typeof file == 'string' && file != '' ? file : user.Profile;
         yield user.save();
@@ -224,6 +248,7 @@ const AddProfilePicRepository = (_c, _d, _e) => __awaiter(void 0, [_c, _d, _e], 
         });
     }
     catch (e) {
+        console.log(e);
         return ResponseFunctions.AddProfileRes({
             message: 'Internal Server Error',
             status: 202,
@@ -367,3 +392,23 @@ const ResendOTP = (_h) => __awaiter(void 0, [_h], void 0, function* ({ UserId })
     }
 });
 exports.ResendOTP = ResendOTP;
+const getTwoStep = (_j) => __awaiter(void 0, [_j], void 0, function* ({ user }) {
+    try {
+        const { TwoStepVerification } = yield DatabaseFunctions.findUsingId(UnverifiedUsers_1.default, user._id);
+        return ResponseFunctions.GetSecurityRes({
+            message: 'Security Verified',
+            status: 200,
+            user: user,
+            TwoStepVerification: TwoStepVerification
+        });
+    }
+    catch (e) {
+        return ResponseFunctions.GetSecurityRes({
+            message: 'Internal Server Error',
+            status: 500,
+            user: user,
+            TwoStepVerification: false
+        });
+    }
+});
+exports.getTwoStep = getTwoStep;

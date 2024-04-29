@@ -10,4 +10,6 @@ userRouter.post('/update-verify/:UserId', upload.single('Profile'), Middleware.A
 userRouter.post('/otp/:UserId', Middleware.OtpVerify)
 userRouter.get('/verify', Middleware.VerifyUserAuth, Middleware.VerifyUserResponse)
 userRouter.post('/resendotp/:UserId', Middleware.ResendOTP)
+userRouter.post('/get-twostep', Middleware.VerifyUserAuth,Middleware.getSecurity)
+
 export default userRouter

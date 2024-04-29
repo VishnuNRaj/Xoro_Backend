@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ResendUserOTP = exports.verifyUserAuth = exports.OTPVerifyLogin = exports.AddProfileUser = exports.VerifyUser = exports.LoginUser = exports.RegisterUser = void 0;
+exports.getTwoStep = exports.ResendUserOTP = exports.verifyUserAuth = exports.OTPVerifyLogin = exports.AddProfileUser = exports.VerifyUser = exports.LoginUser = exports.RegisterUser = void 0;
 const Validations = __importStar(require("../validations/UserValidation"));
 const ResponseFunctions = __importStar(require("../responses/Response/UserResponse"));
 const Repository = __importStar(require("../repository/User/UserAuthRepository"));
@@ -207,3 +207,17 @@ const ResendUserOTP = (_j) => __awaiter(void 0, [_j], void 0, function* ({ UserI
     }
 });
 exports.ResendUserOTP = ResendUserOTP;
+const getTwoStep = (_k) => __awaiter(void 0, [_k], void 0, function* ({ user }) {
+    try {
+        return Repository.getTwoStep({ user });
+    }
+    catch (e) {
+        return {
+            message: 'Internal Server Error',
+            status: 500,
+            user: user,
+            TwoStepVerification: false
+        };
+    }
+});
+exports.getTwoStep = getTwoStep;

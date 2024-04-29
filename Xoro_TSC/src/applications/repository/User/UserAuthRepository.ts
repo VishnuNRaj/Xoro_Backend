@@ -11,6 +11,9 @@ import User from '../../../frameworks/database/models/User';
 import auth from '../../../config/auth'
 import UserDocument from '../../../entities/User';
 import { VerifyUser } from '../../functions/UserFunctions';
+import Connections from '../../../frameworks/database/models/Connetions';
+import { ConnectionsInterface } from '../../../entities/Connections';
+import { ObjectId } from 'mongodb';
 
 export const RegisterRepository: Function = async (data: UserEntity.Register): Promise<Responses.SignUpResponse> => {
     try {
@@ -59,10 +62,10 @@ export const RegisterRepository: Function = async (data: UserEntity.Register): P
 export const LoginRepository: Function = async ({ Email, Password }: UserEntity.Login): Promise<Responses.LoginResponse> => {
     try {
         const user: UnverifiedUsers = await DatabaseFunctions.findOneData(UserAuth, { Email: Email })
-        const auth = await VerifyUser(user)
-        if (!auth.status) {
+        const userauth:any = await VerifyUser(user)
+        if (!userauth.status) {
             return ResponseFunctions.VerityAccountAuthRes(<Responses.VerifyUserAuthResponse>{
-                message: auth.message,
+                message: userauth.message,
                 status: 202,
                 user: null
             })
@@ -84,7 +87,7 @@ export const LoginRepository: Function = async ({ Email, Password }: UserEntity.
             return ResponseFunctions.LoginRes(<Responses.LoginResponse>{
                 errors: [],
                 message: 'Account Not Yet Verified. Please Verify Account Through Link Shared Via Email',
-                status: 200
+                status: 204
             })
         }
         if (!user.TwoStepVerification) {
@@ -104,7 +107,7 @@ export const LoginRepository: Function = async ({ Email, Password }: UserEntity.
             errors: [],
             message: 'A Otp Has Been Send To The Registered Email Address',
             status: 200,
-            user:user
+            user: user
         })
     } catch (e) {
         return ResponseFunctions.SignupRes(<Responses.LoginResponse>{
@@ -127,8 +130,7 @@ export const VerifyAccountRepository: Function = async ({ VerificationLink, User
             })
         }
         const user: UnverifiedUsers = await DatabaseFunctions.findUsingId(UserAuth, { _id: UserId })
-        console.log(user);
-
+        console.log(user)
         if (!user || user.Suspended || user.Terminated || user.VerificationLink != VerificationLink || user.Verified) {
             return ResponseFunctions.VerifyAccountRes(<Responses.VerifyAccountResponse>{
                 message: 'Invalid Link',
@@ -143,7 +145,19 @@ export const VerifyAccountRepository: Function = async ({ VerificationLink, User
             })
         }
         await DatabaseFunctions.updateById(UserAuth, user._id, { Verified: true })
-        await DatabaseFunctions.insertData(User, user)
+        const ProfileLink = await CommonFunctions.generateVerificationLink()
+        const [res]: ConnectionsInterface[] = await DatabaseFunctions.insertData(Connections, { UserId: user._id })
+        // const data = {...user,Connections: res._id, ProfileLink: ProfileLink}
+        await DatabaseFunctions.insertData(User, <UserDocument>{
+            _id:user._id,
+            Name:user.Name,
+            Username:user.Username,
+            Suspended:user.Suspended,
+            SuspendedTill:user.SuspendedTill,
+            Connections:res._id,
+            ProfileLink:ProfileLink,
+            Profile:user.Profile,
+        })
         const token = await CreatePayload({ Payload: { UserId: user._id, Email: user.Email, Admin: false }, RememberMe: false })
         return ResponseFunctions.VerifyAccountRes(<Responses.VerifyAccountResponse>{
             message: 'Verified Succesfully',
@@ -177,6 +191,18 @@ export const AddProfilePicRepository: Function = async ({ file }: UserEntity.Fil
                 token: ''
             })
         }
+        const dataFound: UnverifiedUsers = await DatabaseFunctions.findOneData(UserAuth, {
+            Username: Username,
+            Email: { $ne: user.Email }
+        });
+
+        if (dataFound) {
+            return ResponseFunctions.AddProfileRes(<Responses.AddProfileResponse>{
+                message: 'Username Already Exists',
+                status: 202,
+                token: ''
+            })
+        }
         user.Username = Username ? Username : user.Username
         user.Profile = typeof file == 'string' && file != '' ? file : user.Profile
         await user.save()
@@ -189,6 +215,7 @@ export const AddProfilePicRepository: Function = async ({ file }: UserEntity.Fil
             user: user
         })
     } catch (e) {
+        console.log(e)
         return ResponseFunctions.AddProfileRes(<Responses.AddProfileResponse>{
             message: 'Internal Server Error',
             status: 202,
@@ -325,6 +352,26 @@ export const ResendOTP: Function = async ({ UserId }: UserEntity.UserOTP): Promi
         return ResponseFunctions.ResendOTPRes(<Responses.UserOTPResponse>{
             message: 'Internal Server Error',
             status: 500
+        })
+    }
+}
+
+
+export const getTwoStep: Function = async ({ user }: UserEntity.GetSecurity): Promise<Responses.GetSecurityResponse> => {
+    try {
+        const { TwoStepVerification }: UnverifiedUsers = await DatabaseFunctions.findUsingId(UserAuth, user._id)
+        return ResponseFunctions.GetSecurityRes(<Responses.GetSecurityResponse>{
+            message: 'Security Verified',
+            status: 200,
+            user: user,
+            TwoStepVerification: TwoStepVerification
+        })
+    } catch (e) {
+        return ResponseFunctions.GetSecurityRes(<Responses.GetSecurityResponse>{
+            message: 'Internal Server Error',
+            status: 500,
+            user: user,
+            TwoStepVerification: false
         })
     }
 }

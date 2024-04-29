@@ -5,4 +5,6 @@ export interface ConnectionsInterface extends Document {
     Followers:ObjectId[];
     Following:ObjectId[];
     Mutual:ObjectId[];
+    FollowRequests:ObjectId[];
+    FollowingRequests:ObjectId[];
 }

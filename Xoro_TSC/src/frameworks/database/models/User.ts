@@ -33,8 +33,8 @@ const userSchema = new Schema<UserDocument>({
     Country: String,
     Description: [String],
     CreatedAt: {
-        type:Date,
-        default:new Date()
+        type: Date,
+        default: new Date()
     },
     ProfileLink: String,
     Posts: {
@@ -55,8 +55,9 @@ const userSchema = new Schema<UserDocument>({
     },
     Banner: {
         type: String,
-        default: 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fmosaic-lille.fr%2F%3Fo%3D290%2B-3d-hd-wallpapers-and-backgrounds-rr-eg1kVkTY&psig=AOvVaw0BEW4n9NCBHXhigAYdlIPT&ust=1713802676944000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCPjEldba04UDFQAAAAAdAAAAABBb'
+        default: 'https://blogger.googleusercontent.com/img/a/AVvXsEhqzeTOTJm2J-wrSe9kAj3DlAphY5RzFw3W4xf25OPT1AEktfD1Z70sYBclrMDeuD6jAeZzJPByXgH272iG3hxS7AGppznCwS1yzioR77m4J03rVdFLmL3TtLjVmUfaCk-p1D3Jdkj6fp-9U64Tnqg1EMKT9OXpclfVjKrYeqT-OJWdnq9JBh_8ZZKWpsM=s1600-rw'
     },
+    ProfileLock: { type: Boolean, default: false }
 });
 
 const User = model<UserDocument>('users', userSchema);

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUsingId = exports.findData = exports.checkObjectId = exports.updateById = exports.insertData = exports.findUsingId = exports.findOneData = void 0;
+exports.deleteUsingId = exports.findData = exports.checkObjectId = exports.executeBulkWrite = exports.findOneAndUpdate = exports.updateById = exports.insertData = exports.findUsingId = exports.findOneData = void 0;
 const mongoose_1 = require("mongoose");
 const findOneData = (Db, query) => __awaiter(void 0, void 0, void 0, function* () {
     return yield Db.findOne(query);
@@ -20,13 +20,27 @@ const findUsingId = (Db, query) => __awaiter(void 0, void 0, void 0, function* (
 });
 exports.findUsingId = findUsingId;
 const insertData = (Db, data) => __awaiter(void 0, void 0, void 0, function* () {
-    return yield Db.insertMany([data]);
+    return yield Db.insertMany(data);
 });
 exports.insertData = insertData;
 const updateById = (Db, id, data) => __awaiter(void 0, void 0, void 0, function* () {
     return yield Db.findByIdAndUpdate(id, { $set: data });
 });
 exports.updateById = updateById;
+const findOneAndUpdate = (Db, query, update, options) => __awaiter(void 0, void 0, void 0, function* () {
+    return yield Db.findOneAndUpdate(query, update, options);
+});
+exports.findOneAndUpdate = findOneAndUpdate;
+const executeBulkWrite = (Db, bulkOperations) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield Db.bulkWrite(bulkOperations);
+    }
+    catch (e) {
+        console.error(e);
+        throw new Error('Bulk write operation failed');
+    }
+});
+exports.executeBulkWrite = executeBulkWrite;
 const checkObjectId = (id) => __awaiter(void 0, void 0, void 0, function* () {
     return yield (0, mongoose_1.isObjectIdOrHexString)(id);
 });

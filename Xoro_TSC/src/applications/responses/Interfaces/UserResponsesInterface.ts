@@ -1,3 +1,4 @@
+import { Post } from "../../../entities/PostImages";
 import UnverifiedUsers from "../../../entities/UnverifiedUsers";
 import UserDocument from "../../../entities/User";
 
@@ -45,4 +46,70 @@ export interface VerifyUserAuthResponse {
 export interface UserOTPResponse {
     message:string;
     status:number;
+}
+
+export interface GetSecurityResponse {
+    user:UserDocument;
+    TwoStepVerification:boolean;
+    message:string;
+    status:number;
+}
+
+export interface EditBannerResponse {
+    user:UserDocument;
+    status:number;
+    message:string;
+}
+
+export interface EditProfilePicResponse {
+    user:UserDocument;
+    status:number;
+    message:string;
+}
+
+export interface SecureAccountResponse {
+    user:UserDocument;
+    status:number;
+    message:string;
+}
+
+export interface ProfileSettingsResponse {
+    user:UserDocument;
+    status:number;
+    message:string;
+}
+
+export interface EditProfileDataResponse {
+    user:UserDocument;
+    status:number;
+    message:string;
+}
+
+export interface FollowUserResponse {
+    user:UserDocument;
+    status:number;
+    message:string;
+}
+
+export interface UnFollowUserResponse {
+    user:UserDocument;
+    status:number;
+    message:string;
+}
+
+export interface SearchUserResponse {
+    users:UserDocument[] | null;
+    user:UserDocument;
+    status:number;
+    message:string;
+}
+
+export interface GetProfileResponse {
+    message:string;
+    userData:UserDocument | null;
+    user:UserDocument;
+    status:number;
+    post:{
+        Images:Post[]
+    }
 }

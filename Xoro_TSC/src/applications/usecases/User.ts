@@ -171,3 +171,16 @@ export const ResendUserOTP: Function = async ({ UserId }: UserEntity.UserOTP) =>
         }
     }
 }
+
+export const getTwoStep:Function = async ({user}:UserEntity.GetSecurity) => {
+    try {
+        return Repository.getTwoStep({user})
+    } catch (e) {
+        return <Responses.GetSecurityResponse>{
+            message:'Internal Server Error',
+            status:500,
+            user:user,
+            TwoStepVerification:false
+        }
+    }
+}

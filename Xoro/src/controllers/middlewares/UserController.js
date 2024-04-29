@@ -32,13 +32,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ResendOTP = exports.VerifyUserResponse = exports.VerifyUserAuth = exports.OtpVerify = exports.AddProfile = exports.VerifyAccount = exports.Login = exports.Register = void 0;
+exports.getSecurity = exports.ResendOTP = exports.VerifyUserResponse = exports.VerifyUserAuth = exports.OtpVerify = exports.AddProfile = exports.VerifyAccount = exports.Login = exports.Register = void 0;
 const UseCases = __importStar(require("../../applications/usecases/User"));
 const console_1 = require("console");
 const Register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { Name, Email, Password, Phone, } = req.body;
-        (0, console_1.log)(req.body);
         const result = yield UseCases.RegisterUser({ Name, Email, Password, Phone });
         (0, console_1.log)(result);
         res.status(result.status).json(result);
@@ -139,3 +138,14 @@ const ResendOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.ResendOTP = ResendOTP;
+const getSecurity = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const result = req.result;
+        const data = yield UseCases.getTwoStep({ user: result === null || result === void 0 ? void 0 : result.user });
+        return res.status(data.status).json(data);
+    }
+    catch (e) {
+        return res.status(500).json({ messsage: 'Internal Server Error' });
+    }
+});
+exports.getSecurity = getSecurity;

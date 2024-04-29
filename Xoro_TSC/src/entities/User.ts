@@ -34,4 +34,5 @@ export default interface UserDocument extends Document {
         Notifications:boolean,
     };
     Banner:string;
+    ProfileLock:boolean;
 }
