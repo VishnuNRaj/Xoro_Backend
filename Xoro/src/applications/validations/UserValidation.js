@@ -34,6 +34,7 @@ const RegisterValidate = (data) => __awaiter(void 0, void 0, void 0, function* (
                 .required()
                 .error(new Error('2')),
             Phone: joi_1.default.string().length(10).allow('').optional().error(new Error('4')),
+            Type: joi_1.default.string().valid('Email', 'LinkedIn', 'Google').required().error(new Error('5'))
         });
         const { error } = schema.validate(data, { abortEarly: false });
         (0, console_1.log)(error);

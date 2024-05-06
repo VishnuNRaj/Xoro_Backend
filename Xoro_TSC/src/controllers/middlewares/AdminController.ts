@@ -9,7 +9,6 @@ interface customRequest extends Request {
 type Middleware = (req: customRequest, res: Response, next: NextFunction) => void;
 
 
-
 export const AdminLogin: Middleware = async (req, res) => {
     try {
         const {

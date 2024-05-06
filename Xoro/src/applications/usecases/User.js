@@ -38,9 +38,13 @@ const ResponseFunctions = __importStar(require("../responses/Response/UserRespon
 const Repository = __importStar(require("../repository/User/UserAuthRepository"));
 const UserFunctions = __importStar(require("../functions/UserFunctions"));
 const console_1 = require("console");
-const RegisterUser = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Name, Email, Password, Phone }) {
+const RegisterUser = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Name, Email, Password, Phone, Type, Profile }) {
     try {
-        const errors = yield Validations.RegisterValidate({ Name, Email, Password, Phone });
+        console.log(Type, '_++_+________________________+_+_+_+_+_+_+_+++++___+++_+');
+        let errors = [];
+        if (Type === 'Email') {
+            errors = yield Validations.RegisterValidate({ Name, Email, Password, Phone, Type });
+        }
         if (errors.length > 0) {
             return ResponseFunctions.SignupRes({
                 errors: errors,
@@ -48,7 +52,7 @@ const RegisterUser = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Name, 
                 message: 'Invalid Data Provided'
             });
         }
-        return yield Repository.RegisterRepository({ Name, Email, Password, Phone });
+        return yield Repository.RegisterRepository({ Name, Email, Password, Phone, Type, Profile });
     }
     catch (e) {
         return {
@@ -59,15 +63,18 @@ const RegisterUser = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Name, 
     }
 });
 exports.RegisterUser = RegisterUser;
-const LoginUser = (_b) => __awaiter(void 0, [_b], void 0, function* ({ Email, Password }) {
+const LoginUser = (_b) => __awaiter(void 0, [_b], void 0, function* ({ Email, Password, Type }) {
     try {
-        const errors = yield Validations.LoginValidate({ Email, Password });
+        let errors = [];
+        if (Type === 'Email') {
+            errors = yield Validations.LoginValidate({ Email, Password });
+        }
         if (errors.length > 0) {
             return {
                 errors, message: 'Invalid Data Format', status: 201
             };
         }
-        return yield Repository.LoginRepository({ Email, Password });
+        return yield Repository.LoginRepository({ Email, Password, Type });
     }
     catch (e) {
         return {

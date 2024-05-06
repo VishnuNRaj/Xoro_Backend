@@ -37,8 +37,8 @@ const UseCases = __importStar(require("../../applications/usecases/User"));
 const console_1 = require("console");
 const Register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { Name, Email, Password, Phone, } = req.body;
-        const result = yield UseCases.RegisterUser({ Name, Email, Password, Phone });
+        const { Name, Email, Password, Phone, Type, Profile } = req.body;
+        const result = yield UseCases.RegisterUser({ Profile, Name, Email, Password, Phone, Type });
         (0, console_1.log)(result);
         res.status(result.status).json(result);
     }
@@ -49,8 +49,8 @@ const Register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.Register = Register;
 const Login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { Email, Password } = req.body;
-        const result = yield UseCases.LoginUser({ Email, Password });
+        const { Email, Password, Type } = req.body;
+        const result = yield UseCases.LoginUser({ Email, Password, Type });
         console.log(result);
         res.status(result.status).json(result);
     }

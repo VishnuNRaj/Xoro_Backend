@@ -17,7 +17,7 @@ import { ObjectId } from 'mongodb';
 
 export const RegisterRepository: Function = async (data: UserEntity.Register): Promise<Responses.SignUpResponse> => {
     try {
-        const { Name, Email, Phone }: UserEntity.Register = data
+        const { Name, Email, Phone, Type, Profile }: UserEntity.Register = data
         let { Password }: UserEntity.Register = data
         const user: UnverifiedUsers = await DatabaseFunctions.findOneData(UserAuth, { Email: Email })
         if (user && user.Verified) {
@@ -40,9 +40,8 @@ export const RegisterRepository: Function = async (data: UserEntity.Register): P
             })
         }
         const Username = CommonFunctions.generateRandomName('user', 8)
-        console.log(Username)
         Password = await CommonFunctions.HashPassword(Password)
-        const [Userdata] = await DatabaseFunctions.insertData(UserAuth, { Name, Email, Password, Phone, Username, VerificationLink, LinkTimeout })
+        const [Userdata] = await DatabaseFunctions.insertData(UserAuth, { Name, Email, Password, Phone, Username, VerificationLink, LinkTimeout, Profile, Type })
         await SendVerificationLink(Email, link + Userdata._id)
         return ResponseFunctions.SignupRes(<Responses.SignUpResponse>{
             errors: [],
@@ -59,10 +58,11 @@ export const RegisterRepository: Function = async (data: UserEntity.Register): P
     }
 }
 
-export const LoginRepository: Function = async ({ Email, Password }: UserEntity.Login): Promise<Responses.LoginResponse> => {
+export const LoginRepository: Function = async ({ Email, Password, Type }: UserEntity.Login): Promise<Responses.LoginResponse> => {
     try {
+        console.log(Email, typeof Password, Type)
         const user: UnverifiedUsers = await DatabaseFunctions.findOneData(UserAuth, { Email: Email })
-        const userauth:any = await VerifyUser(user)
+        const userauth: any = await VerifyUser(user)
         if (!userauth.status) {
             return ResponseFunctions.VerityAccountAuthRes(<Responses.VerifyUserAuthResponse>{
                 message: userauth.message,
@@ -149,14 +149,14 @@ export const VerifyAccountRepository: Function = async ({ VerificationLink, User
         const [res]: ConnectionsInterface[] = await DatabaseFunctions.insertData(Connections, { UserId: user._id })
         // const data = {...user,Connections: res._id, ProfileLink: ProfileLink}
         await DatabaseFunctions.insertData(User, <UserDocument>{
-            _id:user._id,
-            Name:user.Name,
-            Username:user.Username,
-            Suspended:user.Suspended,
-            SuspendedTill:user.SuspendedTill,
-            Connections:res._id,
-            ProfileLink:ProfileLink,
-            Profile:user.Profile,
+            _id: user._id,
+            Name: user.Name,
+            Username: user.Username,
+            Suspended: user.Suspended,
+            SuspendedTill: user.SuspendedTill,
+            Connections: res._id,
+            ProfileLink: ProfileLink,
+            Profile: user.Profile,
         })
         const token = await CreatePayload({ Payload: { UserId: user._id, Email: user.Email, Admin: false }, RememberMe: false })
         return ResponseFunctions.VerifyAccountRes(<Responses.VerifyAccountResponse>{

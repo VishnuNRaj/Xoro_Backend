@@ -35,6 +35,7 @@ const UserAuthSchema = new Schema<UnverifiedUsers>({
         type: Boolean,
         default: false,
     },
+    Type: String,
 })
 
 const UserAuth = model<UnverifiedUsers>('unverifiedusers', UserAuthSchema)

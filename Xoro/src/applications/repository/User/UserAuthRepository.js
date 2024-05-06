@@ -48,7 +48,7 @@ const UserFunctions_1 = require("../../functions/UserFunctions");
 const Connetions_1 = __importDefault(require("../../../frameworks/database/models/Connetions"));
 const RegisterRepository = (data) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { Name, Email, Phone } = data;
+        const { Name, Email, Phone, Type, Profile } = data;
         let { Password } = data;
         const user = yield DatabaseFunctions.findOneData(UnverifiedUsers_1.default, { Email: Email });
         if (user && user.Verified) {
@@ -71,9 +71,8 @@ const RegisterRepository = (data) => __awaiter(void 0, void 0, void 0, function*
             });
         }
         const Username = CommonFunctions.generateRandomName('user', 8);
-        console.log(Username);
         Password = yield CommonFunctions.HashPassword(Password);
-        const [Userdata] = yield DatabaseFunctions.insertData(UnverifiedUsers_1.default, { Name, Email, Password, Phone, Username, VerificationLink, LinkTimeout });
+        const [Userdata] = yield DatabaseFunctions.insertData(UnverifiedUsers_1.default, { Name, Email, Password, Phone, Username, VerificationLink, LinkTimeout, Profile, Type });
         yield (0, SendMail_1.SendVerificationLink)(Email, link + Userdata._id);
         return ResponseFunctions.SignupRes({
             errors: [],
@@ -91,8 +90,9 @@ const RegisterRepository = (data) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.RegisterRepository = RegisterRepository;
-const LoginRepository = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Email, Password }) {
+const LoginRepository = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Email, Password, Type }) {
     try {
+        console.log(Email, typeof Password, Type);
         const user = yield DatabaseFunctions.findOneData(UnverifiedUsers_1.default, { Email: Email });
         const userauth = yield (0, UserFunctions_1.VerifyUser)(user);
         if (!userauth.status) {

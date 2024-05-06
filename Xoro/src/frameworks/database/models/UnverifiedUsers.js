@@ -35,6 +35,7 @@ const UserAuthSchema = new mongoose_1.Schema({
         type: Boolean,
         default: false,
     },
+    Type: String,
 });
 const UserAuth = (0, mongoose_1.model)('unverifiedusers', UserAuthSchema);
 exports.default = UserAuth;

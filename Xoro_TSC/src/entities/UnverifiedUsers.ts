@@ -16,4 +16,5 @@ export default interface UnverifiedUsers extends Document {
     Profile:string;
     TwoStepVerification:boolean;
     Banner:string;
+    Type:string;
 }

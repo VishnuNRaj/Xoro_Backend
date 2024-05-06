@@ -16,8 +16,10 @@ export const Register: Middleware = async (req, res) => {
             Email,
             Password,
             Phone,
+            Type,
+            Profile
         }: UserEntity.Register = req.body
-        const result: Responses.SignUpResponse = await UseCases.RegisterUser({ Name, Email, Password, Phone })
+        const result: Responses.SignUpResponse = await UseCases.RegisterUser({ Profile,Name, Email, Password, Phone, Type })
         log(result)
         res.status(result.status).json(result)
     } catch (e) {
@@ -28,9 +30,9 @@ export const Register: Middleware = async (req, res) => {
 export const Login: Middleware = async (req, res) => {
     try {
         const {
-            Email, Password
+            Email, Password, Type
         }: UserEntity.Login = req.body
-        const result: Responses.LoginResponse = await UseCases.LoginUser({ Email, Password })
+        const result: Responses.LoginResponse = await UseCases.LoginUser({ Email, Password, Type })
         console.log(result);
 
         res.status(result.status).json(result)

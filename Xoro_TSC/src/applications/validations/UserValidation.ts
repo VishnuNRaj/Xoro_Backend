@@ -21,6 +21,7 @@ export const RegisterValidate: Function = async (data: UserEntities.Register) =>
                 .required()
                 .error(new Error('2')),
             Phone: Joi.string().length(10).allow('').optional().error(new Error('4')),
+            Type: Joi.string().valid('Email', 'LinkedIn', 'Google').required().error(new Error('5'))
         });
 
         const { error } = schema.validate(data, { abortEarly: false });
@@ -63,14 +64,14 @@ export const LoginValidate: Function = async (data: UserEntities.Login) => {
     }
 }
 
-export const ImageValidate: Function = async ({filename,mimetype}: Express.Multer.File) => {
+export const ImageValidate: Function = async ({ filename, mimetype }: Express.Multer.File) => {
     try {
         const imageSchema = Joi.object({
             filename: Joi.string().required(),
             mimetype: Joi.string().valid('image/jpeg', 'image/png', 'image/gif').required(),
         });
 
-        const { error } = imageSchema.validate({filename,mimetype});
+        const { error } = imageSchema.validate({ filename, mimetype });
 
         if (error) {
             return { status: false, message: error.details[0].message };

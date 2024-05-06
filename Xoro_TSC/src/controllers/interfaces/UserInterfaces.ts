@@ -5,12 +5,15 @@ export interface Register {
     Email: string;
     Password: string;
     Phone: number | null;
+    Type:string;
+    Profile?:string;
 }
 
 
 export interface Login {
     Email: string;
     Password: string;
+    Type:string;
 }
 
 export interface VerifyAccount {

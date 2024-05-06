@@ -6,9 +6,13 @@ import * as Repository from '../repository/User/UserAuthRepository';
 import * as UserFunctions from '../functions/UserFunctions';
 
 import { log } from 'console';
-export const RegisterUser: Function = async ({ Name, Email, Password, Phone }: UserEntity.Register): Promise<Responses.SignUpResponse> => {
+export const RegisterUser: Function = async ({ Name, Email, Password, Phone, Type, Profile }: UserEntity.Register): Promise<Responses.SignUpResponse> => {
     try {
-        const errors = await Validations.RegisterValidate({ Name, Email, Password, Phone })
+        console.log(Type, '_++_+________________________+_+_+_+_+_+_+_+++++___+++_+')
+        let errors = []
+        if (Type === 'Email') {
+            errors = await Validations.RegisterValidate({ Name, Email, Password, Phone, Type })
+        }
         if (errors.length > 0) {
             return ResponseFunctions.SignupRes(<Responses.SignUpResponse>{
                 errors: errors,
@@ -16,7 +20,7 @@ export const RegisterUser: Function = async ({ Name, Email, Password, Phone }: U
                 message: 'Invalid Data Provided'
             })
         }
-        return await Repository.RegisterRepository({ Name, Email, Password, Phone })
+        return await Repository.RegisterRepository({ Name, Email, Password, Phone, Type, Profile })
     } catch (e) {
         return <Responses.SignUpResponse>{
             errors: [],
@@ -26,15 +30,18 @@ export const RegisterUser: Function = async ({ Name, Email, Password, Phone }: U
     }
 }
 
-export const LoginUser: Function = async ({ Email, Password }: UserEntity.Login): Promise<Responses.LoginResponse> => {
+export const LoginUser: Function = async ({ Email, Password, Type }: UserEntity.Login): Promise<Responses.LoginResponse> => {
     try {
-        const errors = await Validations.LoginValidate(<UserEntity.Login>{ Email, Password })
+        let errors = []
+        if (Type === 'Email') {
+            errors = await Validations.LoginValidate(<UserEntity.Login>{ Email, Password })
+        }
         if (errors.length > 0) {
             return <Responses.LoginResponse>{
                 errors, message: 'Invalid Data Format', status: 201
             }
         }
-        return await Repository.LoginRepository({ Email, Password })
+        return await Repository.LoginRepository({ Email, Password, Type })
     } catch (e) {
         return <Responses.LoginResponse>{
             errors: [],
@@ -172,15 +179,15 @@ export const ResendUserOTP: Function = async ({ UserId }: UserEntity.UserOTP) =>
     }
 }
 
-export const getTwoStep:Function = async ({user}:UserEntity.GetSecurity) => {
+export const getTwoStep: Function = async ({ user }: UserEntity.GetSecurity) => {
     try {
-        return Repository.getTwoStep({user})
+        return Repository.getTwoStep({ user })
     } catch (e) {
         return <Responses.GetSecurityResponse>{
-            message:'Internal Server Error',
-            status:500,
-            user:user,
-            TwoStepVerification:false
+            message: 'Internal Server Error',
+            status: 500,
+            user: user,
+            TwoStepVerification: false
         }
     }
 }
