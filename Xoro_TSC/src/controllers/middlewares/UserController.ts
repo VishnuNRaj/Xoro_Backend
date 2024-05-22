@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import * as UserEntity from "../interfaces/UserInterfaces";
 import * as UseCases from '../../applications/usecases/User'
 import * as Responses from '../../applications/responses/Interfaces/UserResponsesInterface';
-import { log } from 'console';
+import { emitNotification } from '../Socket/SocketEmits';
 interface CustomRequest extends Request {
     result?: Responses.VerifyUserAuthResponse;
 }
@@ -19,8 +19,7 @@ export const Register: Middleware = async (req, res) => {
             Type,
             Profile
         }: UserEntity.Register = req.body
-        const result: Responses.SignUpResponse = await UseCases.RegisterUser({ Profile,Name, Email, Password, Phone, Type })
-        log(result)
+        const result: Responses.SignUpResponse = await UseCases.RegisterUser({ Profile, Name, Email, Password, Phone, Type }) 
         res.status(result.status).json(result)
     } catch (e) {
         res.status(500).json({ message: 'Internal Server Error' })
@@ -47,6 +46,7 @@ export const VerifyAccount: Middleware = async (req, res) => {
         console.log(req.params);
 
         const result: Responses.VerifyAccountResponse = await UseCases.VerifyUser({ VerificationLink, UserId })
+        if(result.data) await emitNotification(result.data,req.headers['socket-id']);
         res.status(result.status).json(result)
     } catch (e) {
         res.status(500).json({ message: 'Internal Server Error' })
@@ -79,7 +79,6 @@ export const OtpVerify: Middleware = async (req, res) => {
 
 export const VerifyUserAuth: Middleware = async (req, res, next) => {
     try {
-        console.log(req.file, req.files)
         const token = req.headers.authorization
         const result: Responses.VerifyUserAuthResponse = await UseCases.verifyUserAuth(token)
         if (result.status === 200) {
@@ -119,6 +118,16 @@ export const getSecurity: Middleware = async (req, res) => {
         const result = req.result
         const data = await UseCases.getTwoStep({ user: result?.user })
         return res.status(data.status).json(data)
+    } catch (e) {
+        return res.status(500).json({ messsage: 'Internal Server Error' })
+    }
+}
+
+export const setSecurity: Middleware = async (req, res) => {
+    try {
+        const result = req.result
+        const data = await UseCases.setTwoStep({ user: result?.user?._id })
+        return res.status(data.status)
     } catch (e) {
         return res.status(500).json({ messsage: 'Internal Server Error' })
     }

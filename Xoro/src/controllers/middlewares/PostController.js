@@ -32,13 +32,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ShowPostImages = exports.PostImages = void 0;
+exports.RemoveReactions = exports.DislikePost = exports.LikePost = exports.DeletePost = exports.ShowPostImages = exports.PostImages = void 0;
 const UseCases = __importStar(require("../../applications/usecases/Post"));
 const PostImages = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const result = req.result;
-        const { Images, Caption, CommentsOn, Hashtags, Tags, Hidden } = req.body;
-        const data = yield UseCases.AddPost({ Images, Caption, CommentsOn, Hashtags, Tags, Hidden, user: result === null || result === void 0 ? void 0 : result.user });
+        const Media = req.files;
+        // console.log(Media,req.body)
+        const { Caption, CommentsOn, Hashtags, Tags, Hidden } = req.body;
+        const data = yield UseCases.AddPost({ Media, Caption, CommentsOn, Hashtags, Tags, Hidden, user: result === null || result === void 0 ? void 0 : result.user });
+        console.log(data);
         return res.status(data.status).json(data);
     }
     catch (e) {
@@ -52,7 +55,6 @@ const ShowPostImages = (req, res) => __awaiter(void 0, void 0, void 0, function*
         const result = req.result;
         if (result && ((_a = result.user) === null || _a === void 0 ? void 0 : _a._id)) {
             const data = yield UseCases.ShowPost({ user: result === null || result === void 0 ? void 0 : result.user });
-            console.log(data);
             return res.status(data.status).json(data);
         }
     }
@@ -61,3 +63,48 @@ const ShowPostImages = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.ShowPostImages = ShowPostImages;
+const DeletePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const result = req.result;
+        const { PostId } = req.params;
+        const data = yield UseCases.DeletePost({ PostId, user: result === null || result === void 0 ? void 0 : result.user });
+        return res.status(data.status).json(data);
+    }
+    catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+exports.DeletePost = DeletePost;
+const LikePost = (req, res) => {
+    try {
+        const { PostId, UserId } = req.params;
+        const data = UseCases.LikePost({ PostId, UserId });
+        return res.status(data.status).json(data);
+    }
+    catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+exports.LikePost = LikePost;
+const DislikePost = (req, res) => {
+    try {
+        const { PostId, UserId } = req.params;
+        const data = UseCases.DislikePost({ PostId, UserId });
+        return res.status(data.status).json(data);
+    }
+    catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+exports.DislikePost = DislikePost;
+const RemoveReactions = (req, res) => {
+    try {
+        const { PostId, UserId } = req.params;
+        const data = UseCases.RemoveReactions({ PostId, UserId });
+        return res.status(data.status).json(data);
+    }
+    catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+exports.RemoveReactions = RemoveReactions;

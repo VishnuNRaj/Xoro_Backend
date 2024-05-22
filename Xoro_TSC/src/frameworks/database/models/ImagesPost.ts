@@ -5,7 +5,11 @@ import { ObjectId } from 'mongodb'
 
 export const PostSchema = new Schema<Post>({
     Caption: String,
-    Images: [String],
+    UserId:ObjectId,
+    Images: [{
+        postType: String,
+        link: String,
+    }],
     Postdate: Date,
     Tags: [String],
     CommentsOn: Boolean,
@@ -23,14 +27,5 @@ export const PostSchema = new Schema<Post>({
     }
 });
 
-const PostImageSchema = new Schema<PostImage>({
-    UserId: {
-        type: ObjectId,
-        required: true,
-    },
-    Posts: [PostSchema],
-});
-
-const PostImages = model<PostImage>('postimages', PostImageSchema);
-
+const PostImages = model<Post>('postimages', PostSchema);
 export default PostImages;

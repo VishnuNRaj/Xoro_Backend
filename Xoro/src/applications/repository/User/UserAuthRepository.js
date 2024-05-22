@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getTwoStep = exports.ResendOTP = exports.verifyUserAuthRepository = exports.OTPVerifyRepository = exports.AddProfilePicRepository = exports.VerifyAccountRepository = exports.LoginRepository = exports.RegisterRepository = void 0;
+exports.setTwoStep = exports.getTwoStep = exports.ResendOTP = exports.verifyUserAuthRepository = exports.OTPVerifyRepository = exports.AddProfilePicRepository = exports.VerifyAccountRepository = exports.LoginRepository = exports.RegisterRepository = void 0;
 const DatabaseFunctions = __importStar(require("../../functions/DatabaseFunctions"));
 const UnverifiedUsers_1 = __importDefault(require("../../../frameworks/database/models/UnverifiedUsers"));
 const ResponseFunctions = __importStar(require("../../responses/Response/UserResponse"));
@@ -46,6 +46,8 @@ const User_1 = __importDefault(require("../../../frameworks/database/models/User
 const auth_1 = __importDefault(require("../../../config/auth"));
 const UserFunctions_1 = require("../../functions/UserFunctions");
 const Connetions_1 = __importDefault(require("../../../frameworks/database/models/Connetions"));
+const Notifications_1 = __importDefault(require("../../../frameworks/database/models/Notifications"));
+// import { ObjectId } from 'mongodb';
 const RegisterRepository = (data) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { Name, Email, Phone, Type, Profile } = data;
@@ -178,15 +180,26 @@ const VerifyAccountRepository = (_b) => __awaiter(void 0, [_b], void 0, function
         }
         yield DatabaseFunctions.updateById(UnverifiedUsers_1.default, user._id, { Verified: true });
         const ProfileLink = yield CommonFunctions.generateVerificationLink();
-        const [res] = yield DatabaseFunctions.insertData(Connetions_1.default, { UserId: user._id });
-        // const data = {...user,Connections: res._id, ProfileLink: ProfileLink}
+        const [res] = yield Promise.all([
+            yield DatabaseFunctions.insertData(Connetions_1.default, { UserId: user._id }),
+            yield DatabaseFunctions.insertData(Notifications_1.default, {
+                UserId: user._id, Messages: [
+                    {
+                        Message: 'Welcome to Xoro Streams',
+                        SenderId: user._id,
+                        Link: '',
+                        Type: 'Auth'
+                    }
+                ]
+            }),
+        ]);
         yield DatabaseFunctions.insertData(User_1.default, {
             _id: user._id,
             Name: user.Name,
             Username: user.Username,
             Suspended: user.Suspended,
             SuspendedTill: user.SuspendedTill,
-            Connections: res._id,
+            Connections: res[0]._id,
             ProfileLink: ProfileLink,
             Profile: user.Profile,
         });
@@ -195,7 +208,13 @@ const VerifyAccountRepository = (_b) => __awaiter(void 0, [_b], void 0, function
             message: 'Verified Succesfully',
             status: 200,
             token: token,
-            user: user
+            user: user,
+            data: {
+                Message: 'Welcome to Xoro Streams',
+                Type: 'Auth',
+                SenderId: '',
+                Link: '',
+            }
         });
     }
     catch (e) {
@@ -237,7 +256,7 @@ const AddProfilePicRepository = (_c, _d, _e) => __awaiter(void 0, [_c, _d, _e], 
         }
         user.Username = Username ? Username : user.Username;
         user.Profile = typeof file == 'string' && file != '' ? file : user.Profile;
-        yield user.save();
+        yield DatabaseFunctions.saveData(user);
         yield DatabaseFunctions.updateById(User_1.default, UserId, { Profile: user.Profile, Username: user.Username });
         const token = yield (0, JWT_1.CreatePayload)({ Payload: { UserId: user._id, Email: user.Email, Admin: false }, RememberMe });
         return ResponseFunctions.AddProfileRes({
@@ -338,7 +357,6 @@ const verifyUserAuthRepository = (token) => __awaiter(void 0, void 0, void 0, fu
                 user: null
             });
         }
-        console.log(user.Followers, '__________');
         return ResponseFunctions.VerityAccountAuthRes({
             message: 'Verified Succesfully',
             status: 200,
@@ -412,3 +430,21 @@ const getTwoStep = (_j) => __awaiter(void 0, [_j], void 0, function* ({ user }) 
     }
 });
 exports.getTwoStep = getTwoStep;
+const setTwoStep = (_k) => __awaiter(void 0, [_k], void 0, function* ({ user }) {
+    try {
+        const userData = yield DatabaseFunctions.findUsingId(UnverifiedUsers_1.default, user);
+        userData.TwoStepVerification = !userData.TwoStepVerification;
+        yield DatabaseFunctions.saveData(userData);
+        return ResponseFunctions.setTwoStepRes({
+            message: 'Security Verified',
+            status: 200,
+        });
+    }
+    catch (e) {
+        return ResponseFunctions.setTwoStepRes({
+            message: 'Internal Server Error',
+            status: 500,
+        });
+    }
+});
+exports.setTwoStep = setTwoStep;

@@ -191,3 +191,14 @@ export const getTwoStep: Function = async ({ user }: UserEntity.GetSecurity) => 
         }
     }
 }
+
+export const setTwoStep: Function = async ({ user }: UserEntity.setSecurity) => {
+    try {
+        return Repository.setTwoStep({ user })
+    } catch (e) {
+        return <Responses.setTwoStepResponse>{
+            message: 'Internal Server Error',
+            status: 500,
+        }
+    }
+}

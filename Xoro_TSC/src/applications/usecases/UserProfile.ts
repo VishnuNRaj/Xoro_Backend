@@ -56,25 +56,17 @@ export const EditProfilePic: Function = async ({ user, Image }: UserEntity.EditP
     }
 }
 
-export const EditProfile: Function = async ({ user, Age, Country, Description, Gender, Name, Username }: UserEntity.EditProfileData) => {
+export const EditProfile: Function = async ({ user, Description, Name, Username }: UserEntity.EditProfileData) => {
     try {
-        const result = await Validations.EditProfileValidate({ Age, Gender, Description, Name, Username });
-        if (!result.status) {
-            return <Responses.EditProfileDataResponse>{
-                message: result.message,
-                status: 201,
-                user: user
-            }
-        }
-        const countryValidate = await Validations.CountryValidate(Country)
-        if (!countryValidate.status) {
-            return <Responses.EditProfileDataResponse>{
-                message: countryValidate.message,
-                status: 201,
-                user: user
-            }
-        }
-        return Repository.EditProfileData({ user, Age, Country, Description, Gender, Name, Username })
+        // const result = await Validations.EditProfileValidate({ Description, Name, Username });
+        // if (!result.status) {
+        //     return <Responses.EditProfileDataResponse>{
+        //         message: result.message,
+        //         status: 201,
+        //         user: user
+        //     }
+        // }
+        return Repository.EditProfileData({ user, Description, Name, Username })
     } catch (e) {
         console.log(e)
         return <Responses.EditProfileDataResponse>{
@@ -129,7 +121,8 @@ export const ProfileSettings: Function = async ({ user, Notification, Private, P
 
 export const SearchUser: Function = async ({ user, Search }: UserEntity.SearchUser) => {
     try {
-        if (Search || typeof Search !== 'string' || Search.length === 0) {
+        console.log(Search)
+        if (!Search || typeof Search !== 'string' || Search.length === 0) {
             return ResponseFunctions.SearchUserRes(<Responses.SearchUserResponse>{
                 message: 'Invalid Search',
                 status: 201,
@@ -191,7 +184,8 @@ export const UnFollowUser: Function = async ({ user, UserId }: UserEntity.UnFoll
 
 export const GetUserProfile: Function = async ({ user, ProfileLink }: UserEntity.GetUserProfile) => {
     try {
-        if (!ProfileLink || ProfileLink.length !== 0) {
+        console.log(ProfileLink)
+        if (!ProfileLink || ProfileLink.length === 0) {
             return <Responses.GetProfileResponse>{
                 message: 'Invalid Credentials',
                 status: 201,

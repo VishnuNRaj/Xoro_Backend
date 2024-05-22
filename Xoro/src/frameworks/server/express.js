@@ -10,7 +10,7 @@ const express_mongo_sanitize_1 = __importDefault(require("express-mongo-sanitize
 const helmet_1 = __importDefault(require("helmet"));
 const expressConfig = (app) => {
     app.use(express_1.default.json({ limit: '10mb' }));
-    app.use(express_1.default.urlencoded({ limit: '10mb', extended: true }));
+    app.use(express_1.default.urlencoded({ limit: '100mb', extended: true }));
     app.use((0, morgan_1.default)('dev'));
     app.use((0, helmet_1.default)({ xssFilter: true }));
     app.use((0, express_mongo_sanitize_1.default)());

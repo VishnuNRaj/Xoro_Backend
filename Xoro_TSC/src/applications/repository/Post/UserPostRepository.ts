@@ -3,30 +3,24 @@ import * as Responses from "../../responses/Interfaces/PostUserResponseInterface
 import * as ResponseFunctions from "../../responses/Response/PostResponse";
 import * as CommonFunctions from "../../functions/CommonFunctions";
 import * as PostEntity from "../../../controllers/interfaces/PostInterface";
-import { PostImage, Post } from "../../../entities/PostImages";
 import PostImages from "../../../frameworks/database/models/ImagesPost";
-import User from './../../../frameworks/database/models/User';
+import Reactions from './../../../frameworks/database/models/Reactions';
 import UserDocument from "../../../entities/User";
+import { Post } from "../../../entities/PostImages";
+import { ReactionsInterface } from "../../../entities/Reactions";
+import User from "../../../frameworks/database/models/User";
+
 
 
 export const addPostImagesRepository: Function = async ({ Caption, CommentsOn, Hashtags, Hidden, Images, Tags, user }: PostEntity.addImagesPost) => {
     try {
-        let post: PostImage | null = null
-        const userData: UserDocument = await DatabaseFunctions.findUsingId(User, user._id)
-        if (userData.Images) post = await DatabaseFunctions.findUsingId(PostImages, userData.Images)
-        else {
-            post = new PostImages({
-                UserId: user._id,
-                Posts: []
-            })
-            await DatabaseFunctions.updateById(User, user._id, { Images: post._id })
-        }
-        const newPost: Post = {
+        const newPost = new PostImages({
             Caption: Caption,
+            UserId: user._id,
             CommentsOn: CommentsOn,
             Hashtags: Hashtags,
             Hidden: Hidden,
-            Images: Images,
+            Images: Images ? Images : [],
             Postdate: new Date(),
             Tags: Tags,
             Comments: 0,
@@ -34,13 +28,14 @@ export const addPostImagesRepository: Function = async ({ Caption, CommentsOn, H
             Likes: 0,
             ShowReactions: true,
             ShareLink: CommonFunctions.generateVerificationLink(),
-        };
-        if (post) {
-            post.Posts.push(newPost)
-            await post.save()
-            user.Posts+=1
-            await user.save()
-        }
+        })
+        const [reaction]: ReactionsInterface[] = await DatabaseFunctions.insertData(Reactions, { PostId: newPost._id })
+        await Promise.all([
+            newPost.Reactions = reaction._id,
+            await DatabaseFunctions.saveData(newPost),
+            user.Posts += 1,
+            await DatabaseFunctions.saveData(user),
+        ])
         return ResponseFunctions.addPostRes(<Responses.addPostResponse>{
             message: 'Post Added Successfully',
             status: 200
@@ -57,21 +52,11 @@ export const addPostImagesRepository: Function = async ({ Caption, CommentsOn, H
 
 export const showPostImagesRepository: Function = async ({ user }: PostEntity.showPostImages): Promise<Responses.showImagesResponse> => {
     try {
-        let Images: PostImage | null = null
-        if (!user.Images) {
-            Images = new PostImages({
-                UserId: user._id,
-                Posts: []
-            })
-            await Images.save()
-            user.Images = Images._id
-            await user.save()
-
-        } else Images = await DatabaseFunctions.findUsingId(PostImages, user.Images)
-
+        const posts: Post[] = await DatabaseFunctions.findData(PostImages, { UserId: user._id })
+        console.log(posts)
         return ResponseFunctions.showPostRes(<Responses.showImagesResponse>{
             message: 'Verified',
-            post: Images?.Posts,
+            post: posts,
             status: 200,
             user: user
         })
@@ -83,3 +68,116 @@ export const showPostImagesRepository: Function = async ({ user }: PostEntity.sh
         })
     }
 }
+
+export const deletePostRepository: Function = async ({ PostId, user }: PostEntity.deletePost): Promise<Responses.deletePostResponse> => {
+    try {
+        const responses = await DatabaseFunctions.checkObjectId(PostId)
+        if (!responses) {
+            return ResponseFunctions.deletePostRes(<Responses.deletePostResponse>{
+                message: 'Invalid Credentials',
+                status: 201
+            })
+        }
+        await DatabaseFunctions.deleteUsingId(PostImages, PostId)
+        user.Posts = await DatabaseFunctions.countDocuments(PostImages, user._id, 'UserId')
+        await DatabaseFunctions.saveData(user)
+        return ResponseFunctions.deletePostRes(<Responses.deletePostResponse>{
+            message: 'Deleted Successfully',
+            status: 200
+        })
+    } catch (e) {
+        return ResponseFunctions.deletePostRes(<Responses.deletePostResponse>{
+            message: 'Internal Server Error',
+            status: 500
+        })
+    }
+}
+
+export const LikePostRepository: Function = async ({ PostId, UserId }: PostEntity.LikePost): Promise<Responses.deletePostResponse> => {
+    try {
+        const responses: boolean[] = await Promise.all([
+            await DatabaseFunctions.checkObjectId(PostId),
+            await DatabaseFunctions.checkObjectId(UserId),
+        ])
+        if (!responses[0] || !responses[1]) {
+            return ResponseFunctions.deletePostRes(<Responses.deletePostResponse>{
+                message: 'Invalid Credentials',
+                status: 201
+            })
+        }
+        const post: Post = await DatabaseFunctions.findUsingId(PostImages, PostId)
+        // 👎
+        const result: ReactionsInterface = await DatabaseFunctions.likeDislikePost(Reactions, post.Reactions, UserId, 'Likes', 'Dislikes')
+        post.Likes = result.Likes.length
+        post.Dislikes = result.Dislikes.length
+        await DatabaseFunctions.saveData(post)
+        return ResponseFunctions.deletePostRes(<Responses.deletePostResponse>{
+            message: '👍',
+            status: 200
+        })
+    } catch (e) {
+        return ResponseFunctions.deletePostRes(<Responses.deletePostResponse>{
+            message: 'Internal Server Error',
+            status: 500
+        })
+    }
+}
+
+export const DislikePostRepository: Function = async ({ PostId, UserId }: PostEntity.LikePost): Promise<Responses.deletePostResponse> => {
+    try {
+        const responses: boolean[] = await Promise.all([
+            await DatabaseFunctions.checkObjectId(PostId),
+            await DatabaseFunctions.checkObjectId(UserId),
+        ])
+        if (!responses[0] || !responses[1]) {
+            return ResponseFunctions.deletePostRes(<Responses.deletePostResponse>{
+                message: 'Invalid Credentials',
+                status: 201
+            })
+        }
+        const post: Post = await DatabaseFunctions.findUsingId(PostImages, PostId)
+        const result: ReactionsInterface = await DatabaseFunctions.likeDislikePost(Reactions, post.Reactions, UserId, 'Dislikes', 'Likes')
+        post.Likes = result.Likes.length
+        post.Dislikes = result.Dislikes.length
+        await DatabaseFunctions.saveData(post)
+        return ResponseFunctions.deletePostRes(<Responses.deletePostResponse>{
+            message: '👎',
+            status: 200
+        })
+    } catch (e) {
+        return ResponseFunctions.deletePostRes(<Responses.deletePostResponse>{
+            message: 'Internal Server Error',
+            status: 500
+        })
+    }
+}
+
+export const RemoveReactions: Function = async ({ PostId, UserId }: PostEntity.LikePost): Promise<Responses.deletePostResponse> => {
+    try {
+        const responses: boolean[] = await Promise.all([
+            await DatabaseFunctions.checkObjectId(PostId),
+            await DatabaseFunctions.checkObjectId(UserId),
+        ])
+        if (!responses[0] || !responses[1]) {
+            return ResponseFunctions.deletePostRes(<Responses.deletePostResponse>{
+                message: 'Invalid Credentials',
+                status: 201
+            })
+        }
+        const post: Post = await DatabaseFunctions.findUsingId(PostImages, PostId)
+        const reaction: ReactionsInterface = await DatabaseFunctions.pullReactions(Reactions, post._id, UserId)
+        post.Likes = reaction.Likes.length
+        post.Dislikes = reaction.Dislikes.length
+        await DatabaseFunctions.saveData(post)
+        return ResponseFunctions.deletePostRes(<Responses.deletePostResponse>{
+            message: 'Removed',
+            status: 200
+        })
+    } catch (e) {
+        return ResponseFunctions.deletePostRes(<Responses.deletePostResponse>{
+            message: 'Internal Server Error',
+            status: 500
+        })
+    }
+}
+

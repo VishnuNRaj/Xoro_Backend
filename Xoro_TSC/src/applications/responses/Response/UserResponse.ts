@@ -22,7 +22,8 @@ export const VerifyAccountRes: Function = async (data:Responses.VerifyAccountRes
         message:data.message,
         status:data.status,
         token:data.token,
-        user:data.user
+        user:data.user,
+        data:data.data
     }
 }
 
@@ -112,7 +113,8 @@ export const FollowUserRes: Function = async (data:Responses.FollowUserResponse)
     return <Responses.FollowUserResponse>{
         message:data.message,
         status:data.status,
-        user:data.user
+        user:data.user,
+        notification:data.notification
     }
 }
 
@@ -138,6 +140,14 @@ export const GetUserProfileRes: Function = async (data:Responses.GetProfileRespo
         message:data.message,
         status:data.status,
         user:data.user,
-        userData:data.userData
+        userData:data.userData,
+        post:data.post
+    }
+}
+
+export const setTwoStepRes: Function = async (data:Responses.setTwoStepResponse) =>{
+    return <Responses.setTwoStepResponse>{
+        message:data.message,
+        status:data.status,
     }
 }

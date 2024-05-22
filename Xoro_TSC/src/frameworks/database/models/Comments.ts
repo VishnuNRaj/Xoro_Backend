@@ -25,4 +25,6 @@ const AllCommentSchema = new Schema<AllCommments>({
 });
 
 
-export const CommentModel = model<AllCommments>("Comment", AllCommentSchema);
+const CommentModel = model<AllCommments>("Comment", AllCommentSchema);
+
+export default CommentModel;

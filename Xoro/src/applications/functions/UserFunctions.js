@@ -12,9 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.VerifyUser = exports.uploadBase64Image = exports.UploadFile = void 0;
+exports.createNotification = exports.uploadToFirebase = exports.VerifyUser = exports.uploadBase64Image = exports.UploadFile = void 0;
 const cloudinary_1 = __importDefault(require("../../config/cloudinary"));
 const fs_1 = __importDefault(require("fs"));
+const firebase_1 = __importDefault(require("../../config/firebase"));
+const Notifications_1 = __importDefault(require("../../frameworks/database/models/Notifications"));
+const DatabaseFunctions_1 = require("./DatabaseFunctions");
 const UploadFile = (file) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const fileBuffer = fs_1.default.readFileSync(file.path);
@@ -71,3 +74,38 @@ const VerifyUser = (user) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.VerifyUser = VerifyUser;
+const uploadToFirebase = (file, path) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const store = firebase_1.default.storage().bucket();
+        const buffer = fs_1.default.readFileSync(file.path);
+        yield store.file(path).save(buffer, {
+            metadata: {
+                contentType: file.mimetype
+            }
+        });
+        console.log(store.file(path));
+        const data = store.file(path);
+        const signedUrl = yield data.getSignedUrl({
+            action: 'read',
+            expires: Date.now() + 15 * 60 * 1000,
+        });
+        console.log('Signed URL:', signedUrl);
+        fs_1.default.unlinkSync(file.path);
+        return signedUrl[0];
+    }
+    catch (e) {
+        console.log(e);
+        return e.message;
+    }
+});
+exports.uploadToFirebase = uploadToFirebase;
+const createNotification = (data, UserId) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield (0, DatabaseFunctions_1.findOneAndUpdate)(Notifications_1.default, { UserId: UserId }, { $push: { Messages: data } }, {});
+        return true;
+    }
+    catch (e) {
+        return false;
+    }
+});
+exports.createNotification = createNotification;

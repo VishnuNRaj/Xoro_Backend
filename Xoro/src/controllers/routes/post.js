@@ -22,11 +22,16 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const UserController_1 = require("../middlewares/UserController");
 const Middleware = __importStar(require("./../middlewares/PostController"));
+const Multer_1 = __importDefault(require("../other/Multer"));
 const postRouter = (0, express_1.Router)();
 postRouter.get('/', UserController_1.VerifyUserAuth, Middleware.ShowPostImages);
-postRouter.post('/add-post', UserController_1.VerifyUserAuth, Middleware.PostImages);
+postRouter.post('/add-post', Multer_1.default.array('Media'), UserController_1.VerifyUserAuth, Middleware.PostImages);
+postRouter.get('/delete/:PostId', UserController_1.VerifyUserAuth, Middleware.DeletePost);
 exports.default = postRouter;

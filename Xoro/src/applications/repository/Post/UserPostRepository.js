@@ -35,31 +35,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.showPostImagesRepository = exports.addPostImagesRepository = void 0;
+exports.RemoveReactions = exports.DislikePostRepository = exports.LikePostRepository = exports.deletePostRepository = exports.showPostImagesRepository = exports.addPostImagesRepository = void 0;
 const DatabaseFunctions = __importStar(require("../../functions/DatabaseFunctions"));
 const ResponseFunctions = __importStar(require("../../responses/Response/PostResponse"));
 const CommonFunctions = __importStar(require("../../functions/CommonFunctions"));
 const ImagesPost_1 = __importDefault(require("../../../frameworks/database/models/ImagesPost"));
-const User_1 = __importDefault(require("./../../../frameworks/database/models/User"));
+const Reactions_1 = __importDefault(require("./../../../frameworks/database/models/Reactions"));
 const addPostImagesRepository = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Caption, CommentsOn, Hashtags, Hidden, Images, Tags, user }) {
     try {
-        let post = null;
-        const userData = yield DatabaseFunctions.findUsingId(User_1.default, user._id);
-        if (userData.Images)
-            post = yield DatabaseFunctions.findUsingId(ImagesPost_1.default, userData.Images);
-        else {
-            post = new ImagesPost_1.default({
-                UserId: user._id,
-                Posts: []
-            });
-            yield DatabaseFunctions.updateById(User_1.default, user._id, { Images: post._id });
-        }
-        const newPost = {
+        const newPost = new ImagesPost_1.default({
             Caption: Caption,
+            UserId: user._id,
             CommentsOn: CommentsOn,
             Hashtags: Hashtags,
             Hidden: Hidden,
-            Images: Images,
+            Images: Images ? Images : [],
             Postdate: new Date(),
             Tags: Tags,
             Comments: 0,
@@ -67,13 +57,14 @@ const addPostImagesRepository = (_a) => __awaiter(void 0, [_a], void 0, function
             Likes: 0,
             ShowReactions: true,
             ShareLink: CommonFunctions.generateVerificationLink(),
-        };
-        if (post) {
-            post.Posts.push(newPost);
-            yield post.save();
-            user.Posts += 1;
-            yield user.save();
-        }
+        });
+        const [reaction] = yield DatabaseFunctions.insertData(Reactions_1.default, { PostId: newPost._id });
+        yield Promise.all([
+            newPost.Reactions = reaction._id,
+            yield DatabaseFunctions.saveData(newPost),
+            user.Posts += 1,
+            yield DatabaseFunctions.saveData(user),
+        ]);
         return ResponseFunctions.addPostRes({
             message: 'Post Added Successfully',
             status: 200
@@ -90,21 +81,11 @@ const addPostImagesRepository = (_a) => __awaiter(void 0, [_a], void 0, function
 exports.addPostImagesRepository = addPostImagesRepository;
 const showPostImagesRepository = (_b) => __awaiter(void 0, [_b], void 0, function* ({ user }) {
     try {
-        let Images = null;
-        if (!user.Images) {
-            Images = new ImagesPost_1.default({
-                UserId: user._id,
-                Posts: []
-            });
-            yield Images.save();
-            user.Images = Images._id;
-            yield user.save();
-        }
-        else
-            Images = yield DatabaseFunctions.findUsingId(ImagesPost_1.default, user.Images);
+        const posts = yield DatabaseFunctions.findData(ImagesPost_1.default, { UserId: user._id });
+        console.log(posts);
         return ResponseFunctions.showPostRes({
             message: 'Verified',
-            post: Images === null || Images === void 0 ? void 0 : Images.Posts,
+            post: posts,
             status: 200,
             user: user
         });
@@ -118,3 +99,119 @@ const showPostImagesRepository = (_b) => __awaiter(void 0, [_b], void 0, functio
     }
 });
 exports.showPostImagesRepository = showPostImagesRepository;
+const deletePostRepository = (_c) => __awaiter(void 0, [_c], void 0, function* ({ PostId, user }) {
+    try {
+        const responses = yield DatabaseFunctions.checkObjectId(PostId);
+        if (!responses) {
+            return ResponseFunctions.deletePostRes({
+                message: 'Invalid Credentials',
+                status: 201
+            });
+        }
+        yield DatabaseFunctions.deleteUsingId(ImagesPost_1.default, PostId);
+        user.Posts = yield DatabaseFunctions.countDocuments(ImagesPost_1.default, user._id, 'UserId');
+        yield DatabaseFunctions.saveData(user);
+        return ResponseFunctions.deletePostRes({
+            message: 'Deleted Successfully',
+            status: 200
+        });
+    }
+    catch (e) {
+        return ResponseFunctions.deletePostRes({
+            message: 'Internal Server Error',
+            status: 500
+        });
+    }
+});
+exports.deletePostRepository = deletePostRepository;
+const LikePostRepository = (_d) => __awaiter(void 0, [_d], void 0, function* ({ PostId, UserId }) {
+    try {
+        const responses = yield Promise.all([
+            yield DatabaseFunctions.checkObjectId(PostId),
+            yield DatabaseFunctions.checkObjectId(UserId),
+        ]);
+        if (!responses[0] || !responses[1]) {
+            return ResponseFunctions.deletePostRes({
+                message: 'Invalid Credentials',
+                status: 201
+            });
+        }
+        const post = yield DatabaseFunctions.findUsingId(ImagesPost_1.default, PostId);
+        // 👎
+        const result = yield DatabaseFunctions.likeDislikePost(Reactions_1.default, post.Reactions, UserId, 'Likes', 'Dislikes');
+        post.Likes = result.Likes.length;
+        post.Dislikes = result.Dislikes.length;
+        yield DatabaseFunctions.saveData(post);
+        return ResponseFunctions.deletePostRes({
+            message: '👍',
+            status: 200
+        });
+    }
+    catch (e) {
+        return ResponseFunctions.deletePostRes({
+            message: 'Internal Server Error',
+            status: 500
+        });
+    }
+});
+exports.LikePostRepository = LikePostRepository;
+const DislikePostRepository = (_e) => __awaiter(void 0, [_e], void 0, function* ({ PostId, UserId }) {
+    try {
+        const responses = yield Promise.all([
+            yield DatabaseFunctions.checkObjectId(PostId),
+            yield DatabaseFunctions.checkObjectId(UserId),
+        ]);
+        if (!responses[0] || !responses[1]) {
+            return ResponseFunctions.deletePostRes({
+                message: 'Invalid Credentials',
+                status: 201
+            });
+        }
+        const post = yield DatabaseFunctions.findUsingId(ImagesPost_1.default, PostId);
+        const result = yield DatabaseFunctions.likeDislikePost(Reactions_1.default, post.Reactions, UserId, 'Dislikes', 'Likes');
+        post.Likes = result.Likes.length;
+        post.Dislikes = result.Dislikes.length;
+        yield DatabaseFunctions.saveData(post);
+        return ResponseFunctions.deletePostRes({
+            message: '👎',
+            status: 200
+        });
+    }
+    catch (e) {
+        return ResponseFunctions.deletePostRes({
+            message: 'Internal Server Error',
+            status: 500
+        });
+    }
+});
+exports.DislikePostRepository = DislikePostRepository;
+const RemoveReactions = (_f) => __awaiter(void 0, [_f], void 0, function* ({ PostId, UserId }) {
+    try {
+        const responses = yield Promise.all([
+            yield DatabaseFunctions.checkObjectId(PostId),
+            yield DatabaseFunctions.checkObjectId(UserId),
+        ]);
+        if (!responses[0] || !responses[1]) {
+            return ResponseFunctions.deletePostRes({
+                message: 'Invalid Credentials',
+                status: 201
+            });
+        }
+        const post = yield DatabaseFunctions.findUsingId(ImagesPost_1.default, PostId);
+        const reaction = yield DatabaseFunctions.pullReactions(Reactions_1.default, post._id, UserId);
+        post.Likes = reaction.Likes.length;
+        post.Dislikes = reaction.Dislikes.length;
+        yield DatabaseFunctions.saveData(post);
+        return ResponseFunctions.deletePostRes({
+            message: 'Removed',
+            status: 200
+        });
+    }
+    catch (e) {
+        return ResponseFunctions.deletePostRes({
+            message: 'Internal Server Error',
+            status: 500
+        });
+    }
+});
+exports.RemoveReactions = RemoveReactions;

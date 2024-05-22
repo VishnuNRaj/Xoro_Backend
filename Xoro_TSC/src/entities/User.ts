@@ -11,10 +11,6 @@ export default interface UserDocument extends Document {
     Terminated: boolean;
     Connections: ObjectId;
     Wallet: ObjectId;
-    Images: ObjectId;
-    Videos: ObjectId;
-    Shorts: ObjectId;
-    Stream: ObjectId;
     Hashtags: string[];
     SuspendedTill?: Date;
     Reason?: string;
@@ -34,5 +30,6 @@ export default interface UserDocument extends Document {
         Notifications:boolean,
     };
     Banner:string;
+    Channel:boolean;
     ProfileLock:boolean;
 }

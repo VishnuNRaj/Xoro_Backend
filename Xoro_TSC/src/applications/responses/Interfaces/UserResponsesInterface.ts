@@ -1,3 +1,4 @@
+import { Notification } from "../../../entities/Notification";
 import { Post } from "../../../entities/PostImages";
 import UnverifiedUsers from "../../../entities/UnverifiedUsers";
 import UserDocument from "../../../entities/User";
@@ -21,6 +22,12 @@ export interface VerifyAccountResponse {
     status: number;
     token: string;
     user:UnverifiedUsers
+    data?:{
+        Message:string;
+        Type:string;
+        SenderId:string;
+        Link:string;
+    }
 }
 
 export interface AddProfileResponse {
@@ -89,6 +96,13 @@ export interface FollowUserResponse {
     user:UserDocument;
     status:number;
     message:string;
+    notification?:{
+        SenderId:string;
+        Message:string;
+        Type:string;
+        Time:Date;
+        Link:string;
+    };
 }
 
 export interface UnFollowUserResponse {
@@ -112,4 +126,9 @@ export interface GetProfileResponse {
     post:{
         Images:Post[]
     }
+}
+
+export interface setTwoStepResponse {
+    message:string;
+    status:number;
 }

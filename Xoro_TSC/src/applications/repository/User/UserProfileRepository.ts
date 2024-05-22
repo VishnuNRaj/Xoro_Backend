@@ -3,17 +3,15 @@ import * as DatabaseFunctions from '../../functions/DatabaseFunctions'
 import UserAuth from '../../../frameworks/database/models/UnverifiedUsers';
 import * as ResponseFunctions from '../../responses/Response/UserResponse';
 import * as Responses from '../../responses/Interfaces/UserResponsesInterface';
-import * as CommonFunctions from '../../functions/CommonFunctions';
 import UnverifiedUsers from '../../../entities/UnverifiedUsers';
-import { UploadFile } from './../../functions/UserFunctions';
+import { createNotification, UploadFile } from './../../functions/UserFunctions';
 import { compare } from 'bcryptjs';
 import User from './../../../frameworks/database/models/User';
 import { ConnectionsInterface } from '../../../entities/Connections';
 import Connections from './../../../frameworks/database/models/Connetions';
-// import { ObjectId } from 'mongodb';
 import UserDocument from '../../../entities/User';
-import { PostImage } from '../../../entities/PostImages';
-import { PostImages } from '../../../controllers/middlewares/PostController';
+import PostImages from '../../../frameworks/database/models/ImagesPost';
+import { Notification } from '../../../entities/Notification';
 
 export const editBannerRepository: Function = async ({ Image, user }: UserEntity.EditBanner) => {
     try {
@@ -26,7 +24,7 @@ export const editBannerRepository: Function = async ({ Image, user }: UserEntity
             })
         }
         user.Banner = result
-        await user.save()
+        await DatabaseFunctions.saveData(user)
         return ResponseFunctions.EditBannerRes(<Responses.EditBannerResponse>{
             user: user,
             status: 200,
@@ -53,7 +51,7 @@ export const editProfilePicRepository: Function = async ({ Image, user }: UserEn
         }
         user.Profile = result
         console.log('*------------------------------------------------*')
-        await user.save()
+        await DatabaseFunctions.saveData(user)
         await DatabaseFunctions.updateById(UserAuth, user._id, { Profile: result })
         return ResponseFunctions.EditProfilePicRes(<Responses.EditProfilePicResponse>{
             user: user,
@@ -80,7 +78,7 @@ export const SecureAccountRepository = async ({ Password, user }: UserEntity.Sec
             })
         }
         userData.TwoStepVerification = !userData.TwoStepVerification
-        await userData.save()
+        await DatabaseFunctions.saveData(userData)
         return ResponseFunctions.SecureAccountRes(<Responses.SecureAccountResponse>{
             user: user,
             status: 200,
@@ -100,7 +98,7 @@ export const ProfileSettingsRepository: Function = async ({ user, Private, Notif
         user.Settings.Private = typeof Private === 'boolean' ? Private : user.Settings.Private
         user.Settings.Notifications = typeof Notification === 'boolean' ? Notification : user.Settings.Notifications
         user.ProfileLock = typeof ProfileLock === 'boolean' ? ProfileLock : user.ProfileLock
-        await user.save()
+        await DatabaseFunctions.saveData(user)
         return ResponseFunctions.SecureAccountRes(<Responses.ProfileSettingsResponse>{
             message: 'Settings Updated',
             user: user,
@@ -115,21 +113,19 @@ export const ProfileSettingsRepository: Function = async ({ user, Private, Notif
     }
 }
 
-export const EditProfileData: Function = async ({ Name, user, Username, Description, Age, Country, Gender }: UserEntity.EditProfileData) => {
+export const EditProfileData: Function = async ({ Name, user, Username, Description }: UserEntity.EditProfileData) => {
     try {
         user.Name = Name;
         user.Username = Username;
         user.Description = Description;
-        user.Gender = Gender;
-        user.Age = Age;
-        user.Country = Country;
-        await user.save();
+        await DatabaseFunctions.saveData(user)
         return ResponseFunctions.EditProfileDataRes(<Responses.EditProfileDataResponse>{
             user: user,
             status: 200,
             message: 'Profile Updated'
         });
     } catch (e) {
+        console.log(e)
         return ResponseFunctions.EditProfileDataRes(<Responses.EditProfileDataResponse>{
             message: 'Internal Server Error',
             user: user,
@@ -178,19 +174,33 @@ export const FollowUserRepository: Function = async ({ user, UserId }: UserEntit
                 }
             }
         }
-        const result1: ConnectionsInterface = await DatabaseFunctions.updateById(Connections, user2._id, user2Update)
-        const result2: ConnectionsInterface = await DatabaseFunctions.updateById(Connections, user._id, userUpdate)
+        const result1: ConnectionsInterface = await DatabaseFunctions.findOneAndUpdate(Connections, { UserId: user2._id }, user2Update, { new: true })
+        const result2: ConnectionsInterface = await DatabaseFunctions.findOneAndUpdate(Connections, { UserId: user._id }, userUpdate, { new: true })
         user.Following = result2.Following.length
         user2.Followers = result1.Followers.length
+        let data = <Notification>{
+            SenderId:user._id,
+            Message:user2.Settings.Private ? 'New Follow Request' : 'New Follower',
+            Link:user.Profile,
+            Type: 'Following',
+        }
         await Promise.all([
-            await user.save(),
-            await user2.save()
+            await DatabaseFunctions.saveData(user),
+            await DatabaseFunctions.saveData(user2),
+            await createNotification(data,user2._id)
         ])
 
         return ResponseFunctions.FollowUserRes(<Responses.FollowUserResponse>{
             user: user,
             status: 200,
-            message: user.Settings.Private ? 'Follow Request Sent' : 'Success'
+            message: user2.Settings.Private ? 'Follow Request Sent' : 'Success',
+            notification: {
+                SenderId: user.Username,
+                Message: user2.Settings.Private ? 'New Follow Request' : 'New Follower',
+                Link: user.Profile,
+                Type: 'Following',
+                Time: new Date()
+            }
         });
     } catch (e) {
         console.error(e);
@@ -223,14 +233,15 @@ export const UnFollowUserRepository: Function = async ({ user, UserId }: UserEnt
             { $pull: { Followers: user._id } },
             { new: true, upsert: true }
         );
+        console.log(user2, result)
         user.Following = result.Following.length
         user.Connections = result._id
-        await DatabaseFunctions.updateById(User, UserId, { Following: user2.Followers, Connections: user2._id })
-        await user.save()
+        await DatabaseFunctions.updateById(User, UserId, { Following: user2.Followers.length, Connections: user2._id })
+        await DatabaseFunctions.saveData(user)
         return ResponseFunctions.UnFollowUserRes(<Responses.UnFollowUserResponse>{
             user: user,
             status: 200,
-            message: 'Following'
+            message: 'Success'
         })
     } catch (e) {
         return ResponseFunctions.UnFollowUserRes(<Responses.UnFollowUserResponse>{
@@ -243,7 +254,13 @@ export const UnFollowUserRepository: Function = async ({ user, UserId }: UserEnt
 
 export const SearchUserRepository: Function = async ({ user, Search }: UserEntity.SearchUser) => {
     try {
-        const result: UserDocument[] = await DatabaseFunctions.findData(User, { Name: { $regex: Search, $options: 'i' } })
+        const result: UserDocument[] = await DatabaseFunctions.findData(User, {
+            $or: [
+                { Username: { $regex: Search, $options: 'i' } },
+                { Name: { $regex: Search, $options: 'i' } },
+            ]
+        })
+        console.log(result)
         return ResponseFunctions.SearchUserRes(<Responses.SearchUserResponse>{
             user: user,
             message: 'Users Found',
@@ -292,7 +309,7 @@ export const GetUserProfileRepository: Function = async ({ user, ProfileLink }: 
         if (userData.Settings.Private) {
             return ResponseFunctions.GetUserProfileRes(<Responses.GetProfileResponse>{
                 user: user,
-                status: 201,
+                status: 200,
                 message: 'Private Profile',
                 userData: userData,
                 post: { Images: [] }
@@ -300,9 +317,9 @@ export const GetUserProfileRepository: Function = async ({ user, ProfileLink }: 
         }
 
         const post = await Promise.all([
-            await DatabaseFunctions.findUsingId(PostImages, userData.Images)
+            await DatabaseFunctions.findData(PostImages, { UserId: userData._id })
         ])
-
+        console.log(post[0])
         return ResponseFunctions.GetUserProfileRes(<Responses.GetProfileResponse>{
             user: user,
             status: 200,

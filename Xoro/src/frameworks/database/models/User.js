@@ -19,10 +19,6 @@ const userSchema = new mongoose_1.Schema({
     Terminated: Boolean,
     Connections: mongodb_1.ObjectId,
     Wallet: mongodb_1.ObjectId,
-    Images: mongodb_1.ObjectId,
-    Videos: mongodb_1.ObjectId,
-    Shorts: mongodb_1.ObjectId,
-    Stream: mongodb_1.ObjectId,
     Hashtags: [String],
     SuspendedTill: Date,
     Reason: String,
@@ -52,6 +48,10 @@ const userSchema = new mongoose_1.Schema({
             type: Boolean,
             default: false
         },
+    },
+    Channel: {
+        type: Boolean,
+        default: false
     },
     Banner: {
         type: String,

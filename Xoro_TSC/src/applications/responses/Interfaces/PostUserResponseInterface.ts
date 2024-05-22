@@ -12,3 +12,8 @@ export interface showImagesResponse {
     status:number;
     user:UserDocument;
 }
+
+export interface deletePostResponse {
+    message:string;
+    status:number;
+}

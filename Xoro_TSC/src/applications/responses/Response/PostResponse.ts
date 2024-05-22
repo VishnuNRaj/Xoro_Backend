@@ -15,3 +15,10 @@ export const showPostRes = async (data:Responses.showImagesResponse) => {
         user:data.user
     }
 }
+
+export const deletePostRes = async (data:Responses.deletePostResponse) => {
+    return <Responses.deletePostResponse>{
+        message:data.message,
+        status:data.status
+    }
+}

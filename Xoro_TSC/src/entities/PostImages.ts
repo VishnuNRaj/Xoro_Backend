@@ -3,12 +3,16 @@ import { Document } from 'mongoose';
 
 export interface PostImage extends Document {
     UserId: typeof ObjectId;
-    Posts: Post[]
+    Posts: ObjectId[]
 }
 
-export interface Post {
+export interface Post extends Document {
     Caption: string;
-    Images: string[];
+    UserId:ObjectId;
+    Images: {
+        postType:string,
+        link:string;
+    }[];
     Postdate: Date;
     Tags: string[];
     CommentsOn: boolean;

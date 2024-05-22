@@ -88,25 +88,17 @@ const EditProfilePic = (_b) => __awaiter(void 0, [_b], void 0, function* ({ user
     }
 });
 exports.EditProfilePic = EditProfilePic;
-const EditProfile = (_c) => __awaiter(void 0, [_c], void 0, function* ({ user, Age, Country, Description, Gender, Name, Username }) {
+const EditProfile = (_c) => __awaiter(void 0, [_c], void 0, function* ({ user, Description, Name, Username }) {
     try {
-        const result = yield Validations.EditProfileValidate({ Age, Gender, Description, Name, Username });
-        if (!result.status) {
-            return {
-                message: result.message,
-                status: 201,
-                user: user
-            };
-        }
-        const countryValidate = yield Validations.CountryValidate(Country);
-        if (!countryValidate.status) {
-            return {
-                message: countryValidate.message,
-                status: 201,
-                user: user
-            };
-        }
-        return Repository.EditProfileData({ user, Age, Country, Description, Gender, Name, Username });
+        // const result = await Validations.EditProfileValidate({ Description, Name, Username });
+        // if (!result.status) {
+        //     return <Responses.EditProfileDataResponse>{
+        //         message: result.message,
+        //         status: 201,
+        //         user: user
+        //     }
+        // }
+        return Repository.EditProfileData({ user, Description, Name, Username });
     }
     catch (e) {
         console.log(e);
@@ -164,7 +156,8 @@ const ProfileSettings = (_e) => __awaiter(void 0, [_e], void 0, function* ({ use
 exports.ProfileSettings = ProfileSettings;
 const SearchUser = (_f) => __awaiter(void 0, [_f], void 0, function* ({ user, Search }) {
     try {
-        if (Search || typeof Search !== 'string' || Search.length === 0) {
+        console.log(Search);
+        if (!Search || typeof Search !== 'string' || Search.length === 0) {
             return ResponseFunctions.SearchUserRes({
                 message: 'Invalid Search',
                 status: 201,
@@ -229,7 +222,8 @@ const UnFollowUser = (_h) => __awaiter(void 0, [_h], void 0, function* ({ user, 
 exports.UnFollowUser = UnFollowUser;
 const GetUserProfile = (_j) => __awaiter(void 0, [_j], void 0, function* ({ user, ProfileLink }) {
     try {
-        if (!ProfileLink || ProfileLink.length !== 0) {
+        console.log(ProfileLink);
+        if (!ProfileLink || ProfileLink.length === 0) {
             return {
                 message: 'Invalid Credentials',
                 status: 201,

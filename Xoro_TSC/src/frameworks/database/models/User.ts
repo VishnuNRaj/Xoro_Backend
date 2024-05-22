@@ -19,10 +19,6 @@ const userSchema = new Schema<UserDocument>({
     Terminated: Boolean,
     Connections: ObjectId,
     Wallet: ObjectId,
-    Images: ObjectId,
-    Videos: ObjectId,
-    Shorts: ObjectId,
-    Stream: ObjectId,
     Hashtags: [String],
     SuspendedTill: Date,
     Reason: String,
@@ -52,6 +48,10 @@ const userSchema = new Schema<UserDocument>({
             type: Boolean,
             default: false
         },
+    },
+    Channel: {
+        type: Boolean,
+        default: false
     },
     Banner: {
         type: String,

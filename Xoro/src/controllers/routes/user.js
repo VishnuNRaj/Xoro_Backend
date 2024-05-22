@@ -38,4 +38,5 @@ userRouter.post('/otp/:UserId', Middleware.OtpVerify);
 userRouter.get('/verify', Middleware.VerifyUserAuth, Middleware.VerifyUserResponse);
 userRouter.post('/resendotp/:UserId', Middleware.ResendOTP);
 userRouter.post('/get-twostep', Middleware.VerifyUserAuth, Middleware.getSecurity);
+userRouter.post('/set-twostep', Middleware.VerifyUserAuth, Middleware.setSecurity);
 exports.default = userRouter;

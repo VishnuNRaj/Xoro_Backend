@@ -1,3 +1,4 @@
+import { ObjectId } from "mongoose";
 import UserDocument from "../../entities/User";
 
 export interface Register {
@@ -50,6 +51,11 @@ export interface UserOTP {
 export interface GetSecurity {
     user:UserDocument;
 }
+
+export interface setSecurity {
+    user:ObjectId;
+}
+
 
 export interface EditBanner {
     Image:Express.Multer.File;

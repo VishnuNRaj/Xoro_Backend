@@ -7,6 +7,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const config = {
     PORT: parseInt(process.env.PORT || '3000'),
-    MONGO: process.env.MONGO || ''
+    MONGO: process.env.MONGO || '',
+    BASE: process.env.BASE || ''
 };
 exports.default = config;

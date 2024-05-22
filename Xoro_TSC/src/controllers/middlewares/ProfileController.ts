@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-// import * as secure from '../other/SecureData'
 import * as UserEntity from "../interfaces/UserInterfaces";
 import * as UseCases from '../../applications/usecases/UserProfile'
 import * as AuthResponses from '../../applications/responses/Interfaces/UserResponsesInterface';
+import { emitNotification } from '../Socket/SocketEmits'
 interface CustomRequest extends Request {
     result?: AuthResponses.VerifyUserAuthResponse;
 }
@@ -90,10 +90,8 @@ export const UnFollowUser: Middleware = async (req, res) => {
 export const SearchUser: Middleware = async (req, res) => {
     try {
         const result = req.result
-        const { Search } = req.body
-        // const decode: any = await secure.verifyPayloadSecure(token)
+        const { Search } = req.params
         const data = await UseCases.SearchUser({ user: result?.user, Search })
-        // const encode: string = await secure.createPayloadSecure(data)
         return res.status(data.status).json(data)
     } catch (e) {
         return res.status(500).json({ message: 'Internal Server Error' })
@@ -103,8 +101,8 @@ export const SearchUser: Middleware = async (req, res) => {
 export const GetProfile: Middleware = async (req, res) => {
     try {
         const result = req.result
-        const { Profilelink } = req.params
-        const data = await UseCases.GetUserProfile({ user: result?.user, Profilelink })
+        const { ProfileLink } = req.params
+        const data = await UseCases.GetUserProfile({ user: result?.user, ProfileLink })
         return res.status(data.status).json(data)
     } catch (e) {
         return res.status(500).json({ message: 'Internal Server Error' })

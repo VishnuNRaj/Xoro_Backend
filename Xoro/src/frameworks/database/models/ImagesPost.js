@@ -5,7 +5,11 @@ const mongoose_1 = require("mongoose");
 const mongodb_1 = require("mongodb");
 exports.PostSchema = new mongoose_1.Schema({
     Caption: String,
-    Images: [String],
+    UserId: mongodb_1.ObjectId,
+    Images: [{
+            postType: String,
+            link: String,
+        }],
     Postdate: Date,
     Tags: [String],
     CommentsOn: Boolean,
@@ -22,12 +26,5 @@ exports.PostSchema = new mongoose_1.Schema({
         default: true
     }
 });
-const PostImageSchema = new mongoose_1.Schema({
-    UserId: {
-        type: mongodb_1.ObjectId,
-        required: true,
-    },
-    Posts: [exports.PostSchema],
-});
-const PostImages = (0, mongoose_1.model)('postimages', PostImageSchema);
+const PostImages = (0, mongoose_1.model)('postimages', exports.PostSchema);
 exports.default = PostImages;

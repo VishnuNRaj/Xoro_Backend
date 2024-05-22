@@ -43,7 +43,7 @@ const UserFunctions_1 = require("./../../functions/UserFunctions");
 const bcryptjs_1 = require("bcryptjs");
 const User_1 = __importDefault(require("./../../../frameworks/database/models/User"));
 const Connetions_1 = __importDefault(require("./../../../frameworks/database/models/Connetions"));
-const PostController_1 = require("../../../controllers/middlewares/PostController");
+const ImagesPost_1 = __importDefault(require("../../../frameworks/database/models/ImagesPost"));
 const editBannerRepository = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Image, user }) {
     try {
         const result = yield (0, UserFunctions_1.UploadFile)(Image);
@@ -55,7 +55,7 @@ const editBannerRepository = (_a) => __awaiter(void 0, [_a], void 0, function* (
             });
         }
         user.Banner = result;
-        yield user.save();
+        yield DatabaseFunctions.saveData(user);
         return ResponseFunctions.EditBannerRes({
             user: user,
             status: 200,
@@ -83,7 +83,7 @@ const editProfilePicRepository = (_b) => __awaiter(void 0, [_b], void 0, functio
         }
         user.Profile = result;
         console.log('*------------------------------------------------*');
-        yield user.save();
+        yield DatabaseFunctions.saveData(user);
         yield DatabaseFunctions.updateById(UnverifiedUsers_1.default, user._id, { Profile: result });
         return ResponseFunctions.EditProfilePicRes({
             user: user,
@@ -111,7 +111,7 @@ const SecureAccountRepository = (_c) => __awaiter(void 0, [_c], void 0, function
             });
         }
         userData.TwoStepVerification = !userData.TwoStepVerification;
-        yield userData.save();
+        yield DatabaseFunctions.saveData(userData);
         return ResponseFunctions.SecureAccountRes({
             user: user,
             status: 200,
@@ -132,7 +132,7 @@ const ProfileSettingsRepository = (_d) => __awaiter(void 0, [_d], void 0, functi
         user.Settings.Private = typeof Private === 'boolean' ? Private : user.Settings.Private;
         user.Settings.Notifications = typeof Notification === 'boolean' ? Notification : user.Settings.Notifications;
         user.ProfileLock = typeof ProfileLock === 'boolean' ? ProfileLock : user.ProfileLock;
-        yield user.save();
+        yield DatabaseFunctions.saveData(user);
         return ResponseFunctions.SecureAccountRes({
             message: 'Settings Updated',
             user: user,
@@ -148,15 +148,12 @@ const ProfileSettingsRepository = (_d) => __awaiter(void 0, [_d], void 0, functi
     }
 });
 exports.ProfileSettingsRepository = ProfileSettingsRepository;
-const EditProfileData = (_e) => __awaiter(void 0, [_e], void 0, function* ({ Name, user, Username, Description, Age, Country, Gender }) {
+const EditProfileData = (_e) => __awaiter(void 0, [_e], void 0, function* ({ Name, user, Username, Description }) {
     try {
         user.Name = Name;
         user.Username = Username;
         user.Description = Description;
-        user.Gender = Gender;
-        user.Age = Age;
-        user.Country = Country;
-        yield user.save();
+        yield DatabaseFunctions.saveData(user);
         return ResponseFunctions.EditProfileDataRes({
             user: user,
             status: 200,
@@ -164,6 +161,7 @@ const EditProfileData = (_e) => __awaiter(void 0, [_e], void 0, function* ({ Nam
         });
     }
     catch (e) {
+        console.log(e);
         return ResponseFunctions.EditProfileDataRes({
             message: 'Internal Server Error',
             user: user,
@@ -211,18 +209,32 @@ const FollowUserRepository = (_f) => __awaiter(void 0, [_f], void 0, function* (
                 }
             };
         }
-        const result1 = yield DatabaseFunctions.updateById(Connetions_1.default, user2._id, user2Update);
-        const result2 = yield DatabaseFunctions.updateById(Connetions_1.default, user._id, userUpdate);
+        const result1 = yield DatabaseFunctions.findOneAndUpdate(Connetions_1.default, { UserId: user2._id }, user2Update, { new: true });
+        const result2 = yield DatabaseFunctions.findOneAndUpdate(Connetions_1.default, { UserId: user._id }, userUpdate, { new: true });
         user.Following = result2.Following.length;
         user2.Followers = result1.Followers.length;
+        let data = {
+            SenderId: user._id,
+            Message: user2.Settings.Private ? 'New Follow Request' : 'New Follower',
+            Link: user.Profile,
+            Type: 'Following',
+        };
         yield Promise.all([
-            yield user.save(),
-            yield user2.save()
+            yield DatabaseFunctions.saveData(user),
+            yield DatabaseFunctions.saveData(user2),
+            yield (0, UserFunctions_1.createNotification)(data, user2._id)
         ]);
         return ResponseFunctions.FollowUserRes({
             user: user,
             status: 200,
-            message: user.Settings.Private ? 'Follow Request Sent' : 'Success'
+            message: user2.Settings.Private ? 'Follow Request Sent' : 'Success',
+            notification: {
+                SenderId: user.Username,
+                Message: user2.Settings.Private ? 'New Follow Request' : 'New Follower',
+                Link: user.Profile,
+                Type: 'Following',
+                Time: new Date()
+            }
         });
     }
     catch (e) {
@@ -246,14 +258,15 @@ const UnFollowUserRepository = (_g) => __awaiter(void 0, [_g], void 0, function*
         }
         const result = yield DatabaseFunctions.findOneAndUpdate(Connetions_1.default, { UserId: user._id }, { $pull: { Following: UserId } }, { new: true, upsert: true });
         const user2 = yield DatabaseFunctions.findOneAndUpdate(Connetions_1.default, { UserId: UserId }, { $pull: { Followers: user._id } }, { new: true, upsert: true });
+        console.log(user2, result);
         user.Following = result.Following.length;
         user.Connections = result._id;
-        yield DatabaseFunctions.updateById(User_1.default, UserId, { Following: user2.Followers, Connections: user2._id });
-        yield user.save();
+        yield DatabaseFunctions.updateById(User_1.default, UserId, { Following: user2.Followers.length, Connections: user2._id });
+        yield DatabaseFunctions.saveData(user);
         return ResponseFunctions.UnFollowUserRes({
             user: user,
             status: 200,
-            message: 'Following'
+            message: 'Success'
         });
     }
     catch (e) {
@@ -267,7 +280,13 @@ const UnFollowUserRepository = (_g) => __awaiter(void 0, [_g], void 0, function*
 exports.UnFollowUserRepository = UnFollowUserRepository;
 const SearchUserRepository = (_h) => __awaiter(void 0, [_h], void 0, function* ({ user, Search }) {
     try {
-        const result = yield DatabaseFunctions.findData(User_1.default, { Name: { $regex: Search, $options: 'i' } });
+        const result = yield DatabaseFunctions.findData(User_1.default, {
+            $or: [
+                { Username: { $regex: Search, $options: 'i' } },
+                { Name: { $regex: Search, $options: 'i' } },
+            ]
+        });
+        console.log(result);
         return ResponseFunctions.SearchUserRes({
             user: user,
             message: 'Users Found',
@@ -314,15 +333,16 @@ const GetUserProfileRepository = (_j) => __awaiter(void 0, [_j], void 0, functio
         if (userData.Settings.Private) {
             return ResponseFunctions.GetUserProfileRes({
                 user: user,
-                status: 201,
+                status: 200,
                 message: 'Private Profile',
                 userData: userData,
                 post: { Images: [] }
             });
         }
         const post = yield Promise.all([
-            yield DatabaseFunctions.findUsingId(PostController_1.PostImages, userData.Images)
+            yield DatabaseFunctions.findData(ImagesPost_1.default, { UserId: userData._id })
         ]);
+        console.log(post[0]);
         return ResponseFunctions.GetUserProfileRes({
             user: user,
             status: 200,

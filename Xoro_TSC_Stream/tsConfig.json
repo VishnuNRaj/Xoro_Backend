@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "target": "es6",
+        "module": "commonjs",
+        "outDir": "../Xoro_Stream",
+        "strict": true,
+        "esModuleInterop": true,
+        "resolveJsonModule": true
+    },
+    "include": [
+        "*"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}

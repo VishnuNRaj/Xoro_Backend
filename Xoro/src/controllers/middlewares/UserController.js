@@ -32,14 +32,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getSecurity = exports.ResendOTP = exports.VerifyUserResponse = exports.VerifyUserAuth = exports.OtpVerify = exports.AddProfile = exports.VerifyAccount = exports.Login = exports.Register = void 0;
+exports.setSecurity = exports.getSecurity = exports.ResendOTP = exports.VerifyUserResponse = exports.VerifyUserAuth = exports.OtpVerify = exports.AddProfile = exports.VerifyAccount = exports.Login = exports.Register = void 0;
 const UseCases = __importStar(require("../../applications/usecases/User"));
-const console_1 = require("console");
+const SocketEmits_1 = require("../Socket/SocketEmits");
 const Register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { Name, Email, Password, Phone, Type, Profile } = req.body;
         const result = yield UseCases.RegisterUser({ Profile, Name, Email, Password, Phone, Type });
-        (0, console_1.log)(result);
         res.status(result.status).json(result);
     }
     catch (e) {
@@ -64,6 +63,8 @@ const VerifyAccount = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         const { VerificationLink, UserId } = req.params;
         console.log(req.params);
         const result = yield UseCases.VerifyUser({ VerificationLink, UserId });
+        if (result.data)
+            yield (0, SocketEmits_1.emitNotification)(result.data, req.headers['socket-id']);
         res.status(result.status).json(result);
     }
     catch (e) {
@@ -99,7 +100,6 @@ const OtpVerify = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.OtpVerify = OtpVerify;
 const VerifyUserAuth = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log(req.file, req.files);
         const token = req.headers.authorization;
         const result = yield UseCases.verifyUserAuth(token);
         if (result.status === 200) {
@@ -149,3 +149,15 @@ const getSecurity = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.getSecurity = getSecurity;
+const setSecurity = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const result = req.result;
+        const data = yield UseCases.setTwoStep({ user: (_a = result === null || result === void 0 ? void 0 : result.user) === null || _a === void 0 ? void 0 : _a._id });
+        return res.status(data.status);
+    }
+    catch (e) {
+        return res.status(500).json({ messsage: 'Internal Server Error' });
+    }
+});
+exports.setSecurity = setSecurity;

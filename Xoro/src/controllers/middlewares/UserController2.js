@@ -121,10 +121,8 @@ exports.UnFollowUser = UnFollowUser;
 const SearchUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const result = req.result;
-        const { Search } = req.body;
-        // const decode: any = await secure.verifyPayloadSecure(token)
+        const { Search } = req.params;
         const data = yield UseCases.SearchUser({ user: result === null || result === void 0 ? void 0 : result.user, Search });
-        // const encode: string = await secure.createPayloadSecure(data)
         return res.status(data.status).json(data);
     }
     catch (e) {

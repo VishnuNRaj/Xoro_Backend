@@ -32,20 +32,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ShowPost = exports.AddPost = void 0;
+exports.RemoveReactions = exports.DislikePost = exports.LikePost = exports.DeletePost = exports.ShowPost = exports.AddPost = void 0;
 const Repository = __importStar(require("../repository/Post/UserPostRepository"));
-const UserFunctions = __importStar(require("../functions/UserFunctions"));
-const AddPost = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Caption, CommentsOn, Hashtags, Hidden, Images, Tags, user }) {
+const firebase_1 = require("../../config/firebase");
+const AddPost = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Caption, CommentsOn, Hashtags, Hidden, Media, Tags, user }) {
     try {
-        if (!Images || Images.length === 0) {
+        if (!Media || Media.length === 0) {
             return {
                 message: 'No Images Provided',
                 status: 201
             };
         }
-        const result = yield Promise.all(Images.map((image) => __awaiter(void 0, void 0, void 0, function* () {
-            const link = yield UserFunctions.uploadBase64Image(image);
-            return link;
+        const result = yield Promise.all(Media.map((media) => __awaiter(void 0, void 0, void 0, function* () {
+            const link = yield (0, firebase_1.uploadFileToFirebase)(media, `posts/${user.id}/${Date.now()}`);
+            return {
+                postType: media.mimetype.split('/')[0],
+                link: link
+            };
         })));
         return yield Repository.addPostImagesRepository({ Caption, CommentsOn, Hashtags, Hidden, Images: result, Tags, user });
     }
@@ -72,3 +75,75 @@ const ShowPost = (_b) => __awaiter(void 0, [_b], void 0, function* ({ user }) {
     }
 });
 exports.ShowPost = ShowPost;
+const DeletePost = (_c) => __awaiter(void 0, [_c], void 0, function* ({ PostId, user }) {
+    try {
+        if (!PostId || typeof PostId !== 'string' || PostId.length === 0) {
+            return {
+                message: 'Invalid Credentials',
+                status: 201
+            };
+        }
+        return yield Repository.deletePostRepository({ PostId, user });
+    }
+    catch (e) {
+        return {
+            message: 'Internal Server Error',
+            status: 500
+        };
+    }
+});
+exports.DeletePost = DeletePost;
+const LikePost = (_d) => __awaiter(void 0, [_d], void 0, function* ({ PostId, UserId }) {
+    try {
+        if (typeof PostId !== 'string' || PostId.length === 0 || UserId.length === 0 || typeof UserId !== 'string' || UserId.length === 0) {
+            return {
+                message: 'Invalid Credentials',
+                status: 201
+            };
+        }
+        return yield Repository.LikePostRepository({ PostId, UserId });
+    }
+    catch (e) {
+        return {
+            message: 'Internal Server Error',
+            status: 500
+        };
+    }
+});
+exports.LikePost = LikePost;
+const DislikePost = (_e) => __awaiter(void 0, [_e], void 0, function* ({ PostId, UserId }) {
+    try {
+        if (typeof PostId !== 'string' || PostId.length === 0 || UserId.length === 0 || typeof UserId !== 'string' || UserId.length === 0) {
+            return {
+                message: 'Invalid Credentials',
+                status: 201
+            };
+        }
+        return yield Repository.DislikePostRepository({ PostId, UserId });
+    }
+    catch (e) {
+        return {
+            message: 'Internal Server Error',
+            status: 500
+        };
+    }
+});
+exports.DislikePost = DislikePost;
+const RemoveReactions = (_f) => __awaiter(void 0, [_f], void 0, function* ({ PostId, UserId }) {
+    try {
+        if (typeof PostId !== 'string' || PostId.length === 0 || UserId.length === 0 || typeof UserId !== 'string' || UserId.length === 0) {
+            return {
+                message: 'Invalid Credentials',
+                status: 201
+            };
+        }
+        return yield Repository.RemoveReactions({ PostId, UserId });
+    }
+    catch (e) {
+        return {
+            message: 'Internal Server Error',
+            status: 500
+        };
+    }
+});
+exports.RemoveReactions = RemoveReactions;

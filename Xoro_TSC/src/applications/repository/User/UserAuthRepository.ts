@@ -13,7 +13,8 @@ import UserDocument from '../../../entities/User';
 import { VerifyUser } from '../../functions/UserFunctions';
 import Connections from '../../../frameworks/database/models/Connetions';
 import { ConnectionsInterface } from '../../../entities/Connections';
-import { ObjectId } from 'mongodb';
+import Notifications from '../../../frameworks/database/models/Notifications';
+// import { ObjectId } from 'mongodb';
 
 export const RegisterRepository: Function = async (data: UserEntity.Register): Promise<Responses.SignUpResponse> => {
     try {
@@ -146,15 +147,26 @@ export const VerifyAccountRepository: Function = async ({ VerificationLink, User
         }
         await DatabaseFunctions.updateById(UserAuth, user._id, { Verified: true })
         const ProfileLink = await CommonFunctions.generateVerificationLink()
-        const [res]: ConnectionsInterface[] = await DatabaseFunctions.insertData(Connections, { UserId: user._id })
-        // const data = {...user,Connections: res._id, ProfileLink: ProfileLink}
+        const [res]: any[] = await Promise.all([
+            await DatabaseFunctions.insertData(Connections, { UserId: user._id }),
+            await DatabaseFunctions.insertData(Notifications, {
+                UserId: user._id, Messages: [
+                    {
+                        Message: 'Welcome to Xoro Streams',
+                        SenderId: user._id,
+                        Link: '',
+                        Type: 'Auth'
+                    }
+                ]
+            }),
+        ])
         await DatabaseFunctions.insertData(User, <UserDocument>{
             _id: user._id,
             Name: user.Name,
             Username: user.Username,
             Suspended: user.Suspended,
             SuspendedTill: user.SuspendedTill,
-            Connections: res._id,
+            Connections: res[0]._id,
             ProfileLink: ProfileLink,
             Profile: user.Profile,
         })
@@ -163,7 +175,13 @@ export const VerifyAccountRepository: Function = async ({ VerificationLink, User
             message: 'Verified Succesfully',
             status: 200,
             token: token,
-            user: user
+            user: user,
+            data:{
+                Message: 'Welcome to Xoro Streams',
+                Type: 'Auth',
+                SenderId: '',
+                Link: '',
+            }
         })
     } catch (e) {
         console.log(e)
@@ -205,7 +223,7 @@ export const AddProfilePicRepository: Function = async ({ file }: UserEntity.Fil
         }
         user.Username = Username ? Username : user.Username
         user.Profile = typeof file == 'string' && file != '' ? file : user.Profile
-        await user.save()
+        await DatabaseFunctions.saveData(user)
         await DatabaseFunctions.updateById(User, UserId, { Profile: user.Profile, Username: user.Username })
         const token: string = await CreatePayload({ Payload: { UserId: user._id, Email: user.Email, Admin: false }, RememberMe })
         return ResponseFunctions.AddProfileRes(<Responses.AddProfileResponse>{
@@ -304,7 +322,6 @@ export const verifyUserAuthRepository: Function = async (token: string): Promise
                 user: null
             })
         }
-        console.log(user.Followers, '__________')
         return ResponseFunctions.VerityAccountAuthRes(<Responses.VerifyUserAuthResponse>{
             message: 'Verified Succesfully',
             status: 200,
@@ -372,6 +389,23 @@ export const getTwoStep: Function = async ({ user }: UserEntity.GetSecurity): Pr
             status: 500,
             user: user,
             TwoStepVerification: false
+        })
+    }
+}
+
+export const setTwoStep: Function = async ({ user }: UserEntity.setSecurity): Promise<Responses.setTwoStepResponse> => {
+    try {
+        const userData: UnverifiedUsers = await DatabaseFunctions.findUsingId(UserAuth, user)
+        userData.TwoStepVerification = !userData.TwoStepVerification
+        await DatabaseFunctions.saveData(userData)
+        return ResponseFunctions.setTwoStepRes(<Responses.setTwoStepResponse>{
+            message: 'Security Verified',
+            status: 200,
+        })
+    } catch (e) {
+        return ResponseFunctions.setTwoStepRes(<Responses.setTwoStepResponse>{
+            message: 'Internal Server Error',
+            status: 500,
         })
     }
 }

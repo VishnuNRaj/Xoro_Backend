@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GetUserProfileRes = exports.SearchUserRes = exports.UnFollowUserRes = exports.FollowUserRes = exports.EditProfileDataRes = exports.ProfileSettingsRes = exports.SecureAccountRes = exports.EditProfilePicRes = exports.EditBannerRes = exports.GetSecurityRes = exports.ResendOTPRes = exports.VerityAccountAuthRes = exports.OTPVerifyRes = exports.AddProfileRes = exports.VerifyAccountRes = exports.LoginRes = exports.SignupRes = void 0;
+exports.setTwoStepRes = exports.GetUserProfileRes = exports.SearchUserRes = exports.UnFollowUserRes = exports.FollowUserRes = exports.EditProfileDataRes = exports.ProfileSettingsRes = exports.SecureAccountRes = exports.EditProfilePicRes = exports.EditBannerRes = exports.GetSecurityRes = exports.ResendOTPRes = exports.VerityAccountAuthRes = exports.OTPVerifyRes = exports.AddProfileRes = exports.VerifyAccountRes = exports.LoginRes = exports.SignupRes = void 0;
 const SignupRes = (data) => __awaiter(void 0, void 0, void 0, function* () {
     return {
         errors: data.errors,
@@ -32,7 +32,8 @@ const VerifyAccountRes = (data) => __awaiter(void 0, void 0, void 0, function* (
         message: data.message,
         status: data.status,
         token: data.token,
-        user: data.user
+        user: data.user,
+        data: data.data
     };
 });
 exports.VerifyAccountRes = VerifyAccountRes;
@@ -122,7 +123,8 @@ const FollowUserRes = (data) => __awaiter(void 0, void 0, void 0, function* () {
     return {
         message: data.message,
         status: data.status,
-        user: data.user
+        user: data.user,
+        notification: data.notification
     };
 });
 exports.FollowUserRes = FollowUserRes;
@@ -148,7 +150,15 @@ const GetUserProfileRes = (data) => __awaiter(void 0, void 0, void 0, function* 
         message: data.message,
         status: data.status,
         user: data.user,
-        userData: data.userData
+        userData: data.userData,
+        post: data.post
     };
 });
 exports.GetUserProfileRes = GetUserProfileRes;
+const setTwoStepRes = (data) => __awaiter(void 0, void 0, void 0, function* () {
+    return {
+        message: data.message,
+        status: data.status,
+    };
+});
+exports.setTwoStepRes = setTwoStepRes;
