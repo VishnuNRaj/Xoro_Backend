@@ -132,3 +132,8 @@ export interface setTwoStepResponse {
     message:string;
     status:number;
 }
+
+export interface createChannelResponse {
+    message:string;
+    status:number;
+}

@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GetUserProfileRepository = exports.SearchUserRepository = exports.UnFollowUserRepository = exports.FollowUserRepository = exports.EditProfileData = exports.ProfileSettingsRepository = exports.SecureAccountRepository = exports.editProfilePicRepository = exports.editBannerRepository = void 0;
+exports.CreateChannelRepository = exports.GetUserProfileRepository = exports.SearchUserRepository = exports.UnFollowUserRepository = exports.FollowUserRepository = exports.EditProfileData = exports.ProfileSettingsRepository = exports.SecureAccountRepository = exports.editProfilePicRepository = exports.editBannerRepository = void 0;
 const DatabaseFunctions = __importStar(require("../../functions/DatabaseFunctions"));
 const UnverifiedUsers_1 = __importDefault(require("../../../frameworks/database/models/UnverifiedUsers"));
 const ResponseFunctions = __importStar(require("../../responses/Response/UserResponse"));
@@ -44,6 +44,7 @@ const bcryptjs_1 = require("bcryptjs");
 const User_1 = __importDefault(require("./../../../frameworks/database/models/User"));
 const Connetions_1 = __importDefault(require("./../../../frameworks/database/models/Connetions"));
 const ImagesPost_1 = __importDefault(require("../../../frameworks/database/models/ImagesPost"));
+const Channels_1 = __importDefault(require("../../../frameworks/database/models/Channels"));
 const editBannerRepository = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Image, user }) {
     try {
         const result = yield (0, UserFunctions_1.UploadFile)(Image);
@@ -259,9 +260,10 @@ const UnFollowUserRepository = (_g) => __awaiter(void 0, [_g], void 0, function*
         const result = yield DatabaseFunctions.findOneAndUpdate(Connetions_1.default, { UserId: user._id }, { $pull: { Following: UserId } }, { new: true, upsert: true });
         const user2 = yield DatabaseFunctions.findOneAndUpdate(Connetions_1.default, { UserId: UserId }, { $pull: { Followers: user._id } }, { new: true, upsert: true });
         console.log(user2, result);
+        console.log(user2, '__________');
         user.Following = result.Following.length;
         user.Connections = result._id;
-        yield DatabaseFunctions.updateById(User_1.default, UserId, { Following: user2.Followers.length, Connections: user2._id });
+        yield DatabaseFunctions.updateById(User_1.default, UserId, { Followers: user2.Followers.length });
         yield DatabaseFunctions.saveData(user);
         return ResponseFunctions.UnFollowUserRes({
             user: user,
@@ -363,3 +365,30 @@ const GetUserProfileRepository = (_j) => __awaiter(void 0, [_j], void 0, functio
     }
 });
 exports.GetUserProfileRepository = GetUserProfileRepository;
+const CreateChannelRepository = (_k, user_1, Link_1) => __awaiter(void 0, [_k, user_1, Link_1], void 0, function* ({ Name, Description, Type }, user, Link) {
+    try {
+        if (user.Channel) {
+            return ResponseFunctions.createChannelRes({
+                message: 'Channel Already Created',
+                status: 203
+            });
+        }
+        const [newChannel] = yield DatabaseFunctions.insertData(Channels_1.default, {
+            Name, Description, Type, UserId: user._id, Logo: Link
+        });
+        user.Channel = newChannel._id;
+        yield DatabaseFunctions.saveData(user);
+        return ResponseFunctions.createChannelRes({
+            message: 'Channel Created SuccessFully',
+            status: 200
+        });
+    }
+    catch (e) {
+        console.log(e);
+        return ResponseFunctions.createChannelRes({
+            message: 'Internal Server Error',
+            status: 500
+        });
+    }
+});
+exports.CreateChannelRepository = CreateChannelRepository;

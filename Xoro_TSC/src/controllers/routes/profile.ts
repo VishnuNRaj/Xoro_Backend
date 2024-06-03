@@ -12,4 +12,5 @@ profileRouter.post('/follow/:UserId', VerifyUserAuth, Middleware.FollowUser)
 profileRouter.post('/unfollow/:UserId', VerifyUserAuth, Middleware.UnFollowUser)
 profileRouter.get('/search/:Search', VerifyUserAuth, Middleware.SearchUser)
 profileRouter.get('/:ProfileLink', VerifyUserAuth, Middleware.GetProfile)
+profileRouter.post('/createChannel',upload.single('Logo'),VerifyUserAuth,Middleware.CreateChannel)
 export default profileRouter;

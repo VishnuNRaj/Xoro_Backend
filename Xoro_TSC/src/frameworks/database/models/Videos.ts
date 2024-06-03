@@ -10,7 +10,6 @@ const VideoSchema = new Schema<PostVideo>({
     Postdate: Date,
     Settings: {
         CommentsOn: Boolean,
-        ReactionsOn: Boolean,
         PremiumContent: Boolean,
         ListedContent: Boolean,
     },
@@ -23,6 +22,11 @@ const VideoSchema = new Schema<PostVideo>({
     },
     Description:String,
     VideoLInk:String,
+    Uploaded:{
+        type:Boolean,
+        default:false,
+    },
+    Key:String,
 })
 
 const Videos = model<PostVideo>('videos', VideoSchema)

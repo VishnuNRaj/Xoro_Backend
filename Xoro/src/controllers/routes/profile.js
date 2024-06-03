@@ -40,4 +40,5 @@ profileRouter.post('/follow/:UserId', UserController_1.VerifyUserAuth, Middlewar
 profileRouter.post('/unfollow/:UserId', UserController_1.VerifyUserAuth, Middleware.UnFollowUser);
 profileRouter.get('/search/:Search', UserController_1.VerifyUserAuth, Middleware.SearchUser);
 profileRouter.get('/:ProfileLink', UserController_1.VerifyUserAuth, Middleware.GetProfile);
+profileRouter.post('/createChannel', Multer_1.default.single('Logo'), UserController_1.VerifyUserAuth, Middleware.CreateChannel);
 exports.default = profileRouter;

@@ -110,6 +110,7 @@ const deletePostRepository = (_c) => __awaiter(void 0, [_c], void 0, function* (
         }
         yield DatabaseFunctions.deleteUsingId(ImagesPost_1.default, PostId);
         user.Posts = yield DatabaseFunctions.countDocuments(ImagesPost_1.default, user._id, 'UserId');
+        console.log(user.Posts);
         yield DatabaseFunctions.saveData(user);
         return ResponseFunctions.deletePostRes({
             message: 'Deleted Successfully',

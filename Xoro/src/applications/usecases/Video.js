@@ -32,27 +32,34 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uploadVideo = void 0;
-const Validations = __importStar(require("../validations/VideoValidations"));
+exports.getVideos = exports.uploadVideo = void 0;
 const Repository = __importStar(require("../repository/Video/UserVideoRepository"));
 const UserFunctions = __importStar(require("../functions/UserFunctions"));
-const firebase_1 = require("../../config/firebase");
 const uploadVideo = (data) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const errors = yield Validations.uploadVideoValidate(data);
-        if (!errors.status) {
+        // const errors: {
+        //     errors: string;
+        //     status: boolean;
+        // } = await Validations.uploadVideoValidate(data)
+        // if (!errors.status) {
+        //     return <Responses.uploadVideoResponse>{
+        //         message: errors.errors,
+        //         status: 400,
+        //     }
+        // }
+        if (!data.user.Channel)
             return {
-                message: errors.errors,
-                status: 400,
+                message: 'Create a Channel For Uploading Videos',
+                status: 201,
             };
-        }
         const Links = {
-            Video: yield (0, firebase_1.uploadFileToFirebase)(data.Video, `/videos/${data.user._id}`),
+            Video: `${data.user.Channel}/${new Date()}-${data.Video.originalname}`,
             Thumbnail: yield UserFunctions.uploadBase64Image(data.Thumbnail)
         };
         return Repository.uploadVideoRepository(Object.assign(Object.assign({}, data), { Links: Links }));
     }
     catch (e) {
+        console.log(e);
         return {
             message: 'Internal Server Error',
             status: 500,
@@ -60,3 +67,25 @@ const uploadVideo = (data) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.uploadVideo = uploadVideo;
+const getVideos = (user, skip, random) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        if (typeof skip !== 'number') {
+            return {
+                user: user,
+                message: 'Fault Queries',
+                status: 201,
+                Videos: []
+            };
+        }
+        return Repository.getVideoRepository(user, skip, random);
+    }
+    catch (e) {
+        return {
+            user: user,
+            message: 'Internal server Error',
+            status: 201,
+            Videos: []
+        };
+    }
+});
+exports.getVideos = getVideos;

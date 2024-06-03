@@ -32,10 +32,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GetUserProfile = exports.UnFollowUser = exports.FollowUser = exports.SearchUser = exports.ProfileSettings = exports.SecureAccount = exports.EditProfile = exports.EditProfilePic = exports.EditBanner = void 0;
+exports.CreateChannel = exports.GetUserProfile = exports.UnFollowUser = exports.FollowUser = exports.SearchUser = exports.ProfileSettings = exports.SecureAccount = exports.EditProfile = exports.EditProfilePic = exports.EditBanner = void 0;
 const Validations = __importStar(require("../validations/UserValidation"));
 const ResponseFunctions = __importStar(require("../responses/Response/UserResponse"));
 const Repository = __importStar(require("../repository/User/UserProfileRepository"));
+const firebase_1 = require("../../config/firebase");
 const EditBanner = (_a) => __awaiter(void 0, [_a], void 0, function* ({ user, Image }) {
     try {
         if (!Image) {
@@ -249,3 +250,22 @@ const GetUserProfile = (_j) => __awaiter(void 0, [_j], void 0, function* ({ user
     }
 });
 exports.GetUserProfile = GetUserProfile;
+const CreateChannel = (_k, user_1) => __awaiter(void 0, [_k, user_1], void 0, function* ({ Description, Name, Type, Logo }, user) {
+    try {
+        if (!Name || !Type || !Description) {
+            return {
+                message: 'Add Channel Name',
+                status: 202
+            };
+        }
+        const Link = yield (0, firebase_1.uploadFileToFirebase)(Logo, `/logos/${user._id}/`);
+        return Repository.CreateChannelRepository({ Description, Name, Type }, user, Link);
+    }
+    catch (e) {
+        return {
+            message: 'Internal Server Error',
+            status: 500
+        };
+    }
+});
+exports.CreateChannel = CreateChannel;

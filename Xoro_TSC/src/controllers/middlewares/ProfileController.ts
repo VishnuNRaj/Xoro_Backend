@@ -108,3 +108,15 @@ export const GetProfile: Middleware = async (req, res) => {
         return res.status(500).json({ message: 'Internal Server Error' })
     }
 }
+
+export const CreateChannel: Middleware = async (req, res) => {
+    try {
+        const result = req.result
+        const file = req.file
+        const { Name, Description, Type }: UserEntity.createChannel = req.body
+        const data = await UseCases.CreateChannel({ Name, Description, Type, Logo: file }, result?.user)
+        return res.status(data.status).json(data)
+    } catch (e) {
+        return res.status(500).json({ message: "Internal Server Error" })
+    }
+}

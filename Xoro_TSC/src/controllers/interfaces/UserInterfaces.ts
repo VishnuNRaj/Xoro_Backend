@@ -108,3 +108,10 @@ export interface GetUserProfile {
     ProfileLink:string;
     user:UserDocument;
 }
+
+export interface createChannel {
+    Name:string;
+    Type:string[];
+    Description:string;
+    Logo:Express.Multer.File;
+}

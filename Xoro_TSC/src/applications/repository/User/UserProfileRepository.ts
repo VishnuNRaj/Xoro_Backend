@@ -12,6 +12,8 @@ import Connections from './../../../frameworks/database/models/Connetions';
 import UserDocument from '../../../entities/User';
 import PostImages from '../../../frameworks/database/models/ImagesPost';
 import { Notification } from '../../../entities/Notification';
+import Channels from '../../../frameworks/database/models/Channels'
+import { ChannelInterface } from '../../../entities/Channels';
 
 export const editBannerRepository: Function = async ({ Image, user }: UserEntity.EditBanner) => {
     try {
@@ -179,15 +181,15 @@ export const FollowUserRepository: Function = async ({ user, UserId }: UserEntit
         user.Following = result2.Following.length
         user2.Followers = result1.Followers.length
         let data = <Notification>{
-            SenderId:user._id,
-            Message:user2.Settings.Private ? 'New Follow Request' : 'New Follower',
-            Link:user.Profile,
+            SenderId: user._id,
+            Message: user2.Settings.Private ? 'New Follow Request' : 'New Follower',
+            Link: user.Profile,
             Type: 'Following',
         }
         await Promise.all([
             await DatabaseFunctions.saveData(user),
             await DatabaseFunctions.saveData(user2),
-            await createNotification(data,user2._id)
+            await createNotification(data, user2._id)
         ])
 
         return ResponseFunctions.FollowUserRes(<Responses.FollowUserResponse>{
@@ -234,9 +236,10 @@ export const UnFollowUserRepository: Function = async ({ user, UserId }: UserEnt
             { new: true, upsert: true }
         );
         console.log(user2, result)
+        console.log(user2,'__________')
         user.Following = result.Following.length
         user.Connections = result._id
-        await DatabaseFunctions.updateById(User, UserId, { Following: user2.Followers.length, Connections: user2._id })
+        await DatabaseFunctions.updateById(User, UserId, { Followers: user2.Followers.length })
         await DatabaseFunctions.saveData(user)
         return ResponseFunctions.UnFollowUserRes(<Responses.UnFollowUserResponse>{
             user: user,
@@ -334,6 +337,32 @@ export const GetUserProfileRepository: Function = async ({ user, ProfileLink }: 
             message: 'Internal Server Error',
             userData: null,
             user: user,
+            status: 500
+        })
+    }
+}
+
+export const CreateChannelRepository: Function = async ({ Name, Description, Type }: UserEntity.createChannel, user: UserDocument, Link: string) => {
+    try {
+        if (user.Channel) {
+            return ResponseFunctions.createChannelRes(<Responses.createChannelResponse>{
+                message: 'Channel Already Created',
+                status: 203
+            })
+        }
+        const [newChannel]: ChannelInterface[] = await DatabaseFunctions.insertData(Channels, {
+            Name, Description, Type, UserId: user._id, Logo: Link
+        })
+        user.Channel = newChannel._id
+        await DatabaseFunctions.saveData(user)
+        return ResponseFunctions.createChannelRes(<Responses.createChannelResponse>{
+            message: 'Channel Created SuccessFully',
+            status: 200
+        })
+    } catch (e) {
+        console.log(e)
+        return ResponseFunctions.createChannelRes(<Responses.createChannelResponse>{
+            message: 'Internal Server Error',
             status: 500
         })
     }

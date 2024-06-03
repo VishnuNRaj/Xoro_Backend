@@ -30,6 +30,7 @@ export default interface UserDocument extends Document {
         Notifications:boolean,
     };
     Banner:string;
-    Channel:boolean;
+    Channel:ObjectId;
     ProfileLock:boolean;
+    VIP:boolean;
 }

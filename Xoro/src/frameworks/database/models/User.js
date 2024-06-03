@@ -50,14 +50,14 @@ const userSchema = new mongoose_1.Schema({
         },
     },
     Channel: {
-        type: Boolean,
-        default: false
+        type: mongoose_1.Types.ObjectId,
     },
     Banner: {
         type: String,
         default: 'https://blogger.googleusercontent.com/img/a/AVvXsEhqzeTOTJm2J-wrSe9kAj3DlAphY5RzFw3W4xf25OPT1AEktfD1Z70sYBclrMDeuD6jAeZzJPByXgH272iG3hxS7AGppznCwS1yzioR77m4J03rVdFLmL3TtLjVmUfaCk-p1D3Jdkj6fp-9U64Tnqg1EMKT9OXpclfVjKrYeqT-OJWdnq9JBh_8ZZKWpsM=s1600-rw'
     },
-    ProfileLock: { type: Boolean, default: false }
+    ProfileLock: { type: Boolean, default: false },
+    VIP: { type: Boolean, default: false },
 });
 const User = (0, mongoose_1.model)('users', userSchema);
 exports.default = User;

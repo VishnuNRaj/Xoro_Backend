@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GetProfile = exports.SearchUser = exports.UnFollowUser = exports.FollowUser = exports.EditProfile = exports.ProfileSettings = exports.SecureAccount = exports.EditProfilePic = exports.EditBanner = void 0;
+exports.CreateChannel = exports.GetProfile = exports.SearchUser = exports.UnFollowUser = exports.FollowUser = exports.EditProfile = exports.ProfileSettings = exports.SecureAccount = exports.EditProfilePic = exports.EditBanner = void 0;
 const UseCases = __importStar(require("../../applications/usecases/UserProfile"));
 const EditBanner = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -142,3 +142,16 @@ const GetProfile = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.GetProfile = GetProfile;
+const CreateChannel = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const result = req.result;
+        const file = req.file;
+        const { Name, Description, Type } = req.body;
+        const data = yield UseCases.CreateChannel({ Name, Description, Type, Logo: file }, result === null || result === void 0 ? void 0 : result.user);
+        return res.status(data.status).json(data);
+    }
+    catch (e) {
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+});
+exports.CreateChannel = CreateChannel;

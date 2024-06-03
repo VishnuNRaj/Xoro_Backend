@@ -1,17 +1,20 @@
 import { Document, ObjectId } from "mongoose";
 
+export interface FilesLink extends Document {
+    FileLink: string;
+    FileType: string;
+}
+
 export interface Messages extends Document {
-    SenderId:ObjectId;
-    RecieverId:ObjectId;
-    FileLink:string;
-    FileType:string;
-    Message:string;
-    Time:Date;
-    Seen:boolean;
+    RoomId: string;
+    SenderId: ObjectId;
+    Files: FilesLink[];
+    Message: string;
+    Time: Date;
+    Seen: [ObjectId];
 }
 
 export interface Chat extends Document {
-    UserId:ObjectId[];
-    Messages:Messages[];
-    RoomId:string;
+    UserId: ObjectId[];
+    RoomId: string;
 }

@@ -4,6 +4,8 @@ import * as Responses from '../responses/Interfaces/UserResponsesInterface';
 import * as ResponseFunctions from '../responses/Response/UserResponse';
 import * as Repository from '../repository/User/UserProfileRepository';
 import * as UserFunctions from '../functions/UserFunctions';
+import UserDocument from '../../entities/User';
+import { uploadFileToFirebase } from '../../config/firebase';
 
 
 export const EditBanner: Function = async ({ user, Image }: UserEntity.EditBanner) => {
@@ -206,6 +208,24 @@ export const GetUserProfile: Function = async ({ user, ProfileLink }: UserEntity
             post: {
                 Images: []
             }
+        }
+    }
+}
+
+export const CreateChannel: Function = async ({ Description, Name, Type, Logo }: UserEntity.createChannel, user: UserDocument) => {
+    try {
+        if (!Name || !Type || !Description) {
+            return {
+                message: 'Add Channel Name',
+                status: 202
+            };
+        }
+        const Link: string = await uploadFileToFirebase(Logo, `/logos/${user._id}/`)
+        return Repository.CreateChannelRepository({ Description, Name, Type }, user,Link)
+    } catch (e) {
+        return <Responses.createChannelResponse>{
+            message: 'Internal Server Error',
+            status: 500
         }
     }
 }

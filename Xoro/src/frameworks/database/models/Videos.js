@@ -10,7 +10,6 @@ const VideoSchema = new mongoose_1.Schema({
     Postdate: Date,
     Settings: {
         CommentsOn: Boolean,
-        ReactionsOn: Boolean,
         PremiumContent: Boolean,
         ListedContent: Boolean,
     },
@@ -23,6 +22,11 @@ const VideoSchema = new mongoose_1.Schema({
     },
     Description: String,
     VideoLInk: String,
+    Uploaded: {
+        type: Boolean,
+        default: false,
+    },
+    Key: String,
 });
 const Videos = (0, mongoose_1.model)('videos', VideoSchema);
 exports.default = Videos;

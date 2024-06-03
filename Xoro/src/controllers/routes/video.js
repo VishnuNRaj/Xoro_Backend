@@ -32,4 +32,6 @@ const Middleware = __importStar(require("../middlewares/VideoController"));
 const Multer_1 = __importDefault(require("../other/Multer"));
 const UserController_1 = require("../middlewares/UserController");
 videoRouter.post('/upload', Multer_1.default.single('Video'), UserController_1.VerifyUserAuth, Middleware.uploadVideo);
+videoRouter.get('/:skip', UserController_1.VerifyUserAuth, Middleware.getVideos);
+videoRouter.get('/videos/:skip', Middleware.getVideos);
 exports.default = videoRouter;

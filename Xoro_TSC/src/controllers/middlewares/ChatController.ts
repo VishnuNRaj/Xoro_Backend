@@ -16,3 +16,12 @@ export const getChats: Middleware = (req, res) => {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 }
+
+export const SendMessage: Middleware = (req, res) => {
+    try {
+        const result = req?.result
+        const { RoomId } = req.body
+    } catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error ' })
+    }
+}

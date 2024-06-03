@@ -151,3 +151,10 @@ export const setTwoStepRes: Function = async (data:Responses.setTwoStepResponse)
         status:data.status,
     }
 }
+
+export const createChannelRes: Function = async (data:Responses.createChannelResponse) => {
+    return <Responses.createChannelResponse>{
+        message:data.message,
+        status:data.status
+    }
+}

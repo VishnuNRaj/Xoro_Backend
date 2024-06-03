@@ -1,9 +1,11 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import * as SocketFunctions from './SocketFunctions';
-import s3 from '../../config/s3bucket'
-import { PassThrough } from 'stream';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import fs from 'fs';
+import path from 'path'
+const videoPath = path.join(__dirname, '../../live');
+const cameraPath = path.join(videoPath, `camera-${'123'}-${'123'}.webm`);
+const screenPath = path.join(videoPath, `screen-${'123'}.webm`);
+
 let live:any = {}
 const socketRoutes = (io: SocketIOServer): SocketIOServer => {
     if (!io) {
@@ -15,66 +17,32 @@ const socketRoutes = (io: SocketIOServer): SocketIOServer => {
         socket.on('notification', ({ data, UserId }) => SocketFunctions.sendNotifications(socket, data, UserId));
         socket.on('chat', ({ data, UserId }) => SocketFunctions.chatRoom(socket, UserId, data));
         socket.on('disconnect', () => SocketFunctions.disconnect(socket));
-
-        socket.on('start', async (UserId) => {
-            if (!live[UserId]) {
-                live[UserId] = {
-                    cameraStream: new PassThrough(),
-                    screenStream: new PassThrough()
-                };
-
-                const cameraKey = `camera/${UserId}-${Date.now()}.webm`;
-                const screenKey = `screen/${UserId}-${Date.now()}.webm`;
-
-                // Create S3 upload streams for camera and screen
-                const uploadCameraParams = {
-                    Bucket: 'xoro-',
-                    Key: cameraKey,
-                    Body: live[UserId].cameraStream
-                };
-
-                const uploadScreenParams = {
-                    Bucket: 'your-bucket-name',
-                    Key: screenKey,
-                    Body: live[UserId].screenStream
-                };
-
-                // Start upload for camera stream
-                const cameraUpload = s3.send(new PutObjectCommand(uploadCameraParams));
-                cameraUpload.then((data) => {
-                    console.log('Successfully uploaded camera stream:', data);
-                }).catch((err) => {
-                    console.error('Error uploading camera stream:', err);
-                });
-
-                // Start upload for screen stream
-                const screenUpload = s3.send(new PutObjectCommand(uploadScreenParams));
-                screenUpload.then((data) => {
-                    console.log('Successfully uploaded screen stream:', data);
-                }).catch((err) => {
-                    console.error('Error uploading screen stream:', err);
-                });
-
-                // Generate presigned URLs for live access
-                const cameraUrl = await getSignedUrl(s3, new PutObjectCommand(uploadCameraParams));
-                const screenUrl = await getSignedUrl(s3, new PutObjectCommand(uploadScreenParams));
-
-                // Emit the presigned URLs back to the client
-                socket.emit('liveLinks', { cameraUrl, screenUrl });
-            }
-        });
-
+        socket.on('start',(data)=>{
+          console.log(data,socket.id)
+          live[socket.id] = socket.id
+        })
         socket.on('camera', (data) => {
+          // console.log(live[socket.id])
             if (live[socket.id]) {
-                live[socket.id].cameraStream.write(Buffer.from(data));
+              fs.write(fs.openSync(cameraPath, 'a'), Buffer.from(data), null, null, (err) => {
+                if (err) {
+                  console.error('Error writing camera data:', err);
+                }
+              });
             }
-        });
-
-        socket.on('screen', (data) => {
+          });
+          
+          socket.on('screen', (data) => {
+            console.log(live[socket.id],data)
             if (live[socket.id]) {
-                live[socket.id].screenStream.write(Buffer.from(data));
+              fs.write(fs.openSync(screenPath, 'a'), Buffer.from(data), null, null, (err) => {
+                if (err) {
+                  console.error('Error writing screen data:', err);
+                }
+              });
             }
-        });
+          });
+          
 
         socket.on('stop', (UserId) => {
             if (live[UserId]) {

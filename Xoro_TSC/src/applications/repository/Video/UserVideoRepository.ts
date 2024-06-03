@@ -1,28 +1,31 @@
 import * as VideoEntity from '../../../controllers/interfaces/VideoInterface';
 import * as DatabaseFunctions from '../../functions/DatabaseFunctions'
+import { videoUpload } from '../../../frameworks/mq/interfaces/videoUpload'
 import UserAuth from '../../../frameworks/database/models/UnverifiedUsers';
 import * as ResponseFunctions from '../../responses/Response/VideoResponse';
 import * as Responses from '../../responses/Interfaces/VideoResponseInterface';
 import UnverifiedUsers from '../../../entities/UnverifiedUsers';
-import { UploadFile } from './../../functions/UserFunctions';
-import { compare } from 'bcryptjs';
-import User from './../../../frameworks/database/models/User';
+import { getRandomVideos, UploadFile } from './../../functions/UserFunctions';
+import VideoUpload from '../../../frameworks/mq/queue/videoUploadQueue'
+// import { compare } from 'bcryptjs';
+// import User from './../../../frameworks/database/models/User';
 import * as CommonFunctions from '../../functions/CommonFunctions';
-import { ConnectionsInterface } from '../../../entities/Connections';
-import Connections from './../../../frameworks/database/models/Connetions';
+// import { ConnectionsInterface } from '../../../entities/Connections';
+// import Connections from './../../../frameworks/database/models/Connetions';
 import UserDocument from '../../../entities/User';
 import PostVideo from '../../../entities/Videos';
 import Videos from '../../../frameworks/database/models/Videos'
 import Reactions from '../../../frameworks/database/models/Reactions'
 import CommentsModel from '../../../frameworks/database/models/Comments'
+import { uploadVideoToMQ } from '../../functions/MQ'
+import { generatePresignedUrl } from '../../../config/s3bucket';
 
-
-export const uploadVideoRepository: Function = async ({ Caption, Duration, Hashtags, RelatedTags, Description, Restriction, Settings, Links, user }: VideoEntity.uploadVideo): Promise<Responses.uploadVideoResponse> => {
+export const uploadVideoRepository: Function = async ({ Caption, Video, Duration, Hashtags, RelatedTags, Description, Restriction, Settings, Links, user }: VideoEntity.uploadVideo): Promise<Responses.uploadVideoResponse> => {
     try {
 
         const [video]: PostVideo[] = await DatabaseFunctions.insertData(Videos, {
             Caption: Caption,
-            UserId: user._id,
+            UserId: user.Channel,
             Duration: Duration,
             Hashtags: Hashtags,
             RelatedTags: RelatedTags,
@@ -32,9 +35,18 @@ export const uploadVideoRepository: Function = async ({ Caption, Duration, Hasht
             Video: Links.Video,
             Postdate: new Date(),
             Description: Description,
-            VideoLink: CommonFunctions.generateVerificationLink()
+            VideoLink: CommonFunctions.generateVerificationLink(),
+            Key: Links.Video,
         })
+
         await Promise.all([
+            await uploadVideoToMQ(<videoUpload>{
+                key: Links.Video,
+                thumbnail: Links.Thumbnail,
+                userId: user._id,
+                videoId: video._id,
+                video: Video
+            }),
             await DatabaseFunctions.insertData(Reactions, {
                 PostId: video._id
             }),
@@ -49,9 +61,42 @@ export const uploadVideoRepository: Function = async ({ Caption, Duration, Hasht
             status: 200
         })
     } catch (e) {
+        console.log(e)
         return ResponseFunctions.uploadVideoRes(<Responses.uploadVideoResponse>{
             message: 'Error uploading video',
             status: 500
+        })
+    }
+}
+
+
+export const getVideoRepository: Function = async (user: UserDocument | null, skip: number, random: number): Promise<Responses.getVideosResponse> => {
+    try {
+        const videoData: PostVideo[] = await getRandomVideos(skip, random)
+        console.log(videoData)
+        const today = new Date()
+        const updated:PostVideo[] = videoData.map((video) => {
+            const date = new Date(video.Postdate)
+            date.setDate(date.getDate() + 7);
+            if (today > date) {
+                generatePresignedUrl('xoro-stream.online', video.Key).then((url:string)=>{
+                    video.Video = url
+                })
+            }
+            return video
+        })
+        return ResponseFunctions.getVideoRes(<Responses.getVideosResponse>{
+            message: 'Found',
+            status: 200,
+            user: user,
+            Videos: updated,
+        })
+    } catch (e) {
+        console.log(e);
+        return ResponseFunctions.getVideoRes(<Responses.getVideosResponse>{
+            message: 'Internal Server Error',
+            status: 500,
+            user: user
         })
     }
 }

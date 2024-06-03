@@ -32,13 +32,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uploadVideo = void 0;
+exports.getVideos = exports.uploadVideo = void 0;
 const UseCases = __importStar(require("../../applications/usecases/Video"));
 const uploadVideo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const result = req.result;
         let files = req.file;
         const { Caption, Duration, Hashtags, RelatedTags, Restriction, Settings, Thumbnail, Description } = req.body;
+        console.log();
         const data = yield UseCases.uploadVideo({
             Caption,
             Duration,
@@ -58,3 +59,18 @@ const uploadVideo = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.uploadVideo = uploadVideo;
+const getVideos = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const result = req === null || req === void 0 ? void 0 : req.result;
+        const { skip } = req === null || req === void 0 ? void 0 : req.params;
+        const { random } = req === null || req === void 0 ? void 0 : req.query;
+        if (random && typeof random === 'string' && skip) {
+            const data = yield UseCases.getVideos((result === null || result === void 0 ? void 0 : result.user) || null, parseInt(skip), parseInt(random));
+            return res.status(data.status).json(data);
+        }
+    }
+    catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+exports.getVideos = getVideos;

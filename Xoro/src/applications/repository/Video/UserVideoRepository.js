@@ -35,18 +35,23 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uploadVideoRepository = void 0;
+exports.getVideoRepository = exports.uploadVideoRepository = void 0;
 const DatabaseFunctions = __importStar(require("../../functions/DatabaseFunctions"));
 const ResponseFunctions = __importStar(require("../../responses/Response/VideoResponse"));
+const UserFunctions_1 = require("./../../functions/UserFunctions");
+// import { compare } from 'bcryptjs';
+// import User from './../../../frameworks/database/models/User';
 const CommonFunctions = __importStar(require("../../functions/CommonFunctions"));
 const Videos_1 = __importDefault(require("../../../frameworks/database/models/Videos"));
 const Reactions_1 = __importDefault(require("../../../frameworks/database/models/Reactions"));
 const Comments_1 = __importDefault(require("../../../frameworks/database/models/Comments"));
-const uploadVideoRepository = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Caption, Duration, Hashtags, RelatedTags, Description, Restriction, Settings, Links, user }) {
+const MQ_1 = require("../../functions/MQ");
+const s3bucket_1 = require("../../../config/s3bucket");
+const uploadVideoRepository = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Caption, Video, Duration, Hashtags, RelatedTags, Description, Restriction, Settings, Links, user }) {
     try {
         const [video] = yield DatabaseFunctions.insertData(Videos_1.default, {
             Caption: Caption,
-            UserId: user._id,
+            UserId: user.Channel,
             Duration: Duration,
             Hashtags: Hashtags,
             RelatedTags: RelatedTags,
@@ -56,9 +61,17 @@ const uploadVideoRepository = (_a) => __awaiter(void 0, [_a], void 0, function* 
             Video: Links.Video,
             Postdate: new Date(),
             Description: Description,
-            VideoLink: CommonFunctions.generateVerificationLink()
+            VideoLink: CommonFunctions.generateVerificationLink(),
+            Key: Links.Video,
         });
         yield Promise.all([
+            yield (0, MQ_1.uploadVideoToMQ)({
+                key: Links.Video,
+                thumbnail: Links.Thumbnail,
+                userId: user._id,
+                videoId: video._id,
+                video: Video
+            }),
             yield DatabaseFunctions.insertData(Reactions_1.default, {
                 PostId: video._id
             }),
@@ -72,6 +85,7 @@ const uploadVideoRepository = (_a) => __awaiter(void 0, [_a], void 0, function* 
         });
     }
     catch (e) {
+        console.log(e);
         return ResponseFunctions.uploadVideoRes({
             message: 'Error uploading video',
             status: 500
@@ -79,3 +93,35 @@ const uploadVideoRepository = (_a) => __awaiter(void 0, [_a], void 0, function* 
     }
 });
 exports.uploadVideoRepository = uploadVideoRepository;
+const getVideoRepository = (user, skip, random) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const videoData = yield (0, UserFunctions_1.getRandomVideos)(skip, random);
+        console.log(videoData);
+        const today = new Date();
+        const updated = videoData.map((video) => {
+            const date = new Date(video.Postdate);
+            date.setDate(date.getDate() + 7);
+            if (today > date) {
+                (0, s3bucket_1.generatePresignedUrl)('xoro-stream.online', video.Key).then((url) => {
+                    video.Video = url;
+                });
+            }
+            return video;
+        });
+        return ResponseFunctions.getVideoRes({
+            message: 'Found',
+            status: 200,
+            user: user,
+            Videos: updated,
+        });
+    }
+    catch (e) {
+        console.log(e);
+        return ResponseFunctions.getVideoRes({
+            message: 'Internal Server Error',
+            status: 500,
+            user: user
+        });
+    }
+});
+exports.getVideoRepository = getVideoRepository;

@@ -14,7 +14,6 @@ const socket_1 = require("../../frameworks/server/socket");
 const emitNotification = (data, UserId) => __awaiter(void 0, void 0, void 0, function* () {
     const io = (0, socket_1.getSocketInstance)();
     if (io) {
-        console.log(io, '___________');
         io.to(UserId).emit('notification', data);
     }
 });

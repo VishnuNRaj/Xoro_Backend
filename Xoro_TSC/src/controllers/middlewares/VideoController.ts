@@ -23,7 +23,7 @@ export const uploadVideo: Middleware = async (req, res) => {
             Thumbnail,
             Description
         } = req.body as VideoEntity.uploadVideo;
-
+        console.log()
         const data = await UseCases.uploadVideo({
             Caption,
             Duration,
@@ -41,3 +41,17 @@ export const uploadVideo: Middleware = async (req, res) => {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
+export const getVideos: Middleware = async (req, res) => {
+    try {
+        const result = req?.result
+        const { skip } = req?.params
+        const { random } = req?.query
+        if (random && typeof random === 'string' && skip) {
+            const data = await UseCases.getVideos(result?.user || null, parseInt(skip), parseInt(random))
+            return res.status(data.status).json(data)
+        }
+    } catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' })
+    }
+}

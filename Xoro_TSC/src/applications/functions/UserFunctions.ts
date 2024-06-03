@@ -5,10 +5,12 @@ import UnverifiedUsers from '../../entities/UnverifiedUsers';
 import UserDocument from '../../entities/User';
 import firebase from '../../config/firebase'
 import { Bucket } from '@google-cloud/storage';
-import { ObjectId } from 'mongoose';
+import mongoose, { ObjectId } from 'mongoose';
 import Notifications from '../../frameworks/database/models/Notifications'
-import { findOneAndUpdate } from './DatabaseFunctions';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { findOneAndUpdate, updateById } from './DatabaseFunctions';
+import { Notification } from '../../entities/Notification';
+import Videos from '../../frameworks/database/models/Videos';
+import PostVideo from '../../entities/Videos';
 
 
 export const UploadFile: Function = async (file: Express.Multer.File) => {
@@ -65,8 +67,8 @@ export const VerifyUser: Function = async (user: UnverifiedUsers | UserDocument)
 
 export const uploadToFirebase: Function = async (file: Express.Multer.File, path: string): Promise<string> => {
     try {
-        const store:Bucket = firebase.storage().bucket()
-        const buffer:Buffer = fs.readFileSync(file.path);
+        const store: Bucket = firebase.storage().bucket()
+        const buffer: Buffer = fs.readFileSync(file.path);
         await store.file(path).save(buffer, {
             metadata: {
                 contentType: file.mimetype
@@ -87,12 +89,49 @@ export const uploadToFirebase: Function = async (file: Express.Multer.File, path
     }
 };
 
-export const createNotification:Function = async (data:Notification,UserId:ObjectId) => {
+export const createNotification: Function = async (data: Notification, UserId: ObjectId) => {
     try {
-        await findOneAndUpdate(Notifications,{UserId:UserId},{$push:{Messages:data}},{})
+        await findOneAndUpdate(Notifications, { UserId: UserId }, { $push: { Messages: data } }, {})
         return true;
     } catch (e) {
         return false
     }
 }
 
+export const updateVideoLink: Function = async (videoId: string, link: string) => {
+    try {
+        await updateById(Videos, videoId, { Video: link, Uploaded: true })
+        return true
+    } catch (e) {
+        return false
+    }
+}
+export const getRandomVideos = async (skip: number, random: number): Promise<PostVideo[]> => {
+    try {
+        const totalVideos = await Videos.countDocuments();
+        const randomOffset = random === 0 ? Math.floor(Math.random() * totalVideos) : random;
+
+        const videos:PostVideo[] = await Videos.aggregate([
+            { $sample: { size: totalVideos } },
+            { $skip: randomOffset + skip },
+            { $limit: 10 },
+            {$lookup:{
+                from:'channels',
+                localField:'UserId',
+                foreignField:'_id',
+                as:'Channel'
+            }},
+            {$lookup:{
+                from:'reactions',
+                localField:'_id',
+                foreignField:'PostId',
+                as:'Reactions'
+            }},
+        ]);
+
+        return videos;
+    } catch (error) {
+        console.error('Error fetching random videos:', error);
+        throw error;
+    }
+};

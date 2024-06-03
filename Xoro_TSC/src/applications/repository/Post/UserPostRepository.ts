@@ -80,6 +80,7 @@ export const deletePostRepository: Function = async ({ PostId, user }: PostEntit
         }
         await DatabaseFunctions.deleteUsingId(PostImages, PostId)
         user.Posts = await DatabaseFunctions.countDocuments(PostImages, user._id, 'UserId')
+        console.log(user.Posts)
         await DatabaseFunctions.saveData(user)
         return ResponseFunctions.deletePostRes(<Responses.deletePostResponse>{
             message: 'Deleted Successfully',
