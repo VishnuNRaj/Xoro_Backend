@@ -22,56 +22,86 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const SocketFunctions = __importStar(require("./SocketFunctions"));
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
-const videoPath = path_1.default.join(__dirname, '../../live');
-const cameraPath = path_1.default.join(videoPath, `camera-${'123'}-${'123'}.webm`);
-const screenPath = path_1.default.join(videoPath, `screen-${'123'}.webm`);
-let live = {};
+// import fs from 'fs';
+// import path from 'path';
+const child_process_1 = require("child_process");
+// const videoPath = path.join(__dirname, '../../live');
+// let live = {};
 const socketRoutes = (io) => {
     if (!io) {
         throw new Error('Socket instance is undefined. Ensure initializeSocketServer is called.');
     }
     io.on('connection', (socket) => {
+        console.log('Client connected');
+        const ffmpeg = (0, child_process_1.spawn)('ffmpeg', [
+            '-re',
+            '-i', 'pipe:0',
+            '-c:v', 'libx264',
+            '-preset', 'fast',
+            '-c:a', 'aac',
+            '-f', 'flv',
+            'rtmp://localhost:1935/live/stream'
+        ]);
+        ffmpeg.stdin.on('error', (err) => {
+            console.error('FFmpeg stdin error:', err);
+        });
+        ffmpeg.stderr.on('data', (data) => {
+            console.error('FFmpeg stderr:', data.toString());
+        });
+        ffmpeg.on('error', (data) => {
+            console.log('sadasdas', data);
+        });
+        ffmpeg.on('close', (code) => {
+            console.log(`FFmpeg process closed with code ${code}`);
+        });
+        socket.on('stream', (data) => {
+            ffmpeg.stdin.write(data);
+        });
+        socket.on('stop', () => {
+            ffmpeg.stdin.end();
+        });
         socket.on('join', (UserId) => SocketFunctions.joinUserId(socket, UserId));
         socket.on('notification', ({ data, UserId }) => SocketFunctions.sendNotifications(socket, data, UserId));
         socket.on('chat', ({ data, UserId }) => SocketFunctions.chatRoom(socket, UserId, data));
         socket.on('disconnect', () => SocketFunctions.disconnect(socket));
-        socket.on('start', (data) => {
-            console.log(data, socket.id);
-            live[socket.id] = socket.id;
-        });
-        socket.on('camera', (data) => {
-            // console.log(live[socket.id])
-            if (live[socket.id]) {
-                fs_1.default.write(fs_1.default.openSync(cameraPath, 'a'), Buffer.from(data), null, null, (err) => {
-                    if (err) {
-                        console.error('Error writing camera data:', err);
-                    }
-                });
-            }
-        });
-        socket.on('screen', (data) => {
-            console.log(live[socket.id], data);
-            if (live[socket.id]) {
-                fs_1.default.write(fs_1.default.openSync(screenPath, 'a'), Buffer.from(data), null, null, (err) => {
-                    if (err) {
-                        console.error('Error writing screen data:', err);
-                    }
-                });
-            }
-        });
-        socket.on('stop', (UserId) => {
-            if (live[UserId]) {
-                live[UserId].cameraStream.end();
-                live[UserId].screenStream.end();
-                delete live[UserId];
-            }
+        // socket.on('start', (data) => {
+        //   console.log('Streaming started:', data, socket.id);
+        //   live[socket.id] = {
+        //     cameraPath: path.join(videoPath, `camera-${socket.id}.webm`),
+        //     screenPath: path.join(videoPath, `screen-${socket.id}.webm`)
+        //   };
+        // });
+        // socket.on('camera', (data) => {
+        //   const cameraPath = live[socket.id]?.cameraPath;
+        //   if (cameraPath) {
+        //     fs.appendFile(cameraPath, Buffer.from(data), (err) => {
+        //       if (err) {
+        //         console.error('Error writing camera data:', err);
+        //       } else {
+        //         console.log('Camera data written to', cameraPath);
+        //       }
+        //     });
+        //   }
+        // });
+        // socket.on('screen', (data) => {
+        //   const screenPath = live[socket.id]?.screenPath;
+        //   if (screenPath) {
+        //     fs.appendFile(screenPath, Buffer.from(data), (err) => {
+        //       if (err) {
+        //         console.error('Error writing screen data:', err);
+        //       } else {
+        //         console.log('Screen data written to', screenPath);
+        //       }
+        //     });
+        //   }
+        // });
+        socket.on('disconnect', () => {
+            console.log('Client disconnected:', socket.id);
+            // if (live[socket.id]) {
+            //   delete live[socket.id];
+            // }
         });
     });
     return io;

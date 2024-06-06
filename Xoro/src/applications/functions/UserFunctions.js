@@ -127,7 +127,7 @@ const getRandomVideos = (skip, random) => __awaiter(void 0, void 0, void 0, func
         const videos = yield Videos_1.default.aggregate([
             { $sample: { size: totalVideos } },
             { $skip: randomOffset + skip },
-            { $limit: 12 },
+            { $limit: 10 },
             { $lookup: {
                     from: 'channels',
                     localField: 'UserId',
