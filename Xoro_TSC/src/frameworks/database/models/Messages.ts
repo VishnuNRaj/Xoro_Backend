@@ -2,19 +2,23 @@ import { model, Schema, Types } from 'mongoose';
 import { Messages } from '../../../entities/Chat'
 
 const MessageSchema = new Schema<Messages>({
-    RoomId:String,
-    Message:{
-        type:String,
-        default:""
+    RoomId: String,
+    Message: {
+        type: String,
+        default: ""
     },
-    SenderId:Types.ObjectId,
-    Files:[{
-        FileLink:String,
-        FileType:String,
+    SenderId: Types.ObjectId,
+    Files: [{
+        FileLink: String,
+        FileType: String,
     }],
-    Time:{
-        type:Date,
-        default:new Date(),
+    Time: {
+        type: Date,
+        default: new Date(),
     },
-    Seen:[Types.ObjectId],
+    Redirect: String,
+    Seen: [Types.ObjectId],
 })
+
+const Message = model<Messages>('messages', MessageSchema)
+export default Message

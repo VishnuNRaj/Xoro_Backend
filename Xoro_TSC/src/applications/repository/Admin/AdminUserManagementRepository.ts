@@ -1,11 +1,11 @@
-import * as AdminEntity from '../../../controllers/interfaces/AdminInterface';
+import * as AdminEntity from '../../../entities/RequestInterface/AdminInterface';
 import * as DatabaseFunctions from '../../functions/DatabaseFunctions'
-import * as ResponseFunctions from '../../responses/Response/AdminResponse';
-import * as Responses from '../../responses/Interfaces/AdminResponseInterface';
+import * as ResponseFunctions from '../../responses/AdminResponse';
+import * as Responses from '../../../entities/ResponseInterface/AdminResponseInterface';
 import * as CommonFunctions from '../../functions/CommonFunctions';
-import UserDocument from '../../../entities/User';
+import UserDocument from '../../../entities/ModelsInterface/User';
 import User from '../../../frameworks/database/models/User';
-import UnverifiedUsers from '../../../entities/UnverifiedUsers';
+import UnverifiedUsers from '../../../entities/ModelsInterface/UnverifiedUsers';
 import AdminAuth from '../../../frameworks/database/models/Admin';
 import UserAuth from '../../../frameworks/database/models/UnverifiedUsers';
 

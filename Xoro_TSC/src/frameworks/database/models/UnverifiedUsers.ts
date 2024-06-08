@@ -1,4 +1,4 @@
-import UnverifiedUsers from '../../../entities/UnverifiedUsers';
+import UnverifiedUsers from '../../../entities/ModelsInterface/UnverifiedUsers';
 import { Schema, model } from 'mongoose';
 
 const UserAuthSchema = new Schema<UnverifiedUsers>({

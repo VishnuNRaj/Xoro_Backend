@@ -1,7 +1,7 @@
 import { Worker } from 'bullmq';
 import { videoUpload } from '../interfaces/videoUpload';
 import { createNotification, updateVideoLink } from '../../../applications/functions/UserFunctions';
-import { Notification } from '../../../entities/Notification';
+import { Notification } from '../../../entities/ModelsInterface/Notification';
 import { emitNotification } from '../../../controllers/Socket/SocketEmits';
 import uploadVideoToS3 from '../../../config/s3bucket';
 import redis from '../../database/Redis'

@@ -1,5 +1,5 @@
 import { model, Schema, Types } from 'mongoose'
-import { Messages } from '../../../entities/Notification'
+import { Messages } from '../../../entities/ModelsInterface/Notification'
 
 const NotificationSchema = new Schema<Messages>({
     UserId:Types.ObjectId,

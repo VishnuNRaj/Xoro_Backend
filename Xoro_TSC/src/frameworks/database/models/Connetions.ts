@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { ConnectionsInterface } from "../../../entities/Connections";
+import { ConnectionsInterface } from "../../../entities/ModelsInterface/Connections";
 import { ObjectId } from 'mongodb';
 
 

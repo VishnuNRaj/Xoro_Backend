@@ -34,7 +34,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.setTwoStep = exports.getTwoStep = exports.ResendUserOTP = exports.verifyUserAuth = exports.OTPVerifyLogin = exports.AddProfileUser = exports.VerifyUser = exports.LoginUser = exports.RegisterUser = void 0;
 const Validations = __importStar(require("../validations/UserValidation"));
-const ResponseFunctions = __importStar(require("../responses/Response/UserResponse"));
+const ResponseFunctions = __importStar(require("../responses/UserResponse"));
 const Repository = __importStar(require("../repository/User/UserAuthRepository"));
 const UserFunctions = __importStar(require("../functions/UserFunctions"));
 const console_1 = require("console");

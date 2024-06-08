@@ -1,6 +1,6 @@
 import { Schema, Types, model } from 'mongoose';
 import { ObjectId } from 'mongodb';
-import UserDocument from '../../../entities/User';
+import UserDocument from '../../../entities/ModelsInterface/User';
 
 const userSchema = new Schema<UserDocument>({
     Name: String,

@@ -37,7 +37,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getVideoRepository = exports.uploadVideoRepository = void 0;
 const DatabaseFunctions = __importStar(require("../../functions/DatabaseFunctions"));
-const ResponseFunctions = __importStar(require("../../responses/Response/VideoResponse"));
+const ResponseFunctions = __importStar(require("../../responses/VideoResponse"));
 const UserFunctions_1 = require("./../../functions/UserFunctions");
 // import { compare } from 'bcryptjs';
 // import User from './../../../frameworks/database/models/User';

@@ -1,27 +1,6 @@
 import jwt, { TokenExpiredError } from 'jsonwebtoken';
 import auth, { AuthInterface } from '../../config/auth';
-
-interface JWTCreate {
-    Payload: {
-        UserId: string;
-        Email: string;
-        Admin: Boolean
-    };
-    RememberMe: boolean;
-}
-
-interface JWTVerify {
-    token: string;
-}
-
-interface JWTVerifyResponse {
-    status: boolean;
-    user: { 
-        UserId: string;
-        Email: string;
-    } | null;
-    error: string | null;
-}
+import { JWTCreate, JWTVerify, JWTVerifyResponse } from '../../entities/Configinterface/JWT'
 
 export const CreatePayload: Function = ({ Payload, RememberMe }: JWTCreate): string => {
     try {

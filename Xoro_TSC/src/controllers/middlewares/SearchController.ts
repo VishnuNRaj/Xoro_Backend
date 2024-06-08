@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import * as UserEntity from "../interfaces/UserInterfaces";
+import * as UserEntity from "../../entities/RequestInterface/UserInterfaces";
 import * as UseCases from '../../applications/usecases/User'
-import * as Responses from '../../applications/responses/Interfaces/UserResponsesInterface';
+import * as Responses from '../../entities/ResponseInterface/UserResponsesInterface';
 interface CustomRequest extends Request {
     result?: Responses.VerifyUserAuthResponse;
 }

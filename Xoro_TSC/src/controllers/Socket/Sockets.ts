@@ -16,38 +16,6 @@ const socketRoutes = (io: SocketIOServer): SocketIOServer => {
   io.on('connection', (socket) => {
     console.log('Client connected');
 
-    const ffmpeg = spawn('ffmpeg', [
-      '-re',
-      '-i', 'pipe:0', 
-      '-c:v', 'libx264', 
-      '-preset', 'fast', 
-      '-c:a', 'aac', 
-      '-f', 'flv', 
-      'rtmp://localhost:1935/live/stream' 
-    ]);
-
-    ffmpeg.stdin.on('error', (err) => {
-      console.error('FFmpeg stdin error:', err);
-    });
-
-    ffmpeg.stderr.on('data', (data) => {
-      console.error('FFmpeg stderr:', data.toString());
-    });
-    ffmpeg.on('error',(data)=>{
-      console.log('sadasdas',data)
-    })
-
-    ffmpeg.on('close', (code) => {
-      console.log(`FFmpeg process closed with code ${code}`);
-    });
-   
-    socket.on('stream', (data) => {
-      ffmpeg.stdin.write(data);
-    });
-
-    socket.on('stop', () => {
-      ffmpeg.stdin.end();
-    });
 
 
     socket.on('join', (UserId) => SocketFunctions.joinUserId(socket, UserId));

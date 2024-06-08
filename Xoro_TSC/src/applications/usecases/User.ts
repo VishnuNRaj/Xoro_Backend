@@ -1,7 +1,7 @@
 import * as Validations from '../validations/UserValidation';
-import * as UserEntity from './../../controllers/interfaces/UserInterfaces';
-import * as Responses from '../responses/Interfaces/UserResponsesInterface';
-import * as ResponseFunctions from '../responses/Response/UserResponse';
+import * as UserEntity from '../../entities/RequestInterface/UserInterfaces';
+import * as Responses from '../../entities/ResponseInterface/UserResponsesInterface';
+import * as ResponseFunctions from '../responses/UserResponse';
 import * as Repository from '../repository/User/UserAuthRepository';
 import * as UserFunctions from '../functions/UserFunctions';
 

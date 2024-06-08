@@ -1,9 +1,9 @@
 import * as Validations from '../validations/VideoValidations';
-import * as VideoEntity from './../../controllers/interfaces/VideoInterface';
-import * as Responses from '../responses/Interfaces/VideoResponseInterface';
+import * as VideoEntity from '../../entities/RequestInterface/VideoInterface';
+import * as Responses from '../../entities/ResponseInterface/VideoResponseInterface';
 import * as Repository from '../repository/Video/UserVideoRepository';
 import * as UserFunctions from '../functions/UserFunctions';
-import UserDocument from '../../entities/User';
+import UserDocument from '../../entities/ModelsInterface/User';
 
 export const uploadVideo: Function = async (data: VideoEntity.uploadVideo): Promise<Responses.uploadVideoResponse> => {
     try {

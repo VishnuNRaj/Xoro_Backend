@@ -1,6 +1,6 @@
 import * as Validations from '../validations/UserValidation';
-import * as AdminEntity from './../../controllers/interfaces/AdminInterface';
-import * as Responses from '../responses/Interfaces/AdminResponseInterface';
+import * as AdminEntity from '../../entities/RequestInterface/AdminInterface';
+import * as Responses from '../../entities/ResponseInterface/AdminResponseInterface';
 import * as Repository from '../repository/Admin/AdminAuthRepository';
 import * as AdminUserRepository from '../repository/Admin/AdminUserManagementRepository'
 import { checkObjectId } from '../functions/DatabaseFunctions';

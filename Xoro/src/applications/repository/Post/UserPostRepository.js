@@ -37,7 +37,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RemoveReactions = exports.DislikePostRepository = exports.LikePostRepository = exports.deletePostRepository = exports.showPostImagesRepository = exports.addPostImagesRepository = void 0;
 const DatabaseFunctions = __importStar(require("../../functions/DatabaseFunctions"));
-const ResponseFunctions = __importStar(require("../../responses/Response/PostResponse"));
+const ResponseFunctions = __importStar(require("../../responses/PostResponse"));
 const CommonFunctions = __importStar(require("../../functions/CommonFunctions"));
 const ImagesPost_1 = __importDefault(require("../../../frameworks/database/models/ImagesPost"));
 const Reactions_1 = __importDefault(require("./../../../frameworks/database/models/Reactions"));

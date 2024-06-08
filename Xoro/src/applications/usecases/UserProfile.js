@@ -34,7 +34,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateChannel = exports.GetUserProfile = exports.UnFollowUser = exports.FollowUser = exports.SearchUser = exports.ProfileSettings = exports.SecureAccount = exports.EditProfile = exports.EditProfilePic = exports.EditBanner = void 0;
 const Validations = __importStar(require("../validations/UserValidation"));
-const ResponseFunctions = __importStar(require("../responses/Response/UserResponse"));
+const ResponseFunctions = __importStar(require("../responses/UserResponse"));
 const Repository = __importStar(require("../repository/User/UserProfileRepository"));
 const firebase_1 = require("../../config/firebase");
 const EditBanner = (_a) => __awaiter(void 0, [_a], void 0, function* ({ user, Image }) {

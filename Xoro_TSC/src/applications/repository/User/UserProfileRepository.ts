@@ -1,19 +1,19 @@
-import * as UserEntity from '../../../controllers/interfaces/UserInterfaces';
+import * as UserEntity from '../../../entities/RequestInterface/UserInterfaces';
 import * as DatabaseFunctions from '../../functions/DatabaseFunctions'
 import UserAuth from '../../../frameworks/database/models/UnverifiedUsers';
-import * as ResponseFunctions from '../../responses/Response/UserResponse';
-import * as Responses from '../../responses/Interfaces/UserResponsesInterface';
-import UnverifiedUsers from '../../../entities/UnverifiedUsers';
+import * as ResponseFunctions from '../../responses/UserResponse';
+import * as Responses from '../../../entities/ResponseInterface/UserResponsesInterface';
+import UnverifiedUsers from '../../../entities/ModelsInterface/UnverifiedUsers';
 import { createNotification, UploadFile } from './../../functions/UserFunctions';
 import { compare } from 'bcryptjs';
 import User from './../../../frameworks/database/models/User';
-import { ConnectionsInterface } from '../../../entities/Connections';
+import { ConnectionsInterface } from '../../../entities/ModelsInterface/Connections';
 import Connections from './../../../frameworks/database/models/Connetions';
-import UserDocument from '../../../entities/User';
+import UserDocument from '../../../entities/ModelsInterface/User';
 import PostImages from '../../../frameworks/database/models/ImagesPost';
-import { Notification } from '../../../entities/Notification';
+import { Notification } from '../../../entities/ModelsInterface/Notification';
 import Channels from '../../../frameworks/database/models/Channels'
-import { ChannelInterface } from '../../../entities/Channels';
+import { ChannelInterface } from '../../../entities/ModelsInterface/Channels';
 
 export const editBannerRepository: Function = async ({ Image, user }: UserEntity.EditBanner) => {
     try {

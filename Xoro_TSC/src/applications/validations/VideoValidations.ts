@@ -1,5 +1,5 @@
 import joi, { Schema } from 'joi';
-import * as interfaces from '../../controllers/interfaces/VideoInterface';
+import * as interfaces from '../../entities/RequestInterface/VideoInterface';
 
 export const uploadVideoValidate: Function = async (data: interfaces.uploadVideo): Promise<{
     errors: string;

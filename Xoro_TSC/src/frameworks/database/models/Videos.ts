@@ -1,5 +1,5 @@
 import { model, Schema, Types } from 'mongoose'
-import PostVideo from '../../../entities/Videos'
+import PostVideo from '../../../entities/ModelsInterface/Videos'
 
 const VideoSchema = new Schema<PostVideo>({
     Caption: String,

@@ -1,6 +1,6 @@
 import { Document, Schema, model } from "mongoose";
 import { ObjectId } from "mongodb";
-import { AllCommments, Comment, CommentReply } from "../../../entities/Comments";
+import { AllCommments, Comment, CommentReply } from "../../../entities/ModelsInterface/Comments";
 
 
 const CommentReplySchema = new Schema<CommentReply>({

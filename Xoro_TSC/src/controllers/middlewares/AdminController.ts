@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import * as AdminEntity from "../interfaces/AdminInterface";
+import * as AdminEntity from "../../entities/RequestInterface/AdminInterface";
 import * as UseCases from '../../applications/usecases/Admin'
-import * as Responses from '../../applications/responses/Interfaces/AdminResponseInterface';
+import * as Responses from '../../entities/ResponseInterface/AdminResponseInterface';
 import { log } from 'console';
 interface customRequest extends Request {
     result?: Responses.AdminVerifyAuthResponse

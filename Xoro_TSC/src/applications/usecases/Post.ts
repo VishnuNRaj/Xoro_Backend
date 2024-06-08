@@ -1,7 +1,7 @@
-import * as Responses from '../responses/Interfaces/PostUserResponseInterface';
+import * as Responses from '../../entities/ResponseInterface/PostUserResponseInterface';
 import * as Repository from '../repository/Post/UserPostRepository';
 import * as UserFunctions from '../functions/UserFunctions';
-import * as PostEntity from '../../controllers/interfaces/PostInterface';
+import * as PostEntity from '../../entities/RequestInterface/PostInterface';
 import { uploadFileToFirebase } from '../../config/firebase';
 
 

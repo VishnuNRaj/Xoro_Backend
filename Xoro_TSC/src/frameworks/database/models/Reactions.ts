@@ -1,5 +1,5 @@
 import { Schema, model } from "mongoose";
-import { ReactionsInterface } from "../../../entities/Reactions";
+import { ReactionsInterface } from "../../../entities/ModelsInterface/Reactions";
 import { ObjectId } from "mongodb";
 
 

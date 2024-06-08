@@ -35,10 +35,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.searchData = exports.countDocuments = exports.likeDislikePost = exports.saveData = exports.deleteUsingId = exports.findData = exports.checkObjectId = exports.executeBulkWrite = exports.pullReactions = exports.findAndPull = exports.findOneAndUpdate = exports.updateByData = exports.updateById = exports.insertData = exports.findUsingId = exports.findOneData = void 0;
+exports.getChats = exports.searchData = exports.countDocuments = exports.likeDislikePost = exports.saveData = exports.deleteUsingId = exports.findUsers = exports.findData = exports.checkObjectId = exports.executeBulkWrite = exports.pullReactions = exports.findAndPull = exports.findOneAndUpdate = exports.updateByData = exports.updateById = exports.insertData = exports.findUsingId = exports.findOneData = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const User_1 = __importDefault(require("../../frameworks/database/models/User"));
 const ImagesPost_1 = __importDefault(require("../../frameworks/database/models/ImagesPost"));
+const Chat_1 = __importDefault(require("../../frameworks/database/models/Chat"));
 const findOneData = (Db, query) => __awaiter(void 0, void 0, void 0, function* () {
     return yield Db.findOne(query);
 });
@@ -94,6 +95,11 @@ const findData = (Db, query) => __awaiter(void 0, void 0, void 0, function* () {
     return yield Db.find(query);
 });
 exports.findData = findData;
+const findUsers = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    const objectIdArray = userId.map(id => new mongoose_1.Types.ObjectId(id));
+    return yield User_1.default.find({ _id: { $in: objectIdArray } });
+});
+exports.findUsers = findUsers;
 const deleteUsingId = (Db, id) => __awaiter(void 0, void 0, void 0, function* () {
     return yield Db.findByIdAndDelete(id);
 });
@@ -133,3 +139,50 @@ const searchData = (search) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.searchData = searchData;
+const getChats = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const data = yield Chat_1.default.aggregate([
+            { $match: { 'Users.UserId': { $in: [userId] } } },
+            {
+                $lookup: {
+                    from: 'messages',
+                    localField: 'RoomId',
+                    foreignField: 'RoomId',
+                    as: 'messages'
+                }
+            },
+            { $unwind: { path: '$messages', preserveNullAndEmptyArrays: true } }, // Unwind messages, allowing for empty arrays
+            { $sort: { 'messages.Time': -1 } }, // Sort messages by time in descending order
+            {
+                $group: {
+                    _id: '$RoomId',
+                    latestMessage: { $first: '$messages' }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'chats',
+                    localField: '_id',
+                    foreignField: 'RoomId',
+                    as: 'chat'
+                }
+            },
+            { $unwind: '$chat' }, // Unwind the chat array to get a single chat document
+            {
+                $project: {
+                    _id: 0,
+                    RoomId: '$_id',
+                    Users: '$chat.Users',
+                    GroupName: '$chat.GroupName',
+                    latestMessage: 1
+                }
+            }
+        ]);
+        return data;
+    }
+    catch (e) {
+        console.error('Error fetching chats:', e);
+        throw e;
+    }
+});
+exports.getChats = getChats;

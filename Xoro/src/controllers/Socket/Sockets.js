@@ -24,9 +24,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const SocketFunctions = __importStar(require("./SocketFunctions"));
-// import fs from 'fs';
-// import path from 'path';
-const child_process_1 = require("child_process");
 // const videoPath = path.join(__dirname, '../../live');
 // let live = {};
 const socketRoutes = (io) => {
@@ -35,33 +32,6 @@ const socketRoutes = (io) => {
     }
     io.on('connection', (socket) => {
         console.log('Client connected');
-        const ffmpeg = (0, child_process_1.spawn)('ffmpeg', [
-            '-re',
-            '-i', 'pipe:0',
-            '-c:v', 'libx264',
-            '-preset', 'fast',
-            '-c:a', 'aac',
-            '-f', 'flv',
-            'rtmp://localhost:1935/live/stream'
-        ]);
-        ffmpeg.stdin.on('error', (err) => {
-            console.error('FFmpeg stdin error:', err);
-        });
-        ffmpeg.stderr.on('data', (data) => {
-            console.error('FFmpeg stderr:', data.toString());
-        });
-        ffmpeg.on('error', (data) => {
-            console.log('sadasdas', data);
-        });
-        ffmpeg.on('close', (code) => {
-            console.log(`FFmpeg process closed with code ${code}`);
-        });
-        socket.on('stream', (data) => {
-            ffmpeg.stdin.write(data);
-        });
-        socket.on('stop', () => {
-            ffmpeg.stdin.end();
-        });
         socket.on('join', (UserId) => SocketFunctions.joinUserId(socket, UserId));
         socket.on('notification', ({ data, UserId }) => SocketFunctions.sendNotifications(socket, data, UserId));
         socket.on('chat', ({ data, UserId }) => SocketFunctions.chatRoom(socket, UserId, data));

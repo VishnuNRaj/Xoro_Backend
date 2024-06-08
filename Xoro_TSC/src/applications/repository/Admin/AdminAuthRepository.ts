@@ -1,12 +1,12 @@
-import * as AdminEntity from '../../../controllers/interfaces/AdminInterface';
+import * as AdminEntity from '../../../entities/RequestInterface/AdminInterface';
 import * as DatabaseFunctions from '../../functions/DatabaseFunctions'
-import * as ResponseFunctions from '../../responses/Response/AdminResponse';
-import * as Responses from '../../responses/Interfaces/AdminResponseInterface';
+import * as ResponseFunctions from '../../responses/AdminResponse';
+import * as Responses from '../../../entities/ResponseInterface/AdminResponseInterface';
 import * as CommonFunctions from '../../functions/CommonFunctions';
 import { SendVerificationOTP } from '../../functions/SendMail';
 import { CreatePayload, VerifyPayload } from '../../functions/JWT';
 import Admin from '../../../frameworks/database/models/Admin';
-import AdminDocument from '../../../entities/Admin';
+import AdminDocument from '../../../entities/ModelsInterface/Admin';
 
 
 

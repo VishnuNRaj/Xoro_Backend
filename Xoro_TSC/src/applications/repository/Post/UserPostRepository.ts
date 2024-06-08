@@ -1,13 +1,13 @@
 import * as DatabaseFunctions from "../../functions/DatabaseFunctions";
-import * as Responses from "../../responses/Interfaces/PostUserResponseInterface";
-import * as ResponseFunctions from "../../responses/Response/PostResponse";
+import * as Responses from "../../../entities/ResponseInterface/PostUserResponseInterface";
+import * as ResponseFunctions from "../../responses/PostResponse";
 import * as CommonFunctions from "../../functions/CommonFunctions";
-import * as PostEntity from "../../../controllers/interfaces/PostInterface";
+import * as PostEntity from "../../../entities/RequestInterface/PostInterface";
 import PostImages from "../../../frameworks/database/models/ImagesPost";
 import Reactions from './../../../frameworks/database/models/Reactions';
-import UserDocument from "../../../entities/User";
-import { Post } from "../../../entities/PostImages";
-import { ReactionsInterface } from "../../../entities/Reactions";
+import UserDocument from "../../../entities/ModelsInterface/User";
+import { Post } from "../../../entities/ModelsInterface/PostImages";
+import { ReactionsInterface } from "../../../entities/ModelsInterface/Reactions";
 import User from "../../../frameworks/database/models/User";
 
 

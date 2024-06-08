@@ -1,10 +1,10 @@
-import * as VideoEntity from '../../../controllers/interfaces/VideoInterface';
+import * as VideoEntity from '../../../entities/RequestInterface/VideoInterface';
 import * as DatabaseFunctions from '../../functions/DatabaseFunctions'
 import { videoUpload } from '../../../frameworks/mq/interfaces/videoUpload'
 import UserAuth from '../../../frameworks/database/models/UnverifiedUsers';
-import * as ResponseFunctions from '../../responses/Response/VideoResponse';
-import * as Responses from '../../responses/Interfaces/VideoResponseInterface';
-import UnverifiedUsers from '../../../entities/UnverifiedUsers';
+import * as ResponseFunctions from '../../responses/VideoResponse';
+import * as Responses from '../../../entities/ResponseInterface/VideoResponseInterface';
+import UnverifiedUsers from '../../../entities/ModelsInterface/UnverifiedUsers';
 import { getRandomVideos, UploadFile } from './../../functions/UserFunctions';
 import VideoUpload from '../../../frameworks/mq/queue/videoUploadQueue'
 // import { compare } from 'bcryptjs';
@@ -12,8 +12,8 @@ import VideoUpload from '../../../frameworks/mq/queue/videoUploadQueue'
 import * as CommonFunctions from '../../functions/CommonFunctions';
 // import { ConnectionsInterface } from '../../../entities/Connections';
 // import Connections from './../../../frameworks/database/models/Connetions';
-import UserDocument from '../../../entities/User';
-import PostVideo from '../../../entities/Videos';
+import UserDocument from '../../../entities/ModelsInterface/User';
+import PostVideo from '../../../entities/ModelsInterface/Videos';
 import Videos from '../../../frameworks/database/models/Videos'
 import Reactions from '../../../frameworks/database/models/Reactions'
 import CommentsModel from '../../../frameworks/database/models/Comments'

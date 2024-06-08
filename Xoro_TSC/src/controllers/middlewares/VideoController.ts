@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import * as UseCases from '../../applications/usecases/Video'
-import * as Responses from '../../applications/responses/Interfaces/UserResponsesInterface';
-import * as VideoEntity from "../interfaces/VideoInterface";
+import * as Responses from '../../entities/ResponseInterface/UserResponsesInterface';
+import * as VideoEntity from "../../entities/RequestInterface/VideoInterface";
 interface CustomRequest extends Request {
     result?: Responses.VerifyUserAuthResponse;
 }

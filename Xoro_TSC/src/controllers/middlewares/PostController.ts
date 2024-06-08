@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { VerifyUserAuthResponse } from '../../applications/responses/Interfaces/UserResponsesInterface';
-import * as PostEntity from '../interfaces/PostInterface';
+import { VerifyUserAuthResponse } from '../../entities/ResponseInterface/UserResponsesInterface';
+import * as PostEntity from '../../entities/RequestInterface/PostInterface';
 import * as UseCases from '../../applications/usecases/Post';
 interface customRequest extends Request {
     result?: VerifyUserAuthResponse,

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import * as UserEntity from "../interfaces/UserInterfaces";
+import * as UserEntity from "../../entities/RequestInterface/UserInterfaces";
 import * as UseCases from '../../applications/usecases/User'
-import * as Responses from '../../applications/responses/Interfaces/UserResponsesInterface';
+import * as Responses from '../../entities/ResponseInterface/UserResponsesInterface';
 import { emitNotification } from '../Socket/SocketEmits';
 interface CustomRequest extends Request {
     result?: Responses.VerifyUserAuthResponse;
@@ -19,7 +19,7 @@ export const Register: Middleware = async (req, res) => {
             Type,
             Profile
         }: UserEntity.Register = req.body
-        const result: Responses.SignUpResponse = await UseCases.RegisterUser({ Profile, Name, Email, Password, Phone, Type }) 
+        const result: Responses.SignUpResponse = await UseCases.RegisterUser({ Profile, Name, Email, Password, Phone, Type })
         res.status(result.status).json(result)
     } catch (e) {
         res.status(500).json({ message: 'Internal Server Error' })
@@ -46,7 +46,7 @@ export const VerifyAccount: Middleware = async (req, res) => {
         console.log(req.params);
 
         const result: Responses.VerifyAccountResponse = await UseCases.VerifyUser({ VerificationLink, UserId })
-        if(result.data) await emitNotification(result.data,req.headers['socket-id']);
+        if (result.data) await emitNotification(result.data, req.headers['socket-id']);
         res.status(result.status).json(result)
     } catch (e) {
         res.status(500).json({ message: 'Internal Server Error' })

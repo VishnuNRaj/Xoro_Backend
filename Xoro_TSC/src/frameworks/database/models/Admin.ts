@@ -1,4 +1,4 @@
-import Admin from '../../../entities/Admin';
+import Admin from '../../../entities/ModelsInterface/Admin';
 import { Schema, model } from 'mongoose';
 
 const AdminAuthSchema = new Schema<Admin>({

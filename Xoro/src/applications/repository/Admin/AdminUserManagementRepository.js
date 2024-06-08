@@ -37,7 +37,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserManagementRepository = exports.UserDataRepository = void 0;
 const DatabaseFunctions = __importStar(require("../../functions/DatabaseFunctions"));
-const ResponseFunctions = __importStar(require("../../responses/Response/AdminResponse"));
+const ResponseFunctions = __importStar(require("../../responses/AdminResponse"));
 const User_1 = __importDefault(require("../../../frameworks/database/models/User"));
 const Admin_1 = __importDefault(require("../../../frameworks/database/models/Admin"));
 const UnverifiedUsers_1 = __importDefault(require("../../../frameworks/database/models/UnverifiedUsers"));

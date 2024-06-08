@@ -25,7 +25,7 @@ const uploadVideoToMQ = (_a) => __awaiter(void 0, [_a], void 0, function* ({ key
             video: video,
             videoId: videoId
         });
-        console.log(res);
+        // console.log(res)
         return true;
     }
     catch (e) {

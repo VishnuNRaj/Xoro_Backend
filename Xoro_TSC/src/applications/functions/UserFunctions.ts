@@ -1,16 +1,16 @@
 import cloudinaryv2 from '../../config/cloudinary';
 import { UploadApiResponse } from 'cloudinary';
 import fs from 'fs';
-import UnverifiedUsers from '../../entities/UnverifiedUsers';
-import UserDocument from '../../entities/User';
+import UnverifiedUsers from '../../entities/ModelsInterface/UnverifiedUsers';
+import UserDocument from '../../entities/ModelsInterface/User';
 import firebase from '../../config/firebase'
 import { Bucket } from '@google-cloud/storage';
 import mongoose, { ObjectId } from 'mongoose';
 import Notifications from '../../frameworks/database/models/Notifications'
 import { findOneAndUpdate, updateById } from './DatabaseFunctions';
-import { Notification } from '../../entities/Notification';
+import { Notification } from '../../entities/ModelsInterface/Notification';
 import Videos from '../../frameworks/database/models/Videos';
-import PostVideo from '../../entities/Videos';
+import PostVideo from '../../entities/ModelsInterface/Videos';
 
 
 export const UploadFile: Function = async (file: Express.Multer.File) => {

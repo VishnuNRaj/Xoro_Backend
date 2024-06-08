@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import * as UserEntities from '../../controllers/interfaces/UserInterfaces';
+import * as UserEntities from '../../entities/RequestInterface/UserInterfaces';
 import { log } from 'console';
 
 export const RegisterValidate: Function = async (data: UserEntities.Register) => {

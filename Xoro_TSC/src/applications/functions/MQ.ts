@@ -11,7 +11,7 @@ export const uploadVideoToMQ: Function = async ({ key, thumbnail, userId, video,
             video: video,
             videoId: videoId
         })
-        console.log(res)
+        // console.log(res)
         return true
     } catch (e) {
         return false

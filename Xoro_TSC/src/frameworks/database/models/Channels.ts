@@ -1,4 +1,4 @@
-import { ChannelInterface } from '../../../entities/Channels';
+import { ChannelInterface } from '../../../entities/ModelsInterface/Channels';
 import { model, Schema, Types } from 'mongoose';
 
 

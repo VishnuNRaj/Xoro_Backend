@@ -1,18 +1,18 @@
-import * as UserEntity from '../../../controllers/interfaces/UserInterfaces';
+import * as UserEntity from '../../../entities/RequestInterface/UserInterfaces';
 import * as DatabaseFunctions from '../../functions/DatabaseFunctions'
 import UserAuth from '../../../frameworks/database/models/UnverifiedUsers';
-import * as ResponseFunctions from '../../responses/Response/UserResponse';
-import * as Responses from '../../responses/Interfaces/UserResponsesInterface';
+import * as ResponseFunctions from '../../responses/UserResponse';
+import * as Responses from '../../../entities/ResponseInterface/UserResponsesInterface';
 import * as CommonFunctions from '../../functions/CommonFunctions';
-import UnverifiedUsers from '../../../entities/UnverifiedUsers';
+import UnverifiedUsers from '../../../entities/ModelsInterface/UnverifiedUsers';
 import { SendVerificationLink, SendVerificationOTP } from '../../functions/SendMail';
 import { CreatePayload, VerifyPayload } from '../../functions/JWT';
 import User from '../../../frameworks/database/models/User';
 import auth from '../../../config/auth'
-import UserDocument from '../../../entities/User';
+import UserDocument from '../../../entities/ModelsInterface/User';
 import { VerifyUser } from '../../functions/UserFunctions';
 import Connections from '../../../frameworks/database/models/Connetions';
-import { ConnectionsInterface } from '../../../entities/Connections';
+import { ConnectionsInterface } from '../../../entities/ModelsInterface/Connections';
 import Notifications from '../../../frameworks/database/models/Notifications';
 // import { ObjectId } from 'mongodb';
 

@@ -1,8 +1,10 @@
-import mongoose, { Document, isObjectIdOrHexString, Mongoose, ObjectId } from 'mongoose'
-import UserDocument from '../../entities/User'
-import { PostImage } from '../../entities/PostImages'
+import mongoose, { Document, isObjectIdOrHexString, Mongoose, ObjectId, Types } from 'mongoose'
+import UserDocument from '../../entities/ModelsInterface/User'
+import { PostImage } from '../../entities/ModelsInterface/PostImages'
 import User from '../../frameworks/database/models/User'
 import PostImages from '../../frameworks/database/models/ImagesPost'
+import Chats from '../../frameworks/database/models/Chat'
+import { Chat } from '../../entities/ModelsInterface/Chat'
 export const findOneData: Function = async (Db: any, query: object): Promise<any> => {
     return await Db.findOne(query)
 }
@@ -19,7 +21,7 @@ export const updateById: Function = async (Db: any, id: string, data: object) =>
     return await Db.findByIdAndUpdate(id, { $set: data })
 }
 
-export const updateByData = async (Db: any,id:string, data: object) => {
+export const updateByData = async (Db: any, id: string, data: object) => {
     return await Db.findByIdAndUpdate(id, data)
 }
 
@@ -67,6 +69,11 @@ export const findData: Function = async (Db: any, query: object) => {
     return await Db.find(query)
 }
 
+export const findUsers: Function = async (userId: string[]) => {
+    const objectIdArray = userId.map(id => new Types.ObjectId(id));
+    return await User.find({ _id: { $in: objectIdArray } })
+}
+
 export const deleteUsingId: Function = async (Db: any, id: string) => {
     return await Db.findByIdAndDelete(id)
 }
@@ -106,5 +113,52 @@ export const searchData = async (search: string): Promise<{
             user: [],
             post: []
         };
+    }
+};
+
+export const getChats = async (userId: ObjectId) => {
+    try {
+        const data = await Chats.aggregate([
+            { $match: { 'Users.UserId': { $in: [userId] } } },
+            {
+                $lookup: {
+                    from: 'messages',
+                    localField: 'RoomId',
+                    foreignField: 'RoomId',
+                    as: 'messages'
+                }
+            },
+            { $unwind: { path: '$messages', preserveNullAndEmptyArrays: true } }, // Unwind messages, allowing for empty arrays
+            { $sort: { 'messages.Time': -1 } }, // Sort messages by time in descending order
+            {
+                $group: {
+                    _id: '$RoomId',
+                    latestMessage: { $first: '$messages' }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'chats',
+                    localField: '_id',
+                    foreignField: 'RoomId',
+                    as: 'chat'
+                }
+            },
+            { $unwind: '$chat' }, // Unwind the chat array to get a single chat document
+            {
+                $project: {
+                    _id: 0,
+                    RoomId: '$_id',
+                    Users: '$chat.Users',
+                    GroupName: '$chat.GroupName',
+                    latestMessage: 1
+                }
+            }
+        ]);
+
+        return data;
+    } catch (e) {
+        console.error('Error fetching chats:', e);
+        throw e;
     }
 };

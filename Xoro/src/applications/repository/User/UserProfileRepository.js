@@ -38,7 +38,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateChannelRepository = exports.GetUserProfileRepository = exports.SearchUserRepository = exports.UnFollowUserRepository = exports.FollowUserRepository = exports.EditProfileData = exports.ProfileSettingsRepository = exports.SecureAccountRepository = exports.editProfilePicRepository = exports.editBannerRepository = void 0;
 const DatabaseFunctions = __importStar(require("../../functions/DatabaseFunctions"));
 const UnverifiedUsers_1 = __importDefault(require("../../../frameworks/database/models/UnverifiedUsers"));
-const ResponseFunctions = __importStar(require("../../responses/Response/UserResponse"));
+const ResponseFunctions = __importStar(require("../../responses/UserResponse"));
 const UserFunctions_1 = require("./../../functions/UserFunctions");
 const bcryptjs_1 = require("bcryptjs");
 const User_1 = __importDefault(require("./../../../frameworks/database/models/User"));

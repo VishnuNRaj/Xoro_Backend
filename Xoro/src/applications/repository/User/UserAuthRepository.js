@@ -38,7 +38,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.setTwoStep = exports.getTwoStep = exports.ResendOTP = exports.verifyUserAuthRepository = exports.OTPVerifyRepository = exports.AddProfilePicRepository = exports.VerifyAccountRepository = exports.LoginRepository = exports.RegisterRepository = void 0;
 const DatabaseFunctions = __importStar(require("../../functions/DatabaseFunctions"));
 const UnverifiedUsers_1 = __importDefault(require("../../../frameworks/database/models/UnverifiedUsers"));
-const ResponseFunctions = __importStar(require("../../responses/Response/UserResponse"));
+const ResponseFunctions = __importStar(require("../../responses/UserResponse"));
 const CommonFunctions = __importStar(require("../../functions/CommonFunctions"));
 const SendMail_1 = require("../../functions/SendMail");
 const JWT_1 = require("../../functions/JWT");

@@ -37,7 +37,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VerifyAdminRepository = exports.ResendOTPRepository = exports.AdminOTPVerifyRepository = exports.AdminLoginRepository = void 0;
 const DatabaseFunctions = __importStar(require("../../functions/DatabaseFunctions"));
-const ResponseFunctions = __importStar(require("../../responses/Response/AdminResponse"));
+const ResponseFunctions = __importStar(require("../../responses/AdminResponse"));
 const CommonFunctions = __importStar(require("../../functions/CommonFunctions"));
 const SendMail_1 = require("../../functions/SendMail");
 const JWT_1 = require("../../functions/JWT");
