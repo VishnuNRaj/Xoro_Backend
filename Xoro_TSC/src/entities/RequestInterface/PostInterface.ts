@@ -1,3 +1,4 @@
+import { ObjectId } from "mongoose";
 import UserDocument from "../ModelsInterface/User";
 
 export interface addImagesPost {
@@ -26,5 +27,10 @@ export interface deletePost {
 export interface LikePost {
     PostId:string;
     user:UserDocument;
-    UserId:string;
+    UserId:ObjectId;
+}
+
+export interface getPost {
+    UserId:ObjectId;
+    skip:number;
 }

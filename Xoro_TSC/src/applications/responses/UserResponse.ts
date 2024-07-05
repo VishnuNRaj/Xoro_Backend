@@ -13,7 +13,8 @@ export const LoginRes: Function = async (data:Responses.LoginResponse) => {
         errors:data.errors,
         message:data.message,
         status:data.status,
-        user:data.user || null
+        user:data.user || null,
+        refresh:data.refresh
     }
 }
 
@@ -23,7 +24,8 @@ export const VerifyAccountRes: Function = async (data:Responses.VerifyAccountRes
         status:data.status,
         token:data.token,
         user:data.user,
-        data:data.data
+        data:data.data,
+        refresh:data.refresh
     }
 }
 
@@ -32,7 +34,8 @@ export const AddProfileRes: Function = async (data:Responses.AddProfileResponse)
         message:data.message,
         status:data.status,
         token:data.token,
-        user:data.user
+        user:data.user,
+        refresh:data.refresh
     }
 }
 
@@ -41,7 +44,8 @@ export const OTPVerifyRes: Function = async (data:Responses.OTPVerifyResponse) =
         message:data.message,
         token:data.token,
         user:data.user,
-        status:data.status
+        status:data.status,
+        refresh:data.refresh,
     }
 }
 
@@ -49,7 +53,8 @@ export const VerityAccountAuthRes: Function = async (data:Responses.VerifyUserAu
     return <Responses.VerifyUserAuthResponse>{
         message:data.message,
         user:data.user,
-        status:data.status
+        status:data.status,
+        token:data.token
     }
 }
 

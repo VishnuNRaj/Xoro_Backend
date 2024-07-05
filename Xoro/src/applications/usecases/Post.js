@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RemoveReactions = exports.DislikePost = exports.LikePost = exports.DeletePost = exports.ShowPost = exports.AddPost = void 0;
+exports.GetPosts = exports.RemoveReactions = exports.DislikePost = exports.LikePost = exports.DeletePost = exports.ShowPost = exports.AddPost = void 0;
 const Repository = __importStar(require("../repository/Post/UserPostRepository"));
 const firebase_1 = require("../../config/firebase");
 const AddPost = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Caption, CommentsOn, Hashtags, Hidden, Media, Tags, user }) {
@@ -62,12 +62,6 @@ const AddPost = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Caption, Co
 exports.AddPost = AddPost;
 const ShowPost = (_b) => __awaiter(void 0, [_b], void 0, function* ({ user }) {
     try {
-        if (!user) {
-            return {
-                message: 'Invalid Credentials',
-                status: 201
-            };
-        }
         return yield Repository.showPostImagesRepository({ user });
     }
     catch (e) {
@@ -95,7 +89,7 @@ const DeletePost = (_c) => __awaiter(void 0, [_c], void 0, function* ({ PostId, 
 exports.DeletePost = DeletePost;
 const LikePost = (_d) => __awaiter(void 0, [_d], void 0, function* ({ PostId, UserId }) {
     try {
-        if (typeof PostId !== 'string' || PostId.length === 0 || UserId.length === 0 || typeof UserId !== 'string' || UserId.length === 0) {
+        if (typeof PostId !== 'string' || PostId.length === 0) {
             return {
                 message: 'Invalid Credentials',
                 status: 201
@@ -113,7 +107,7 @@ const LikePost = (_d) => __awaiter(void 0, [_d], void 0, function* ({ PostId, Us
 exports.LikePost = LikePost;
 const DislikePost = (_e) => __awaiter(void 0, [_e], void 0, function* ({ PostId, UserId }) {
     try {
-        if (typeof PostId !== 'string' || PostId.length === 0 || UserId.length === 0 || typeof UserId !== 'string' || UserId.length === 0) {
+        if (typeof PostId !== 'string' || PostId.length === 0) {
             return {
                 message: 'Invalid Credentials',
                 status: 201
@@ -131,7 +125,7 @@ const DislikePost = (_e) => __awaiter(void 0, [_e], void 0, function* ({ PostId,
 exports.DislikePost = DislikePost;
 const RemoveReactions = (_f) => __awaiter(void 0, [_f], void 0, function* ({ PostId, UserId }) {
     try {
-        if (typeof PostId !== 'string' || PostId.length === 0 || UserId.length === 0 || typeof UserId !== 'string' || UserId.length === 0) {
+        if (typeof PostId !== 'string' || PostId.length === 0) {
             return {
                 message: 'Invalid Credentials',
                 status: 201
@@ -147,3 +141,23 @@ const RemoveReactions = (_f) => __awaiter(void 0, [_f], void 0, function* ({ Pos
     }
 });
 exports.RemoveReactions = RemoveReactions;
+const GetPosts = (_g) => __awaiter(void 0, [_g], void 0, function* ({ UserId, skip }) {
+    try {
+        if (isNaN(skip)) {
+            return {
+                message: "Invalid Properties",
+                status: 201,
+                post: [],
+            };
+        }
+        return yield Repository.getPostsRepository({ UserId, skip });
+    }
+    catch (e) {
+        console.log(e);
+        return {
+            message: "Internal Server Error",
+            status: 500,
+        };
+    }
+});
+exports.GetPosts = GetPosts;

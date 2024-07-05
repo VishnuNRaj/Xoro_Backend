@@ -184,6 +184,25 @@ export const UnFollowUser: Function = async ({ user, UserId }: UserEntity.UnFoll
     }
 }
 
+export const RemoveFollowUser: Function = async ({ user, UserId }: UserEntity.UnFollowUser) => {
+    try {
+        if (!UserId || typeof UserId !== 'string' || UserId.length === 0) {
+            return <Responses.UnFollowUserResponse>{
+                message: 'Invalid Credentials',
+                status: 201,
+                user: user
+            }
+        }
+        return Repository.RemoveFollowUserRepository({ user, UserId })
+    } catch (e) {
+        console.log(e)
+        return <Responses.UnFollowUserResponse>{
+            message: 'Internal Server Error',
+            status: 500,
+            user: user
+        }
+    }
+}
 export const GetUserProfile: Function = async ({ user, ProfileLink }: UserEntity.GetUserProfile) => {
     try {
         console.log(ProfileLink)

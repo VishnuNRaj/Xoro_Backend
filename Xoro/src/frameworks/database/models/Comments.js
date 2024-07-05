@@ -1,23 +1,24 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.CommentReplies = void 0;
 const mongoose_1 = require("mongoose");
 const mongodb_1 = require("mongodb");
 const CommentReplySchema = new mongoose_1.Schema({
-    Comment: String,
+    Comment: [String],
     UserId: mongodb_1.ObjectId,
     Likes: Number,
-    Dislikes: Number
+    CommentId: mongodb_1.ObjectId,
+    Edited: Boolean,
+    Tags: [mongodb_1.ObjectId]
 });
 const CommentSchema = new mongoose_1.Schema({
-    Comment: String,
+    Comment: [String],
+    PostId: mongodb_1.ObjectId,
     UserId: mongodb_1.ObjectId,
     Likes: Number,
-    Dislikes: Number,
-    Replies: [CommentReplySchema]
+    Edited: Boolean,
+    Tags: [mongodb_1.ObjectId]
 });
-const AllCommentSchema = new mongoose_1.Schema({
-    Comments: [CommentSchema],
-    PostId: mongodb_1.ObjectId
-});
-const CommentModel = (0, mongoose_1.model)("Comment", AllCommentSchema);
+const CommentModel = (0, mongoose_1.model)("comments", CommentSchema);
+exports.CommentReplies = (0, mongoose_1.model)("commentreplies", CommentReplySchema);
 exports.default = CommentModel;

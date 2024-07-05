@@ -14,7 +14,7 @@ export interface AdminResendOTP {
 }
 
 export interface AdminVerifyAuth {
-    token?: string;
+    token: string;
 }
 
 export interface AdminUserManagement {

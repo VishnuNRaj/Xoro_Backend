@@ -1,20 +1,20 @@
-import * as interfaces from "../../../controllers/interfaces/SearchInterface";
-import * as Responses from "../../responses/Interfaces/SearchResponsInterface";
-import * as ResponseFunctions from "../../responses/Response/SearchResponse";
+import * as Responses from "../../../entities/ResponseInterface/SearchResponsInterface";
+import * as ResponseFunctions from "../../responses/SearchResponse"
 import * as DatabaseFunctions from "../../functions/DatabaseFunctions"
-import User from "../../../frameworks/database/models/User";
-import UserDocument from "../../../entities/User";
-import { PostImage } from "../../../entities/PostImages";
-export const SearchRepository:Function = async ({Search}:interfaces.searchData):Promise<Responses.searchDataResponse> => {
+import UserDocument from "../../../entities/ModelsInterface/User";
+import { PostImage } from "../../../entities/ModelsInterface/PostImages";
+import { ChannelInterface } from "../../../entities/ModelsInterface/Channels";
+export const SearchDataRepository:Function = async (Search:string):Promise<Responses.searchDataResponse> => {
     try {
         const response:{
-            user: UserDocument[],
+            users: UserDocument[],
             post: PostImage[],
+            channel:ChannelInterface[]
         } = await DatabaseFunctions.searchData(Search)
         return ResponseFunctions.searchDataRes(<Responses.searchDataResponse>{
-            data:null,
-            message: 'Internal Server Error',
-            status: 500,
+            data:response,
+            message: 'Found',
+            status: 200,
         })
     } catch (e) {
         return ResponseFunctions.searchDataRes(<Responses.searchDataResponse>{

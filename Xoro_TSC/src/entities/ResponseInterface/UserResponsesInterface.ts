@@ -15,6 +15,7 @@ export interface LoginResponse {
     message: string;
     status: number;
     user?:UnverifiedUsers | null;
+    refresh?:string;
 }
 
 export interface VerifyAccountResponse {
@@ -28,6 +29,7 @@ export interface VerifyAccountResponse {
         SenderId:string;
         Link:string;
     }
+    refresh:string;
 }
 
 export interface AddProfileResponse {
@@ -35,6 +37,7 @@ export interface AddProfileResponse {
     status: number;
     token: string;
     user:UnverifiedUsers;
+    refresh?:string;
 }
 
 export interface OTPVerifyResponse {
@@ -42,12 +45,14 @@ export interface OTPVerifyResponse {
     token:string;
     user:UnverifiedUsers;
     status:number;
+    refresh:string;
 }
 
 export interface VerifyUserAuthResponse {
     message:string;
     user:UserDocument | null;
     status:number;
+    token:string;
 }
 
 export interface UserOTPResponse {

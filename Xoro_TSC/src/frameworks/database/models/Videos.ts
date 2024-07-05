@@ -21,7 +21,7 @@ const VideoSchema = new Schema<PostVideo>({
         default: 0,
     },
     Description:String,
-    VideoLInk:String,
+    VideoLink:String,
     Uploaded:{
         type:Boolean,
         default:false,

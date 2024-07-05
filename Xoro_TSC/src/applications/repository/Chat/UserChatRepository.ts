@@ -1,37 +1,35 @@
 import * as DatabaseFunctions from "../../functions/DatabaseFunctions";
 import * as Responses from "../../../entities/ResponseInterface/ChatResponseInterface";
 import * as ResponseFunctions from "../../responses/ChatResponse";
-import * as CommonFunctions from "../../functions/CommonFunctions";
-import * as ChatEntity from "../../../controllers/RequestInterface/ChatInterface";
-import PostImages from "../../../frameworks/database/models/ImagesPost";
-import Reactions from './../../../frameworks/database/models/Reactions';
-import UserDocument from "../../../entities/User";
-import { Post } from "../../../entities/PostImages";
-import { ReactionsInterface } from "../../../entities/Reactions";
-import User from "../../../frameworks/database/models/User";
-import { Chat, Messages } from "../../../entities/Chat";
+// import * as CommonFunctions from "../../functions/CommonFunctions";
+import * as ChatEntity from "../../../entities/RequestInterface/ChatInterface";
+import UserDocument from "../../../entities/ModelsInterface/User";
+import { Chat, Messages } from "../../../entities/ModelsInterface/Chat";
 import Message from "../../../frameworks/database/models/Messages";
 import Chats from "../../../frameworks/database/models/Chat";
+import { ConnectionsInterface } from "../../../entities/ModelsInterface/Connections";
 
 
-export const getChats: Function = async (user: UserDocument): Promise<Responses.getChatsResponse> => {
+export const getChats: Function = async (user: UserDocument): Promise<Responses.getChats> => {
     try {
         const data: Chat[] = await DatabaseFunctions.getChats(user._id)
-        return await ResponseFunctions.getChats(<Responses.getChatsResponse>{
+        const users: ConnectionsInterface = await DatabaseFunctions.getFollowers(user._id)
+        return await ResponseFunctions.getChats(<Responses.getChats>{
             user: user,
             message: 'Welcome',
             status: 200,
-            allChats: data
+            allChats: data,
+            users: users
         })
     } catch (e) {
-        return await ResponseFunctions.getChats(<Responses.getChatsResponse>{
+        return await ResponseFunctions.getChats(<Responses.getChats>{
             user: user,
             message: 'Internal Server Error',
             status: 500,
-            allChats: []
+            allChats: [],
         })
     }
-}
+};
 
 export const SendMessage: Function = async (data: ChatEntity.SendMessage): Promise<Responses.SendMessage> => {
     try {
@@ -54,29 +52,65 @@ export const SendMessage: Function = async (data: ChatEntity.SendMessage): Promi
             status: 500,
         })
     }
-}
+};
 
 export const StartChat: Function = async (data: ChatEntity.StartChat) => {
     try {
         let err: string | null = null
-        data.UserId = data.UserId.filter(async (id) => {
-            const response: boolean = await DatabaseFunctions.checkObjectId(id)
+        console.log(data)
+        data.Users = data.Users.filter(async (id) => {
+            const response: boolean = await DatabaseFunctions.checkObjectId(id.UserId)
             if (!response) err = "Invalid Credentials"
             return response
         })
-        const users: UserDocument[] = await DatabaseFunctions.findUsers(data.UserId)
+        const users: UserDocument[] = await DatabaseFunctions.findUsers(data.Users)
+        const oldData:Chat | null = data.Users.length > 2 ? null : await DatabaseFunctions.checkChat(data.Users.map((val)=>val.UserId))
+        if(oldData) {
+            return ResponseFunctions.StartChat(<Responses.StartChat>{
+                message: "Start Chatting",
+                status: 200,
+                newChat: oldData,
+                users:users
+            })
+        }
         let [newChat]: Chat[] = await DatabaseFunctions.insertData(Chats, data)
-        if (data.UserId.length !== users.length || err) return ResponseFunctions.StartChat()
+        if (data.Users.length !== users.length || err) {
+            return ResponseFunctions.StartChat(<Responses.StartChat>{
+                message: err || "",
+                status: 201,
+            })
+        }
         return ResponseFunctions.StartChat(<Responses.StartChat>{
             message: "Start Chatting",
             status: 200,
             newChat: newChat,
-            Users: users
+            users:users
         })
     } catch (e) {
+        console.log(e)
         return ResponseFunctions.StartChat(<Responses.StartChat>{
             message: "Internal Server Error",
             status: 500,
         })
     }
-}
+};
+
+export const getChat: Function = async (RoomId: string, user: UserDocument) => {
+    try {
+        let chat: Chat = await DatabaseFunctions.getChat(RoomId)
+        console.log(chat)
+        const [date] = chat?.LastClear?.filter((Users) => Users.UserId === user._id)
+        chat?.messages?.filter((message) => message.Time > date?.Time)
+        return ResponseFunctions.getChat(<Responses.getChat>{
+            chat: chat,
+            message: 'Found',
+            status: 200,
+        })
+    } catch (e) {
+        console.log(e)
+        return ResponseFunctions.getChat(<Responses.getChat>{
+            message: 'Internal Server Error',
+            status: 500,
+        })
+    }
+};

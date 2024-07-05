@@ -91,10 +91,27 @@ export const uploadToFirebase: Function = async (file: Express.Multer.File, path
 
 export const createNotification: Function = async (data: Notification, UserId: ObjectId) => {
     try {
-        await findOneAndUpdate(Notifications, { UserId: UserId }, { $push: { Messages: data } }, {})
+        const datas = await Notifications.findOne({ UserId: UserId })
+        if(!datas) {
+            Notifications.insertMany([{UserId:UserId,Messages:[data]}])
+        } else {
+            datas.Messages.push(data)
+            await datas.save()
+        }
         return true;
     } catch (e) {
         return false
+    }
+}
+
+export const sendNotifications: Function = async (Message: string, Type: string, userId: ObjectId[], SenderId: ObjectId, Link: string) => {
+    try {
+        const data = <Notification>{
+            Message, Type, Link, SenderId, Time: new Date(),
+        }
+        const notification = await Notifications.updateMany({ UserId: { $or: userId } }, { $push: { Messages: data } })
+    } catch (e) {
+        return null
     }
 }
 
@@ -106,32 +123,67 @@ export const updateVideoLink: Function = async (videoId: string, link: string) =
         return false
     }
 }
+
 export const getRandomVideos = async (skip: number, random: number): Promise<PostVideo[]> => {
     try {
-        const totalVideos = await Videos.countDocuments();
-        const randomOffset = random === 0 ? Math.floor(Math.random() * totalVideos) : random;
+        const totalVideos = await Videos.countDocuments({});
 
-        const videos:PostVideo[] = await Videos.aggregate([
+        const videos: PostVideo[] = await Videos.aggregate([
             { $sample: { size: totalVideos } },
-            { $skip: randomOffset + skip },
+            { $skip: skip },
             { $limit: 10 },
-            {$lookup:{
-                from:'channels',
-                localField:'UserId',
-                foreignField:'_id',
-                as:'Channel'
-            }},
-            {$lookup:{
-                from:'reactions',
-                localField:'_id',
-                foreignField:'PostId',
-                as:'Reactions'
-            }},
+            {
+                $lookup: {
+                    from: 'channels',
+                    localField: 'UserId',
+                    foreignField: '_id',
+                    as: 'Channel'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'reactions',
+                    localField: '_id',
+                    foreignField: 'PostId',
+                    as: 'Reactions'
+                }
+            },
         ]);
 
         return videos;
     } catch (error) {
         console.error('Error fetching random videos:', error);
+        throw error;
+    }
+};
+
+
+export const getVideo = async (VideoLink:string): Promise<PostVideo> => {
+    try {
+
+        const [video]: PostVideo[] = await Videos.aggregate([
+            {$match:{VideoLink:VideoLink}},
+            {
+                $lookup: {
+                    from: 'channels',
+                    localField: 'UserId',
+                    foreignField: '_id',
+                    as: 'Channel'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'reactions',
+                    localField: '_id',
+                    foreignField: 'PostId',
+                    as: 'Reactions'
+                }
+            },
+        ]);
+
+        return video;
+    } catch (error) {
+        console.error('Error fetching video:', error);
         throw error;
     }
 };

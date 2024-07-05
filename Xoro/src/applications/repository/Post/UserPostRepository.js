@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RemoveReactions = exports.DislikePostRepository = exports.LikePostRepository = exports.deletePostRepository = exports.showPostImagesRepository = exports.addPostImagesRepository = void 0;
+exports.getPostsRepository = exports.RemoveReactions = exports.DislikePostRepository = exports.LikePostRepository = exports.deletePostRepository = exports.showPostImagesRepository = exports.addPostImagesRepository = void 0;
 const DatabaseFunctions = __importStar(require("../../functions/DatabaseFunctions"));
 const ResponseFunctions = __importStar(require("../../responses/PostResponse"));
 const CommonFunctions = __importStar(require("../../functions/CommonFunctions"));
@@ -43,7 +43,7 @@ const ImagesPost_1 = __importDefault(require("../../../frameworks/database/model
 const Reactions_1 = __importDefault(require("./../../../frameworks/database/models/Reactions"));
 const addPostImagesRepository = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Caption, CommentsOn, Hashtags, Hidden, Images, Tags, user }) {
     try {
-        const newPost = new ImagesPost_1.default({
+        let newPost = new ImagesPost_1.default({
             Caption: Caption,
             UserId: user._id,
             CommentsOn: CommentsOn,
@@ -82,12 +82,13 @@ exports.addPostImagesRepository = addPostImagesRepository;
 const showPostImagesRepository = (_b) => __awaiter(void 0, [_b], void 0, function* ({ user }) {
     try {
         const posts = yield DatabaseFunctions.findData(ImagesPost_1.default, { UserId: user._id });
-        console.log(posts);
+        const connections = yield DatabaseFunctions.getFollowers(user._id);
         return ResponseFunctions.showPostRes({
             message: 'Verified',
             post: posts,
             status: 200,
-            user: user
+            user: user,
+            connections
         });
     }
     catch (e) {
@@ -131,6 +132,7 @@ const LikePostRepository = (_d) => __awaiter(void 0, [_d], void 0, function* ({ 
             yield DatabaseFunctions.checkObjectId(PostId),
             yield DatabaseFunctions.checkObjectId(UserId),
         ]);
+        console.log(responses);
         if (!responses[0] || !responses[1]) {
             return ResponseFunctions.deletePostRes({
                 message: 'Invalid Credentials',
@@ -139,7 +141,7 @@ const LikePostRepository = (_d) => __awaiter(void 0, [_d], void 0, function* ({ 
         }
         const post = yield DatabaseFunctions.findUsingId(ImagesPost_1.default, PostId);
         // 👎
-        const result = yield DatabaseFunctions.likeDislikePost(Reactions_1.default, post.Reactions, UserId, 'Likes', 'Dislikes');
+        const result = yield DatabaseFunctions.likeDislikePost(post.Reactions, UserId, 'Likes', 'Dislikes');
         post.Likes = result.Likes.length;
         post.Dislikes = result.Dislikes.length;
         yield DatabaseFunctions.saveData(post);
@@ -169,7 +171,7 @@ const DislikePostRepository = (_e) => __awaiter(void 0, [_e], void 0, function* 
             });
         }
         const post = yield DatabaseFunctions.findUsingId(ImagesPost_1.default, PostId);
-        const result = yield DatabaseFunctions.likeDislikePost(Reactions_1.default, post.Reactions, UserId, 'Dislikes', 'Likes');
+        const result = yield DatabaseFunctions.likeDislikePost(post.Reactions, UserId, 'Dislikes', 'Likes');
         post.Likes = result.Likes.length;
         post.Dislikes = result.Dislikes.length;
         yield DatabaseFunctions.saveData(post);
@@ -179,6 +181,7 @@ const DislikePostRepository = (_e) => __awaiter(void 0, [_e], void 0, function* 
         });
     }
     catch (e) {
+        console.log(e);
         return ResponseFunctions.deletePostRes({
             message: 'Internal Server Error',
             status: 500
@@ -199,7 +202,7 @@ const RemoveReactions = (_f) => __awaiter(void 0, [_f], void 0, function* ({ Pos
             });
         }
         const post = yield DatabaseFunctions.findUsingId(ImagesPost_1.default, PostId);
-        const reaction = yield DatabaseFunctions.pullReactions(Reactions_1.default, post._id, UserId);
+        const reaction = yield DatabaseFunctions.pullReactions(Reactions_1.default, post.Reactions, UserId);
         post.Likes = reaction.Likes.length;
         post.Dislikes = reaction.Dislikes.length;
         yield DatabaseFunctions.saveData(post);
@@ -216,3 +219,32 @@ const RemoveReactions = (_f) => __awaiter(void 0, [_f], void 0, function* ({ Pos
     }
 });
 exports.RemoveReactions = RemoveReactions;
+const getPostsRepository = (_g) => __awaiter(void 0, [_g], void 0, function* ({ UserId, skip }) {
+    try {
+        const responses = yield DatabaseFunctions.checkObjectId(UserId);
+        if (!responses) {
+            return ResponseFunctions.getPostRes({
+                message: 'Invalid Credentials',
+                status: 201,
+                post: []
+            });
+        }
+        const connections = yield DatabaseFunctions.getFollowers(UserId);
+        const Idx = Array.from(new Set([...connections.Followers, ...connections.Following, UserId]));
+        const post = yield DatabaseFunctions.getPosts(Idx, skip);
+        return ResponseFunctions.getPostRes({
+            connections: connections,
+            post: post || [],
+            message: 'Found',
+            status: 200
+        });
+    }
+    catch (e) {
+        console.log(e);
+        return ResponseFunctions.getPostRes({
+            message: 'Internal Server Error',
+            status: 500
+        });
+    }
+});
+exports.getPostsRepository = getPostsRepository;

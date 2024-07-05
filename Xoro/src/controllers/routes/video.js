@@ -34,4 +34,5 @@ const UserController_1 = require("../middlewares/UserController");
 videoRouter.post('/upload', Multer_1.default.single('Video'), UserController_1.VerifyUserAuth, Middleware.uploadVideo);
 videoRouter.get('/:skip', UserController_1.VerifyUserAuth, Middleware.getVideos);
 videoRouter.get('/videos/:skip', Middleware.getVideos);
+videoRouter.get('/video/:VideoLink', UserController_1.VerifyUserAuth, Middleware.getVideo);
 exports.default = videoRouter;

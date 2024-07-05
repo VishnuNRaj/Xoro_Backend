@@ -32,13 +32,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RemoveReactions = exports.DislikePost = exports.LikePost = exports.DeletePost = exports.ShowPostImages = exports.PostImages = void 0;
+exports.GetPosts = exports.RemoveReactions = exports.DislikePost = exports.LikePost = exports.DeletePost = exports.ShowPostImages = exports.PostImages = void 0;
 const UseCases = __importStar(require("../../applications/usecases/Post"));
 const PostImages = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const result = req.result;
         const Media = req.files;
-        // console.log(Media,req.body)
         const { Caption, CommentsOn, Hashtags, Tags, Hidden } = req.body;
         const data = yield UseCases.AddPost({ Media, Caption, CommentsOn, Hashtags, Tags, Hidden, user: result === null || result === void 0 ? void 0 : result.user });
         console.log(data);
@@ -50,10 +49,10 @@ const PostImages = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 });
 exports.PostImages = PostImages;
 const ShowPostImages = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     try {
         const result = req.result;
-        if (result && ((_a = result.user) === null || _a === void 0 ? void 0 : _a._id)) {
+        console.log(result);
+        if (result && result.user) {
             const data = yield UseCases.ShowPost({ user: result === null || result === void 0 ? void 0 : result.user });
             return res.status(data.status).json(data);
         }
@@ -75,36 +74,55 @@ const DeletePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.DeletePost = DeletePost;
-const LikePost = (req, res) => {
+const LikePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
-        const { PostId, UserId } = req.params;
-        const data = UseCases.LikePost({ PostId, UserId });
+        const result = req.result;
+        const { PostId } = req.params;
+        const data = yield UseCases.LikePost({ PostId, UserId: (_a = result === null || result === void 0 ? void 0 : result.user) === null || _a === void 0 ? void 0 : _a._id });
         return res.status(data.status).json(data);
     }
     catch (e) {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
-};
+});
 exports.LikePost = LikePost;
-const DislikePost = (req, res) => {
+const DislikePost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b;
     try {
-        const { PostId, UserId } = req.params;
-        const data = UseCases.DislikePost({ PostId, UserId });
+        const result = req.result;
+        const { PostId } = req.params;
+        const data = yield UseCases.DislikePost({ PostId, UserId: (_b = result === null || result === void 0 ? void 0 : result.user) === null || _b === void 0 ? void 0 : _b._id });
         return res.status(data.status).json(data);
     }
     catch (e) {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
-};
+});
 exports.DislikePost = DislikePost;
-const RemoveReactions = (req, res) => {
+const RemoveReactions = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c;
     try {
-        const { PostId, UserId } = req.params;
-        const data = UseCases.RemoveReactions({ PostId, UserId });
+        const result = req.result;
+        const { PostId } = req.params;
+        const data = yield UseCases.RemoveReactions({ PostId, UserId: (_c = result === null || result === void 0 ? void 0 : result.user) === null || _c === void 0 ? void 0 : _c._id });
         return res.status(data.status).json(data);
     }
     catch (e) {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
-};
+});
 exports.RemoveReactions = RemoveReactions;
+const GetPosts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _d;
+    try {
+        const result = req.result;
+        const { skip } = req.params;
+        const data = yield UseCases.GetPosts({ UserId: (_d = result === null || result === void 0 ? void 0 : result.user) === null || _d === void 0 ? void 0 : _d._id, skip: parseInt(skip) });
+        return res.status(data.status).json(Object.assign(Object.assign({}, data), { user: result === null || result === void 0 ? void 0 : result.user }));
+    }
+    catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+exports.GetPosts = GetPosts;

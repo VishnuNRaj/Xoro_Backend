@@ -24,7 +24,6 @@ const io = socketIo(server, {
 
 
 io.on('connection', (socket) => {
-  console.log('Client connected');
  
   socket.on('stream', (stream) => {
     console.log('Received screen stream');

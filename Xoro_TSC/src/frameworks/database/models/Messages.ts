@@ -1,5 +1,5 @@
 import { model, Schema, Types } from 'mongoose';
-import { Messages } from '../../../entities/Chat'
+import { Messages } from '../../../entities/ModelsInterface/Chat'
 
 const MessageSchema = new Schema<Messages>({
     RoomId: String,

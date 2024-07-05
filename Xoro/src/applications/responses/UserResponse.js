@@ -23,7 +23,8 @@ const LoginRes = (data) => __awaiter(void 0, void 0, void 0, function* () {
         errors: data.errors,
         message: data.message,
         status: data.status,
-        user: data.user || null
+        user: data.user || null,
+        refresh: data.refresh
     };
 });
 exports.LoginRes = LoginRes;
@@ -33,7 +34,8 @@ const VerifyAccountRes = (data) => __awaiter(void 0, void 0, void 0, function* (
         status: data.status,
         token: data.token,
         user: data.user,
-        data: data.data
+        data: data.data,
+        refresh: data.refresh
     };
 });
 exports.VerifyAccountRes = VerifyAccountRes;
@@ -42,7 +44,8 @@ const AddProfileRes = (data) => __awaiter(void 0, void 0, void 0, function* () {
         message: data.message,
         status: data.status,
         token: data.token,
-        user: data.user
+        user: data.user,
+        refresh: data.refresh
     };
 });
 exports.AddProfileRes = AddProfileRes;
@@ -51,7 +54,8 @@ const OTPVerifyRes = (data) => __awaiter(void 0, void 0, void 0, function* () {
         message: data.message,
         token: data.token,
         user: data.user,
-        status: data.status
+        status: data.status,
+        refresh: data.refresh,
     };
 });
 exports.OTPVerifyRes = OTPVerifyRes;
@@ -59,7 +63,8 @@ const VerityAccountAuthRes = (data) => __awaiter(void 0, void 0, void 0, functio
     return {
         message: data.message,
         user: data.user,
-        status: data.status
+        status: data.status,
+        token: data.token
     };
 });
 exports.VerityAccountAuthRes = VerityAccountAuthRes;

@@ -1,12 +1,7 @@
 import { Server as SocketIOServer } from 'socket.io';
 import * as SocketFunctions from './SocketFunctions';
-// import fs from 'fs';
-// import path from 'path';
-import { spawn } from 'child_process';
-
-// const videoPath = path.join(__dirname, '../../live');
-
-// let live = {};
+// import {chatUploadQueue} from "../../frameworks/mq/queue/chatUploadQueue"
+import { saveChat } from "../../frameworks/database/Functions/ChatFunctions"
 
 const socketRoutes = (io: SocketIOServer): SocketIOServer => {
   if (!io) {
@@ -21,49 +16,26 @@ const socketRoutes = (io: SocketIOServer): SocketIOServer => {
     socket.on('join', (UserId) => SocketFunctions.joinUserId(socket, UserId));
     socket.on('notification', ({ data, UserId }) => SocketFunctions.sendNotifications(socket, data, UserId));
     socket.on('chat', ({ data, UserId }) => SocketFunctions.chatRoom(socket, UserId, data));
+    socket.on("markAsRead", (data) => SocketFunctions.markAsRead(data))
     socket.on('disconnect', () => SocketFunctions.disconnect(socket));
-
-    // socket.on('start', (data) => {
-    //   console.log('Streaming started:', data, socket.id);
-    //   live[socket.id] = {
-    //     cameraPath: path.join(videoPath, `camera-${socket.id}.webm`),
-    //     screenPath: path.join(videoPath, `screen-${socket.id}.webm`)
-    //   };
-    // });
-
-    // socket.on('camera', (data) => {
-    //   const cameraPath = live[socket.id]?.cameraPath;
-    //   if (cameraPath) {
-    //     fs.appendFile(cameraPath, Buffer.from(data), (err) => {
-    //       if (err) {
-    //         console.error('Error writing camera data:', err);
-    //       } else {
-    //         console.log('Camera data written to', cameraPath);
-    //       }
-    //     });
-    //   }
-    // });
-
-
-    // socket.on('screen', (data) => {
-    //   const screenPath = live[socket.id]?.screenPath;
-    //   if (screenPath) {
-    //     fs.appendFile(screenPath, Buffer.from(data), (err) => {
-    //       if (err) {
-    //         console.error('Error writing screen data:', err);
-    //       } else {
-    //         console.log('Screen data written to', screenPath);
-    //       }
-    //     });
-    //   }
-    // });
-
-    socket.on('disconnect', () => {
-      console.log('Client disconnected:', socket.id);
-      // if (live[socket.id]) {
-      //   delete live[socket.id];
-      // }
-    });
+    socket.on("join-chat", ({ UserId, RoomId }: { UserId: string[], RoomId: string }) => {
+      if (UserId.length > 0) {
+        console.log(UserId, RoomId)
+        UserId.forEach((usr) => {
+          socket.to(usr).emit("start-chat", RoomId)
+        })
+        socket.join(RoomId)
+      }
+    })
+    socket.on("message", async ({ Message, RoomId, SenderId }: { Message: string, RoomId: string, SenderId: string }) => {
+      const message = await saveChat({ Message, RoomId, SenderId })
+      socket.send(message)
+      socket.to(RoomId).emit("message", message)
+    })
+    socket.on("typing", (RoomId: string, Username: String, typing: boolean) => {
+      console.log(typing, Username)
+      socket.to(RoomId).emit("typing", { typing, Username })
+    })
   });
 
   return io;

@@ -10,3 +10,7 @@ export const uploadVideoRes: Function = (data: interfaces.uploadVideoResponse) =
 export const getVideoRes: Function = async (data: interfaces.getVideosResponse) => {
     return <interfaces.getVideosResponse>data
 }
+
+export const getVideosRes: Function = async (data: interfaces.getVideoResponse) => {
+    return <interfaces.getVideoResponse>data
+}

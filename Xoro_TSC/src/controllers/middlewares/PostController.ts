@@ -11,7 +11,6 @@ export const PostImages: Middleware = async (req, res) => {
     try {
         const result = req.result
         const Media = req.files
-        // console.log(Media,req.body)
         const { Caption, CommentsOn, Hashtags, Tags, Hidden }: PostEntity.addImagesPost = req.body
         const data = await UseCases.AddPost({ Media, Caption, CommentsOn, Hashtags, Tags, Hidden, user: result?.user })
         console.log(data)
@@ -24,7 +23,8 @@ export const PostImages: Middleware = async (req, res) => {
 export const ShowPostImages: Middleware = async (req, res) => {
     try {
         const result = req.result
-        if (result && result.user?._id) {
+        console.log(result)
+        if (result && result.user) {
             const data = await UseCases.ShowPost({ user: result?.user })
             return res.status(data.status).json(data)
         }
@@ -44,10 +44,11 @@ export const DeletePost: Middleware = async (req, res) => {
     }
 }
 
-export const LikePost: Middleware = (req, res) => {
+export const LikePost: Middleware = async (req, res) => {
     try {
-        const { PostId, UserId } = req.params
-        const data = UseCases.LikePost({ PostId, UserId })
+        const result = req.result
+        const { PostId } = req.params
+        const data = await UseCases.LikePost({ PostId, UserId: result?.user?._id })
         return res.status(data.status).json(data)
     } catch (e) {
         return res.status(500).json({ message: 'Internal Server Error' })
@@ -55,23 +56,36 @@ export const LikePost: Middleware = (req, res) => {
 }
 
 
-export const DislikePost: Middleware = (req, res) => {
+export const DislikePost: Middleware = async (req, res) => {
     try {
-        const { PostId, UserId } = req.params
-        const data = UseCases.DislikePost({ PostId, UserId })
+        const result = req.result
+        const { PostId } = req.params
+        const data = await UseCases.DislikePost({ PostId, UserId: result?.user?._id })
         return res.status(data.status).json(data)
     } catch (e) {
         return res.status(500).json({ message: 'Internal Server Error' })
     }
 }
 
-export const RemoveReactions: Middleware = (req, res) => {
+export const RemoveReactions: Middleware = async (req, res) => {
     try {
-        const { PostId, UserId } = req.params
-        const data = UseCases.RemoveReactions({ PostId, UserId })
+        const result = req.result
+        const { PostId } = req.params
+        const data = await UseCases.RemoveReactions({ PostId, UserId: result?.user?._id })
         return res.status(data.status).json(data)
     } catch (e) {
         return res.status(500).json({ message: 'Internal Server Error' })
     }
 }
 
+
+export const GetPosts: Middleware = async (req, res) => {
+    try {
+        const result = req.result
+        const { skip } = req.params
+        const data = await UseCases.GetPosts({ UserId: result?.user?._id, skip: parseInt(skip) })
+        return res.status(data.status).json({ ...data, user: result?.user })
+    } catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' })
+    }
+}

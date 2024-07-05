@@ -1,5 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { Document } from 'mongoose';
+import UserDocument from './User';
+import { ReactionsInterface } from './Reactions';
 
 export interface PostImage extends Document {
     UserId: typeof ObjectId;
@@ -25,4 +27,7 @@ export interface Post extends Document {
     Hashtags: string[];
     ShareLink?: string;
     ShowReactions:boolean;
+    user:UserDocument;
+    tags:UserDocument[];
+    reactions:ReactionsInterface;
 }

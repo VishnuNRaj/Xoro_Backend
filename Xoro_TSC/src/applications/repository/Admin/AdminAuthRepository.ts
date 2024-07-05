@@ -134,8 +134,7 @@ export const ResendOTPRepository: Function = async ({ UserId }: AdminEntity.Admi
 
 export const VerifyAdminRepository: Function = async ({ token }: AdminEntity.AdminVerifyAuth): Promise<Responses.AdminVerifyAuthResponse> => {
     try {
-        console.log(token)
-        const result = await VerifyPayload({ token })
+        const result:any = await VerifyPayload({ token,refresh:token })
         console.log(result)
         if (!result.status) {
             return ResponseFunctions.AdminVerifyAuthRes(<Responses.AdminVerifyAuthResponse>{

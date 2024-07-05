@@ -12,3 +12,10 @@ export interface getVideosResponse {
     message:string;
     status:number;
 }
+
+export interface getVideoResponse {
+    Video:PostVideo;
+    message:string;
+    status:number;
+    user:UserDocument
+}

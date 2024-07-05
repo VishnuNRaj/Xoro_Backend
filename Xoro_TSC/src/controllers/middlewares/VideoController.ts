@@ -55,3 +55,15 @@ export const getVideos: Middleware = async (req, res) => {
         return res.status(500).json({ message: 'Internal Server Error' })
     }
 }
+
+export const getVideo: Middleware = async (req, res) => {
+    try {
+        const result = req?.result
+        const { VideoLink } = req?.params
+        const data = await UseCases.getVideo(VideoLink,result?.user)
+        console.log(data)
+        return res.status(data.status).json(data)
+    } catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' })
+    }
+}

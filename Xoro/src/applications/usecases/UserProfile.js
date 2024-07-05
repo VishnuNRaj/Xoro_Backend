@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateChannel = exports.GetUserProfile = exports.UnFollowUser = exports.FollowUser = exports.SearchUser = exports.ProfileSettings = exports.SecureAccount = exports.EditProfile = exports.EditProfilePic = exports.EditBanner = void 0;
+exports.CreateChannel = exports.GetUserProfile = exports.RemoveFollowUser = exports.UnFollowUser = exports.FollowUser = exports.SearchUser = exports.ProfileSettings = exports.SecureAccount = exports.EditProfile = exports.EditProfilePic = exports.EditBanner = void 0;
 const Validations = __importStar(require("../validations/UserValidation"));
 const ResponseFunctions = __importStar(require("../responses/UserResponse"));
 const Repository = __importStar(require("../repository/User/UserProfileRepository"));
@@ -221,7 +221,28 @@ const UnFollowUser = (_h) => __awaiter(void 0, [_h], void 0, function* ({ user, 
     }
 });
 exports.UnFollowUser = UnFollowUser;
-const GetUserProfile = (_j) => __awaiter(void 0, [_j], void 0, function* ({ user, ProfileLink }) {
+const RemoveFollowUser = (_j) => __awaiter(void 0, [_j], void 0, function* ({ user, UserId }) {
+    try {
+        if (!UserId || typeof UserId !== 'string' || UserId.length === 0) {
+            return {
+                message: 'Invalid Credentials',
+                status: 201,
+                user: user
+            };
+        }
+        return Repository.RemoveFollowUserRepository({ user, UserId });
+    }
+    catch (e) {
+        console.log(e);
+        return {
+            message: 'Internal Server Error',
+            status: 500,
+            user: user
+        };
+    }
+});
+exports.RemoveFollowUser = RemoveFollowUser;
+const GetUserProfile = (_k) => __awaiter(void 0, [_k], void 0, function* ({ user, ProfileLink }) {
     try {
         console.log(ProfileLink);
         if (!ProfileLink || ProfileLink.length === 0) {
@@ -250,7 +271,7 @@ const GetUserProfile = (_j) => __awaiter(void 0, [_j], void 0, function* ({ user
     }
 });
 exports.GetUserProfile = GetUserProfile;
-const CreateChannel = (_k, user_1) => __awaiter(void 0, [_k, user_1], void 0, function* ({ Description, Name, Type, Logo }, user) {
+const CreateChannel = (_l, user_1) => __awaiter(void 0, [_l, user_1], void 0, function* ({ Description, Name, Type, Logo }, user) {
     try {
         if (!Name || !Type || !Description) {
             return {

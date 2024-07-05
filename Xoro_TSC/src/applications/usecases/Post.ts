@@ -1,6 +1,5 @@
 import * as Responses from '../../entities/ResponseInterface/PostUserResponseInterface';
 import * as Repository from '../repository/Post/UserPostRepository';
-import * as UserFunctions from '../functions/UserFunctions';
 import * as PostEntity from '../../entities/RequestInterface/PostInterface';
 import { uploadFileToFirebase } from '../../config/firebase';
 
@@ -31,12 +30,6 @@ export const AddPost: Function = async ({ Caption, CommentsOn, Hashtags, Hidden,
 
 export const ShowPost: Function = async ({ user }: PostEntity.showPostImages) => {
     try {
-        if (!user) {
-            return <Responses.showImagesResponse>{
-                message: 'Invalid Credentials',
-                status: 201
-            }
-        }
         return await Repository.showPostImagesRepository({ user })
     } catch (e) {
         return
@@ -62,7 +55,7 @@ export const DeletePost: Function = async ({ PostId, user }: PostEntity.deletePo
 
 export const LikePost: Function = async ({ PostId, UserId }: PostEntity.LikePost) => {
     try {
-        if (typeof PostId !== 'string' || PostId.length === 0 || UserId.length === 0 || typeof UserId !== 'string' || UserId.length === 0) {
+        if (typeof PostId !== 'string' || PostId.length === 0) {
             return <Responses.deletePostResponse>{
                 message: 'Invalid Credentials',
                 status: 201
@@ -79,7 +72,7 @@ export const LikePost: Function = async ({ PostId, UserId }: PostEntity.LikePost
 
 export const DislikePost: Function = async ({ PostId, UserId }: PostEntity.LikePost) => {
     try {
-        if (typeof PostId !== 'string' || PostId.length === 0 || UserId.length === 0 || typeof UserId !== 'string' || UserId.length === 0) {
+        if (typeof PostId !== 'string' || PostId.length === 0) {
             return <Responses.deletePostResponse>{
                 message: 'Invalid Credentials',
                 status: 201
@@ -96,7 +89,7 @@ export const DislikePost: Function = async ({ PostId, UserId }: PostEntity.LikeP
 
 export const RemoveReactions: Function = async ({ PostId, UserId }: PostEntity.LikePost) => {
     try {
-        if (typeof PostId !== 'string' || PostId.length === 0 || UserId.length === 0 || typeof UserId !== 'string' || UserId.length === 0) {
+        if (typeof PostId !== 'string' || PostId.length === 0) {
             return <Responses.deletePostResponse>{
                 message: 'Invalid Credentials',
                 status: 201
@@ -109,4 +102,23 @@ export const RemoveReactions: Function = async ({ PostId, UserId }: PostEntity.L
             status: 500
         }
     }
-}  
+}
+
+export const GetPosts: Function = async ({ UserId, skip }: PostEntity.getPost) => {
+    try {
+        if (isNaN(skip)) {
+            return <Responses.getPostResponse>{
+                message: "Invalid Properties",
+                status: 201,
+                post: [],
+            }
+        }
+        return await Repository.getPostsRepository({ UserId, skip })
+    } catch (e) {
+        console.log(e)
+        return <Responses.getPostResponse>{
+            message: "Internal Server Error",
+            status: 500,
+        }
+    }
+}

@@ -236,7 +236,46 @@ export const UnFollowUserRepository: Function = async ({ user, UserId }: UserEnt
             { new: true, upsert: true }
         );
         console.log(user2, result)
-        console.log(user2,'__________')
+        console.log(user2, '__________')
+        user.Following = result.Following.length
+        user.Connections = result._id
+        await DatabaseFunctions.updateById(User, UserId, { Followers: user2.Followers.length })
+        await DatabaseFunctions.saveData(user)
+        return ResponseFunctions.UnFollowUserRes(<Responses.UnFollowUserResponse>{
+            user: user,
+            status: 200,
+            message: 'Success'
+        })
+    } catch (e) {
+        return ResponseFunctions.UnFollowUserRes(<Responses.UnFollowUserResponse>{
+            message: 'Internal Server Error',
+            status: 500,
+            user: user
+        })
+    }
+}
+
+export const RemoveFollowUserRepository: Function = async ({ user, UserId }: UserEntity.UnFollowUser) => {
+    try {
+        if (!DatabaseFunctions.checkObjectId(UserId)) {
+            return ResponseFunctions.UnFollowUserRes(<Responses.UnFollowUserResponse>{
+                user: user,
+                status: 201,
+                message: 'Invalid Credentials'
+            })
+        }
+        const result: ConnectionsInterface = await DatabaseFunctions.findOneAndUpdate(
+            Connections,
+            { UserId: user._id },
+            { $pull: { Followers: UserId } },
+            { new: true, upsert: true }
+        );
+        const user2: ConnectionsInterface = await DatabaseFunctions.findOneAndUpdate(
+            Connections,
+            { UserId: UserId },
+            { $pull: { Following: user._id } },
+            { new: true, upsert: true }
+        );
         user.Following = result.Following.length
         user.Connections = result._id
         await DatabaseFunctions.updateById(User, UserId, { Followers: user2.Followers.length })

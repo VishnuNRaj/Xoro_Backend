@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getVideoRepository = exports.uploadVideoRepository = void 0;
+exports.getVideoRepository = exports.getVideosRepository = exports.uploadVideoRepository = void 0;
 const DatabaseFunctions = __importStar(require("../../functions/DatabaseFunctions"));
 const ResponseFunctions = __importStar(require("../../responses/VideoResponse"));
 const UserFunctions_1 = require("./../../functions/UserFunctions");
@@ -61,7 +61,7 @@ const uploadVideoRepository = (_a) => __awaiter(void 0, [_a], void 0, function* 
             Video: Links.Video,
             Postdate: new Date(),
             Description: Description,
-            VideoLink: CommonFunctions.generateVerificationLink(),
+            VideoLink: yield CommonFunctions.generateVerificationLink(),
             Key: Links.Video,
         });
         yield Promise.all([
@@ -93,10 +93,9 @@ const uploadVideoRepository = (_a) => __awaiter(void 0, [_a], void 0, function* 
     }
 });
 exports.uploadVideoRepository = uploadVideoRepository;
-const getVideoRepository = (user, skip, random) => __awaiter(void 0, void 0, void 0, function* () {
+const getVideosRepository = (user, skip, random) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const videoData = yield (0, UserFunctions_1.getRandomVideos)(skip, random);
-        console.log(videoData);
         const today = new Date();
         const updated = videoData.map((video) => {
             const date = new Date(video.Postdate);
@@ -108,6 +107,7 @@ const getVideoRepository = (user, skip, random) => __awaiter(void 0, void 0, voi
             }
             return video;
         });
+        console.log(updated);
         return ResponseFunctions.getVideoRes({
             message: 'Found',
             status: 200,
@@ -118,6 +118,27 @@ const getVideoRepository = (user, skip, random) => __awaiter(void 0, void 0, voi
     catch (e) {
         console.log(e);
         return ResponseFunctions.getVideoRes({
+            message: 'Internal Server Error',
+            status: 500,
+            user: user
+        });
+    }
+});
+exports.getVideosRepository = getVideosRepository;
+const getVideoRepository = (VideoLink, user) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const videoData = yield (0, UserFunctions_1.getVideo)(VideoLink);
+        console.log(user, "_+_+_+_++_+_+_+_+");
+        return ResponseFunctions.getVideosRes({
+            message: 'Found',
+            status: 200,
+            Video: videoData,
+            user: user
+        });
+    }
+    catch (e) {
+        console.log(e);
+        return ResponseFunctions.getVideosRes({
             message: 'Internal Server Error',
             status: 500,
             user: user

@@ -7,6 +7,7 @@ import searchRouter from './../../controllers/routes/search';
 import videoRouter from './../../controllers/routes/video';
 import chatRouter from './../../controllers/routes/chat';
 import liveRouter from './../../controllers/routes/live';
+import commentRouter from './../../controllers/routes/comment';
 
 const RouterConfig: Function = (app: Application) => {
     app.use('/user', userRouter)
@@ -17,6 +18,7 @@ const RouterConfig: Function = (app: Application) => {
     app.use('/video', videoRouter)
     app.use('/chat', chatRouter)
     app.use('/live',liveRouter)
+    app.use('/comment',commentRouter)
 }
 
 

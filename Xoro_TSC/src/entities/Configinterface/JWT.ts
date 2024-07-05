@@ -9,6 +9,7 @@ export interface JWTCreate {
 
 export interface JWTVerify {
     token: string;
+    refresh:string;
 }
 
 export interface JWTVerifyResponse {
@@ -18,4 +19,5 @@ export interface JWTVerifyResponse {
         Email: string;
     } | null;
     error: string | null;
+    token:string;
 }

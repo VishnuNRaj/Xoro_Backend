@@ -37,6 +37,7 @@ profileRouter.post('/edit-profile', UserController_1.VerifyUserAuth, Middleware.
 profileRouter.post('/secure-account', UserController_1.VerifyUserAuth, Middleware.SecureAccount);
 profileRouter.post('/profile-settings', UserController_1.VerifyUserAuth, Middleware.ProfileSettings);
 profileRouter.post('/follow/:UserId', UserController_1.VerifyUserAuth, Middleware.FollowUser);
+profileRouter.post('/remove/:UserId', UserController_1.VerifyUserAuth, Middleware.RemoveFollowUser);
 profileRouter.post('/unfollow/:UserId', UserController_1.VerifyUserAuth, Middleware.UnFollowUser);
 profileRouter.get('/search/:Search', UserController_1.VerifyUserAuth, Middleware.SearchUser);
 profileRouter.get('/:ProfileLink', UserController_1.VerifyUserAuth, Middleware.GetProfile);

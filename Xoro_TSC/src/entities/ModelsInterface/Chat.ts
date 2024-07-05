@@ -1,4 +1,5 @@
 import { Document, ObjectId } from "mongoose";
+import UserDocument from "./User";
 
 export interface FilesLink extends Document {
     FileLink: string;
@@ -27,4 +28,6 @@ export interface Chat extends Document {
     }[];
     GroupName: string;
     Profile:string;
+    messages:Messages[];
+    users?:UserDocument[];
 }

@@ -50,7 +50,7 @@ const Login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { Email, Password, Type } = req.body;
         const result = yield UseCases.LoginUser({ Email, Password, Type });
-        console.log(result);
+        console.log(result.refresh);
         res.status(result.status).json(result);
     }
     catch (e) {
@@ -101,8 +101,10 @@ exports.OtpVerify = OtpVerify;
 const VerifyUserAuth = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const token = req.headers.authorization;
-        const result = yield UseCases.verifyUserAuth(token);
+        const refresh = req.cookies.refresh;
+        const result = yield UseCases.verifyUserAuth(token, refresh ? refresh : token);
         if (result.status === 200) {
+            res.cookie("token", result.token);
             req.result = result;
             return next();
         }

@@ -9,12 +9,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.emitNotification = void 0;
+exports.sendChat = exports.emitNotification = void 0;
 const socket_1 = require("../../frameworks/server/socket");
+const io = (0, socket_1.getSocketInstance)();
 const emitNotification = (data, UserId) => __awaiter(void 0, void 0, void 0, function* () {
-    const io = (0, socket_1.getSocketInstance)();
     if (io) {
-        io.to(UserId).emit('notification', data);
+        io.in(UserId).emit('notification', data);
     }
 });
 exports.emitNotification = emitNotification;
+const sendChat = (data) => __awaiter(void 0, void 0, void 0, function* () {
+    if (io) {
+        io.in(data.RoomId).emit("message", data);
+    }
+});
+exports.sendChat = sendChat;

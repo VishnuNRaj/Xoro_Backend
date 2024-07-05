@@ -40,7 +40,6 @@ const UserFunctions = __importStar(require("../functions/UserFunctions"));
 const console_1 = require("console");
 const RegisterUser = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Name, Email, Password, Phone, Type, Profile }) {
     try {
-        console.log(Type, '_++_+________________________+_+_+_+_+_+_+_+++++___+++_+');
         let errors = [];
         if (Type === 'Email') {
             errors = yield Validations.RegisterValidate({ Name, Email, Password, Phone, Type });
@@ -178,17 +177,16 @@ const OTPVerifyLogin = (_g, _h) => __awaiter(void 0, [_g, _h], void 0, function*
     }
 });
 exports.OTPVerifyLogin = OTPVerifyLogin;
-const verifyUserAuth = (token) => __awaiter(void 0, void 0, void 0, function* () {
+const verifyUserAuth = (token, refresh) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log(token);
-        if (!token || typeof token !== 'string') {
+        if (!token || typeof token !== 'string' || typeof refresh !== 'string') {
             return {
-                message: 'Invalid Token',
+                message: 'Invalid Credentials',
                 status: 202,
                 user: null
             };
         }
-        return yield Repository.verifyUserAuthRepository(token);
+        return yield Repository.verifyUserAuthRepository(token, refresh);
     }
     catch (e) {
         console.error(e);

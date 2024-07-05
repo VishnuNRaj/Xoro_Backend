@@ -17,7 +17,7 @@ interface PostVideo extends Document {
     RelatedTags: string;
     Views: number;
     Description: string;
-    VideoLInk: string;
+    VideoLink: string;
     Uploaded:boolean;
     Key:string;
 }

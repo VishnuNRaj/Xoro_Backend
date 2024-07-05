@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose'
-import { Post, PostImage } from '../../../entities/ModelsInterface/PostImages'
+import { Post } from '../../../entities/ModelsInterface/PostImages'
 import { ObjectId } from 'mongodb'
 
 

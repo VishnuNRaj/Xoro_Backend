@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getVideos = exports.uploadVideo = void 0;
+exports.getVideo = exports.getVideos = exports.uploadVideo = void 0;
 const Repository = __importStar(require("../repository/Video/UserVideoRepository"));
 const UserFunctions = __importStar(require("../functions/UserFunctions"));
 const uploadVideo = (data) => __awaiter(void 0, void 0, void 0, function* () {
@@ -77,7 +77,7 @@ const getVideos = (user, skip, random) => __awaiter(void 0, void 0, void 0, func
                 Videos: []
             };
         }
-        return Repository.getVideoRepository(user, skip, random);
+        return Repository.getVideosRepository(user, skip, random);
     }
     catch (e) {
         return {
@@ -89,3 +89,23 @@ const getVideos = (user, skip, random) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.getVideos = getVideos;
+const getVideo = (VideoLink, user) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        if (!VideoLink || VideoLink.length < 32) {
+            return {
+                message: 'Fault Queries',
+                status: 201,
+                user: user
+            };
+        }
+        return yield Repository.getVideoRepository(VideoLink, user);
+    }
+    catch (e) {
+        return {
+            message: 'Internal server Error',
+            status: 201,
+            user: user
+        };
+    }
+});
+exports.getVideo = getVideo;

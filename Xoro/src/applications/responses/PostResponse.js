@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deletePostRes = exports.showPostRes = exports.addPostRes = void 0;
+exports.getPostRes = exports.deletePostRes = exports.showPostRes = exports.addPostRes = void 0;
 const addPostRes = (data) => __awaiter(void 0, void 0, void 0, function* () {
     return {
         message: data.message,
@@ -22,7 +22,8 @@ const showPostRes = (data) => __awaiter(void 0, void 0, void 0, function* () {
         message: data.message,
         post: data.post,
         status: data.status,
-        user: data.user
+        user: data.user,
+        connections: data.connections
     };
 });
 exports.showPostRes = showPostRes;
@@ -33,3 +34,12 @@ const deletePostRes = (data) => __awaiter(void 0, void 0, void 0, function* () {
     };
 });
 exports.deletePostRes = deletePostRes;
+const getPostRes = (data) => __awaiter(void 0, void 0, void 0, function* () {
+    return {
+        message: data.message,
+        status: data.status,
+        post: data.post,
+        connections: data.connections,
+    };
+});
+exports.getPostRes = getPostRes;

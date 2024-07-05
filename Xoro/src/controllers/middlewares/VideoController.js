@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getVideos = exports.uploadVideo = void 0;
+exports.getVideo = exports.getVideos = exports.uploadVideo = void 0;
 const UseCases = __importStar(require("../../applications/usecases/Video"));
 const uploadVideo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -74,3 +74,16 @@ const getVideos = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.getVideos = getVideos;
+const getVideo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const result = req === null || req === void 0 ? void 0 : req.result;
+        const { VideoLink } = req === null || req === void 0 ? void 0 : req.params;
+        const data = yield UseCases.getVideo(VideoLink, result === null || result === void 0 ? void 0 : result.user);
+        console.log(data);
+        return res.status(data.status).json(data);
+    }
+    catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+exports.getVideo = getVideo;

@@ -5,7 +5,7 @@ import UserAuth from '../../../frameworks/database/models/UnverifiedUsers';
 import * as ResponseFunctions from '../../responses/VideoResponse';
 import * as Responses from '../../../entities/ResponseInterface/VideoResponseInterface';
 import UnverifiedUsers from '../../../entities/ModelsInterface/UnverifiedUsers';
-import { getRandomVideos, UploadFile } from './../../functions/UserFunctions';
+import { getRandomVideos, getVideo, UploadFile } from './../../functions/UserFunctions';
 import VideoUpload from '../../../frameworks/mq/queue/videoUploadQueue'
 // import { compare } from 'bcryptjs';
 // import User from './../../../frameworks/database/models/User';
@@ -19,6 +19,7 @@ import Reactions from '../../../frameworks/database/models/Reactions'
 import CommentsModel from '../../../frameworks/database/models/Comments'
 import { uploadVideoToMQ } from '../../functions/MQ'
 import { generatePresignedUrl } from '../../../config/s3bucket';
+import { ObjectId } from 'mongoose';
 
 export const uploadVideoRepository: Function = async ({ Caption, Video, Duration, Hashtags, RelatedTags, Description, Restriction, Settings, Links, user }: VideoEntity.uploadVideo): Promise<Responses.uploadVideoResponse> => {
     try {
@@ -35,7 +36,7 @@ export const uploadVideoRepository: Function = async ({ Caption, Video, Duration
             Video: Links.Video,
             Postdate: new Date(),
             Description: Description,
-            VideoLink: CommonFunctions.generateVerificationLink(),
+            VideoLink: await CommonFunctions.generateVerificationLink(),
             Key: Links.Video,
         })
 
@@ -70,21 +71,21 @@ export const uploadVideoRepository: Function = async ({ Caption, Video, Duration
 }
 
 
-export const getVideoRepository: Function = async (user: UserDocument | null, skip: number, random: number): Promise<Responses.getVideosResponse> => {
+export const getVideosRepository: Function = async (user: UserDocument | null, skip: number, random: number): Promise<Responses.getVideosResponse> => {
     try {
         const videoData: PostVideo[] = await getRandomVideos(skip, random)
-        console.log(videoData)
         const today = new Date()
-        const updated:PostVideo[] = videoData.map((video) => {
+        const updated: PostVideo[] = videoData.map((video) => {
             const date = new Date(video.Postdate)
             date.setDate(date.getDate() + 7);
             if (today > date) {
-                generatePresignedUrl('xoro-stream.online', video.Key).then((url:string)=>{
+                generatePresignedUrl('xoro-stream.online', video.Key).then((url: string) => {
                     video.Video = url
                 })
             }
             return video
         })
+        console.log(updated)
         return ResponseFunctions.getVideoRes(<Responses.getVideosResponse>{
             message: 'Found',
             status: 200,
@@ -97,6 +98,28 @@ export const getVideoRepository: Function = async (user: UserDocument | null, sk
             message: 'Internal Server Error',
             status: 500,
             user: user
+        })
+    }
+}
+
+
+export const getVideoRepository: Function = async (VideoLink: string,user:UserDocument): Promise<Responses.getVideoResponse> => {
+    try {
+        const videoData: PostVideo = await getVideo(VideoLink)
+        console.log(user,"_+_+_+_++_+_+_+_+")
+        return ResponseFunctions.getVideosRes(<Responses.getVideoResponse>{
+            message: 'Found',
+            status: 200,
+            Video: videoData,
+            user:user
+        })
+
+    } catch (e) {
+        console.log(e);
+        return ResponseFunctions.getVideosRes(<Responses.getVideoResponse>{
+            message: 'Internal Server Error',
+            status: 500,
+            user:user
         })
     }
 }

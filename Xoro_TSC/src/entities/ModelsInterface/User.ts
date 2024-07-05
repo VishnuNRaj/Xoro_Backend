@@ -1,4 +1,5 @@
 import { Document, ObjectId } from "mongoose";
+import { Notification } from "./Notification";
 
 export default interface UserDocument extends Document {
     Name: string;
@@ -33,4 +34,5 @@ export default interface UserDocument extends Document {
     Channel:ObjectId;
     ProfileLock:boolean;
     VIP:boolean;
+    notifications:Notification[];
 }

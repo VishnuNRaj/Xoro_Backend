@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateChannelRepository = exports.GetUserProfileRepository = exports.SearchUserRepository = exports.UnFollowUserRepository = exports.FollowUserRepository = exports.EditProfileData = exports.ProfileSettingsRepository = exports.SecureAccountRepository = exports.editProfilePicRepository = exports.editBannerRepository = void 0;
+exports.CreateChannelRepository = exports.GetUserProfileRepository = exports.SearchUserRepository = exports.RemoveFollowUserRepository = exports.UnFollowUserRepository = exports.FollowUserRepository = exports.EditProfileData = exports.ProfileSettingsRepository = exports.SecureAccountRepository = exports.editProfilePicRepository = exports.editBannerRepository = void 0;
 const DatabaseFunctions = __importStar(require("../../functions/DatabaseFunctions"));
 const UnverifiedUsers_1 = __importDefault(require("../../../frameworks/database/models/UnverifiedUsers"));
 const ResponseFunctions = __importStar(require("../../responses/UserResponse"));
@@ -280,7 +280,37 @@ const UnFollowUserRepository = (_g) => __awaiter(void 0, [_g], void 0, function*
     }
 });
 exports.UnFollowUserRepository = UnFollowUserRepository;
-const SearchUserRepository = (_h) => __awaiter(void 0, [_h], void 0, function* ({ user, Search }) {
+const RemoveFollowUserRepository = (_h) => __awaiter(void 0, [_h], void 0, function* ({ user, UserId }) {
+    try {
+        if (!DatabaseFunctions.checkObjectId(UserId)) {
+            return ResponseFunctions.UnFollowUserRes({
+                user: user,
+                status: 201,
+                message: 'Invalid Credentials'
+            });
+        }
+        const result = yield DatabaseFunctions.findOneAndUpdate(Connetions_1.default, { UserId: user._id }, { $pull: { Followers: UserId } }, { new: true, upsert: true });
+        const user2 = yield DatabaseFunctions.findOneAndUpdate(Connetions_1.default, { UserId: UserId }, { $pull: { Following: user._id } }, { new: true, upsert: true });
+        user.Following = result.Following.length;
+        user.Connections = result._id;
+        yield DatabaseFunctions.updateById(User_1.default, UserId, { Followers: user2.Followers.length });
+        yield DatabaseFunctions.saveData(user);
+        return ResponseFunctions.UnFollowUserRes({
+            user: user,
+            status: 200,
+            message: 'Success'
+        });
+    }
+    catch (e) {
+        return ResponseFunctions.UnFollowUserRes({
+            message: 'Internal Server Error',
+            status: 500,
+            user: user
+        });
+    }
+});
+exports.RemoveFollowUserRepository = RemoveFollowUserRepository;
+const SearchUserRepository = (_j) => __awaiter(void 0, [_j], void 0, function* ({ user, Search }) {
     try {
         const result = yield DatabaseFunctions.findData(User_1.default, {
             $or: [
@@ -306,7 +336,7 @@ const SearchUserRepository = (_h) => __awaiter(void 0, [_h], void 0, function* (
     }
 });
 exports.SearchUserRepository = SearchUserRepository;
-const GetUserProfileRepository = (_j) => __awaiter(void 0, [_j], void 0, function* ({ user, ProfileLink }) {
+const GetUserProfileRepository = (_k) => __awaiter(void 0, [_k], void 0, function* ({ user, ProfileLink }) {
     try {
         if (!ProfileLink || ProfileLink.length < 32) {
             return ResponseFunctions.GetUserProfileRes({
@@ -365,7 +395,7 @@ const GetUserProfileRepository = (_j) => __awaiter(void 0, [_j], void 0, functio
     }
 });
 exports.GetUserProfileRepository = GetUserProfileRepository;
-const CreateChannelRepository = (_k, user_1, Link_1) => __awaiter(void 0, [_k, user_1, Link_1], void 0, function* ({ Name, Description, Type }, user, Link) {
+const CreateChannelRepository = (_l, user_1, Link_1) => __awaiter(void 0, [_l, user_1, Link_1], void 0, function* ({ Name, Description, Type }, user, Link) {
     try {
         if (user.Channel) {
             return ResponseFunctions.createChannelRes({

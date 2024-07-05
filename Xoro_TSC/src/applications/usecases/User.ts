@@ -8,7 +8,6 @@ import * as UserFunctions from '../functions/UserFunctions';
 import { log } from 'console';
 export const RegisterUser: Function = async ({ Name, Email, Password, Phone, Type, Profile }: UserEntity.Register): Promise<Responses.SignUpResponse> => {
     try {
-        console.log(Type, '_++_+________________________+_+_+_+_+_+_+_+++++___+++_+')
         let errors = []
         if (Type === 'Email') {
             errors = await Validations.RegisterValidate({ Name, Email, Password, Phone, Type })
@@ -144,17 +143,16 @@ export const OTPVerifyLogin: Function = async ({ OTP, RememberMe }: UserEntity.O
 }
 
 
-export const verifyUserAuth: Function = async (token: string): Promise<Responses.VerifyUserAuthResponse> => {
+export const verifyUserAuth: Function = async (token: string,refresh:string): Promise<Responses.VerifyUserAuthResponse> => {
     try {
-        console.log(token)
-        if (!token || typeof token !== 'string') {
+        if (!token || typeof token !== 'string' || typeof refresh !== 'string') {
             return <Responses.VerifyUserAuthResponse>{
-                message: 'Invalid Token',
+                message: 'Invalid Credentials',
                 status: 202,
                 user: null
             }
         }
-        return await Repository.verifyUserAuthRepository(token)
+        return await Repository.verifyUserAuthRepository(token,refresh)
     } catch (e) {
         console.error(e);
         return <Responses.VerifyUserAuthResponse>{

@@ -44,38 +44,59 @@ const CreatePayload = ({ Payload, RememberMe }) => {
         return jsonwebtoken_1.default.sign(Payload, JWT_SECRET, { expiresIn: RememberMe ? JWT_REMEMBER_ME : JWT_EXPIRES_IN });
     }
     catch (e) {
-        console.log(e);
+        console.error(e);
         return 'Internal server error';
     }
 };
 exports.CreatePayload = CreatePayload;
-const VerifyPayload = (_a) => __awaiter(void 0, [_a], void 0, function* ({ token }) {
+const VerifyPayload = (_a) => __awaiter(void 0, [_a], void 0, function* ({ token, refresh }) {
+    const { JWT_SECRET } = auth_1.default;
     try {
-        const { JWT_SECRET } = auth_1.default;
         const decodedToken = jsonwebtoken_1.default.verify(token, JWT_SECRET);
-        console.log(decodedToken);
         return {
             status: true,
             user: decodedToken,
-            error: null
+            error: null,
+            token: token,
         };
     }
     catch (error) {
-        console.log(error);
+        console.error(error);
         if (error instanceof jsonwebtoken_1.TokenExpiredError) {
-            return {
-                status: false,
-                user: null,
-                error: 'Session Expired'
-            };
+            if (token === refresh) {
+                return {
+                    status: false,
+                    user: null,
+                    error: 'Session Expired'
+                };
+            }
+            try {
+                const refreshToken = jsonwebtoken_1.default.verify(refresh, JWT_SECRET);
+                if (refreshToken) {
+                    const newToken = (0, exports.CreatePayload)({ Payload: refreshToken, RememberMe: true });
+                    return {
+                        status: true,
+                        token: newToken,
+                        user: refreshToken,
+                        error: null
+                    };
+                }
+            }
+            catch (e) {
+                if (e instanceof jsonwebtoken_1.TokenExpiredError) {
+                    return {
+                        status: false,
+                        user: null,
+                        error: 'Session Expired'
+                    };
+                }
+            }
         }
-        else {
-            return {
-                status: false,
-                user: null,
-                error: 'Internal server error'
-            };
-        }
+        return {
+            status: false,
+            user: null,
+            error: 'Internal server error'
+        };
     }
 });
 exports.VerifyPayload = VerifyPayload;

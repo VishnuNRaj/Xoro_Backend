@@ -1,4 +1,4 @@
-import * as interfaces from "../Interfaces/SearchResponsInterface";
+import * as interfaces from "../../entities/ResponseInterface/SearchResponsInterface";
 
 export const searchDataRes:Function = (data:interfaces.searchDataResponse):interfaces.searchDataResponse => {
     return <interfaces.searchDataResponse>{

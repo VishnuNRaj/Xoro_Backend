@@ -47,6 +47,7 @@ const auth_1 = __importDefault(require("../../../config/auth"));
 const UserFunctions_1 = require("../../functions/UserFunctions");
 const Connetions_1 = __importDefault(require("../../../frameworks/database/models/Connetions"));
 const Notifications_1 = __importDefault(require("../../../frameworks/database/models/Notifications"));
+// import { Notification } from '../../../entities/ModelsInterface/Notification';
 // import { ObjectId } from 'mongodb';
 const RegisterRepository = (data) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -94,9 +95,15 @@ const RegisterRepository = (data) => __awaiter(void 0, void 0, void 0, function*
 exports.RegisterRepository = RegisterRepository;
 const LoginRepository = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Email, Password, Type }) {
     try {
-        console.log(Email, typeof Password, Type);
         const user = yield DatabaseFunctions.findOneData(UnverifiedUsers_1.default, { Email: Email });
         const userauth = yield (0, UserFunctions_1.VerifyUser)(user);
+        if (user && user.Type !== Type) {
+            return ResponseFunctions.VerityAccountAuthRes({
+                message: "Account Loggin Incorrect",
+                status: 202,
+                user: null
+            });
+        }
         if (!userauth.status) {
             return ResponseFunctions.VerityAccountAuthRes({
                 message: userauth.message,
@@ -125,11 +132,13 @@ const LoginRepository = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Ema
             });
         }
         if (!user.TwoStepVerification) {
-            const token = yield (0, JWT_1.CreatePayload)({ Payload: { UserId: user._id, Email: user.Email }, RememberMe: true });
+            const token = yield (0, JWT_1.CreatePayload)({ Payload: { UserId: user._id, Email: user.Email, Admin: false }, RememberMe: false });
+            const refresh = yield (0, JWT_1.CreatePayload)({ Payload: { UserId: user._id, Email: user.Email, Admin: false }, RememberMe: true });
             return ResponseFunctions.LoginRes({
                 message: token,
                 status: 210,
                 errors: [],
+                refresh: refresh,
                 user: yield DatabaseFunctions.findUsingId(User_1.default, user._id)
             });
         }
@@ -209,6 +218,7 @@ const VerifyAccountRepository = (_b) => __awaiter(void 0, [_b], void 0, function
             status: 200,
             token: token,
             user: user,
+            refresh: token,
             data: {
                 Message: 'Welcome to Xoro Streams',
                 Type: 'Auth',
@@ -258,12 +268,14 @@ const AddProfilePicRepository = (_c, _d, _e) => __awaiter(void 0, [_c, _d, _e], 
         user.Profile = typeof file == 'string' && file != '' ? file : user.Profile;
         yield DatabaseFunctions.saveData(user);
         yield DatabaseFunctions.updateById(User_1.default, UserId, { Profile: user.Profile, Username: user.Username });
-        const token = yield (0, JWT_1.CreatePayload)({ Payload: { UserId: user._id, Email: user.Email, Admin: false }, RememberMe });
+        const token = yield (0, JWT_1.CreatePayload)({ Payload: { UserId: user._id, Email: user.Email, Admin: false }, RememberMe: false });
+        const refresh = RememberMe ? yield (0, JWT_1.CreatePayload)({ Payload: { UserId: user._id, Email: user.Email, Admin: false }, RememberMe }) : token;
         return ResponseFunctions.AddProfileRes({
             message: 'Uploaded Successfully',
             status: 200,
             token: token,
-            user: user
+            user: user,
+            refresh: refresh
         });
     }
     catch (e) {
@@ -312,13 +324,14 @@ const OTPVerifyRepository = (_f, _g) => __awaiter(void 0, [_f, _g], void 0, func
                 token: ''
             });
         }
-        const token = yield (0, JWT_1.CreatePayload)({ Payload: { UserId: user._id, Email: user.Email }, RememberMe });
-        console.log(token);
+        const token = yield (0, JWT_1.CreatePayload)({ Payload: { UserId: user._id, Email: user.Email, Admin: false }, RememberMe: false });
+        const refresh = RememberMe ? yield (0, JWT_1.CreatePayload)({ Payload: { UserId: user._id, Email: user.Email, Admin: false }, RememberMe }) : token;
         return ResponseFunctions.OTPVerifyRes({
             message: 'Verified Succesfully',
             status: 200,
             token: token,
-            user: user
+            user: user,
+            refresh: refresh
         });
     }
     catch (e) {
@@ -331,9 +344,9 @@ const OTPVerifyRepository = (_f, _g) => __awaiter(void 0, [_f, _g], void 0, func
     }
 });
 exports.OTPVerifyRepository = OTPVerifyRepository;
-const verifyUserAuthRepository = (token) => __awaiter(void 0, void 0, void 0, function* () {
+const verifyUserAuthRepository = (token, refresh) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const result = yield (0, JWT_1.VerifyPayload)({ token });
+        const result = yield (0, JWT_1.VerifyPayload)({ token, refresh });
         if (!result.status) {
             return ResponseFunctions.VerityAccountAuthRes({
                 message: result.error,
@@ -348,7 +361,7 @@ const verifyUserAuthRepository = (token) => __awaiter(void 0, void 0, void 0, fu
                 user: null
             });
         }
-        const user = yield DatabaseFunctions.findUsingId(User_1.default, result.user.UserId);
+        let user = yield DatabaseFunctions.findUsingId(User_1.default, result.user.UserId);
         const auth = yield (0, UserFunctions_1.VerifyUser)(user);
         if (!auth.status) {
             return ResponseFunctions.VerityAccountAuthRes({
@@ -357,10 +370,12 @@ const verifyUserAuthRepository = (token) => __awaiter(void 0, void 0, void 0, fu
                 user: null
             });
         }
+        console.log(user);
         return ResponseFunctions.VerityAccountAuthRes({
             message: 'Verified Succesfully',
             status: 200,
-            user: user
+            user: user,
+            token: result.token
         });
     }
     catch (e) {

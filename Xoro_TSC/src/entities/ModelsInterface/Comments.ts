@@ -1,21 +1,25 @@
-import { Types } from 'mongoose';
+import { ObjectId } from 'mongodb';
+import UserDocument from './User';
 
 export interface CommentReply extends Document {
-    Comment: string;
-    UserId: typeof Types.ObjectId;
+    Comment: string[];
+    CommentId:ObjectId;
+    UserId: ObjectId;
     Likes: number;
-    Dislikes: number;
+    user: UserDocument;
+    tags: UserDocument[];
+    Edited:boolean;
+    Tags:ObjectId[];
 }
+
 
 export interface Comment extends Document {
-    Comment: string;
-    UserId: typeof Types.ObjectId;
+    Comment: string[];
+    PostId: ObjectId;
+    UserId: ObjectId;
     Likes: number;
-    Dislikes: number;
-    Replies: CommentReply[];
-}
-
-export interface AllCommments extends Document {
-    Comments: Comment[];
-    PostId: typeof Types.ObjectId;
+    user: UserDocument;
+    tags: UserDocument[];
+    Edited:boolean;
+    Tags:ObjectId[];
 }

@@ -21,7 +21,7 @@ const VideoSchema = new mongoose_1.Schema({
         default: 0,
     },
     Description: String,
-    VideoLInk: String,
+    VideoLink: String,
     Uploaded: {
         type: Boolean,
         default: false,

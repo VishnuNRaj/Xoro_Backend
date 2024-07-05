@@ -87,6 +87,17 @@ export const UnFollowUser: Middleware = async (req, res) => {
     }
 }
 
+export const RemoveFollowUser: Middleware = async (req, res) => {
+    try {
+        const result = req.result
+        const { UserId } = req.params
+        const data = await UseCases.RemoveFollowUser({ user: result?.user, UserId })
+        return res.status(data.status).json(data)
+    } catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' })
+    }
+}
+
 export const SearchUser: Middleware = async (req, res) => {
     try {
         const result = req.result

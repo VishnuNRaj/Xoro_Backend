@@ -35,11 +35,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getChats = exports.searchData = exports.countDocuments = exports.likeDislikePost = exports.saveData = exports.deleteUsingId = exports.findUsers = exports.findData = exports.checkObjectId = exports.executeBulkWrite = exports.pullReactions = exports.findAndPull = exports.findOneAndUpdate = exports.updateByData = exports.updateById = exports.insertData = exports.findUsingId = exports.findOneData = void 0;
+exports.getComments = exports.getPosts = exports.checkChat = exports.getFollowers = exports.getChat = exports.getChats = exports.searchData = exports.countDocuments = exports.likeDislikePost = exports.saveData = exports.deleteUsingId = exports.findUsersObjectId = exports.findUsers = exports.getUnReadNotifications = exports.findData = exports.checkObjectId = exports.executeBulkWrite = exports.pullReactions = exports.findAndPull = exports.findOneAndUpdate = exports.updateByData = exports.updateById = exports.insertData = exports.findUsingId = exports.findOneData = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const User_1 = __importDefault(require("../../frameworks/database/models/User"));
 const ImagesPost_1 = __importDefault(require("../../frameworks/database/models/ImagesPost"));
 const Chat_1 = __importDefault(require("../../frameworks/database/models/Chat"));
+const Connetions_1 = __importDefault(require("../../frameworks/database/models/Connetions"));
+const Channels_1 = __importDefault(require("../../frameworks/database/models/Channels"));
+const Reactions_1 = __importDefault(require("../../frameworks/database/models/Reactions"));
+const Notifications_1 = __importDefault(require("../../frameworks/database/models/Notifications"));
+const Comments_1 = __importDefault(require("../../frameworks/database/models/Comments"));
 const findOneData = (Db, query) => __awaiter(void 0, void 0, void 0, function* () {
     return yield Db.findOne(query);
 });
@@ -68,11 +73,11 @@ const findAndPull = (Db, id, query, value) => __awaiter(void 0, void 0, void 0, 
     return yield Db.findByIdAndUpdate(id, { $pull: { [query]: new mongoose_1.default.Types.ObjectId(value) } });
 });
 exports.findAndPull = findAndPull;
-const pullReactions = (Db, id, value) => __awaiter(void 0, void 0, void 0, function* () {
+const pullReactions = (Db, id, UserId) => __awaiter(void 0, void 0, void 0, function* () {
     return yield Db.findByIdAndUpdate(id, {
         $pull: {
-            Likes: new mongoose_1.default.Types.ObjectId(value),
-            Dislikes: new mongoose_1.default.Types.ObjectId(value)
+            Likes: UserId,
+            Dislikes: UserId
         }
     });
 });
@@ -95,21 +100,67 @@ const findData = (Db, query) => __awaiter(void 0, void 0, void 0, function* () {
     return yield Db.find(query);
 });
 exports.findData = findData;
+const getUnReadNotifications = (UserId) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const notifications = yield Notifications_1.default.aggregate([
+            { $match: { UserId: UserId } },
+            {
+                $project: {
+                    Messages: {
+                        $filter: {
+                            input: "$Messages",
+                            as: "message",
+                            cond: { $eq: ["$$message.Seen", false] }
+                        }
+                    }
+                }
+            },
+            { $unwind: "$Messages" },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "Messages.SenderId",
+                    foreignField: "_id",
+                    as: "SenderInfo"
+                }
+            },
+            { $unwind: "$SenderInfo" },
+            {
+                $project: {
+                    _id: 1,
+                    UserId: 1,
+                    Messages: 1,
+                    "SenderInfo.Username": 1,
+                    "SenderInfo.Profile": 1,
+                    "SenderInfo.ProfileLink": 1,
+                    "SenderInfo._id": 1
+                }
+            }
+        ]);
+        return notifications;
+    }
+    catch (e) {
+        console.error(e);
+        return null;
+    }
+});
+exports.getUnReadNotifications = getUnReadNotifications;
 const findUsers = (userId) => __awaiter(void 0, void 0, void 0, function* () {
-    const objectIdArray = userId.map(id => new mongoose_1.Types.ObjectId(id));
+    const objectIdArray = userId.map(id => new mongoose_1.Types.ObjectId(id.UserId.toString()));
     return yield User_1.default.find({ _id: { $in: objectIdArray } });
 });
 exports.findUsers = findUsers;
-const deleteUsingId = (Db, id) => __awaiter(void 0, void 0, void 0, function* () {
-    return yield Db.findByIdAndDelete(id);
+const findUsersObjectId = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    const objectIdArray = userId.map(UserId => new mongoose_1.Types.ObjectId(UserId.toString()));
+    return yield User_1.default.find({ _id: { $in: objectIdArray } }, { _id: 1 });
 });
+exports.findUsersObjectId = findUsersObjectId;
+const deleteUsingId = (Db, id) => __awaiter(void 0, void 0, void 0, function* () { return yield Db.findByIdAndDelete(id); });
 exports.deleteUsingId = deleteUsingId;
-const saveData = (data) => __awaiter(void 0, void 0, void 0, function* () {
-    yield data.save();
-});
+const saveData = (data) => __awaiter(void 0, void 0, void 0, function* () { return yield data.save(); });
 exports.saveData = saveData;
-const likeDislikePost = (Db, id, value, field1, field2) => __awaiter(void 0, void 0, void 0, function* () {
-    return yield Db.findByIdAndUpdate(id, { $addToSet: { [field1]: new mongoose_1.default.Types.ObjectId(value) }, $pull: { [field2]: new mongoose_1.default.Types.ObjectId(value) } }, { new: true });
+const likeDislikePost = (id, value, field1, field2) => __awaiter(void 0, void 0, void 0, function* () {
+    return yield Reactions_1.default.findByIdAndUpdate(id, { $addToSet: { [field1]: value }, $pull: { [field2]: value } }, { upsert: true });
 });
 exports.likeDislikePost = likeDislikePost;
 const countDocuments = (Db, id, key) => __awaiter(void 0, void 0, void 0, function* () {
@@ -125,16 +176,19 @@ const searchData = (search) => __awaiter(void 0, void 0, void 0, function* () {
             ]
         });
         const posts = yield (0, exports.findData)(ImagesPost_1.default, { Hashtags: { $elemMatch: { $regex: search, $options: 'i' } } });
+        const channel = yield (0, exports.findData)(Channels_1.default, { Name: { $regex: search, $options: 'i' } });
         return {
-            user: users,
-            post: posts
+            users,
+            post: posts,
+            channel
         };
     }
     catch (error) {
         console.error("Error searching:", error);
         return {
-            user: [],
-            post: []
+            users: [],
+            post: [],
+            channel: []
         };
     }
 });
@@ -151,30 +205,34 @@ const getChats = (userId) => __awaiter(void 0, void 0, void 0, function* () {
                     as: 'messages'
                 }
             },
-            { $unwind: { path: '$messages', preserveNullAndEmptyArrays: true } }, // Unwind messages, allowing for empty arrays
-            { $sort: { 'messages.Time': -1 } }, // Sort messages by time in descending order
+            { $unwind: { path: '$messages', preserveNullAndEmptyArrays: true } },
+            { $sort: { 'messages._id': -1 } },
             {
                 $group: {
                     _id: '$RoomId',
-                    latestMessage: { $first: '$messages' }
+                    latestMessage: { $first: '$messages' },
+                    chat: { $first: '$$ROOT' }
                 }
             },
             {
                 $lookup: {
-                    from: 'chats',
-                    localField: '_id',
-                    foreignField: 'RoomId',
-                    as: 'chat'
+                    from: 'users',
+                    let: { userIds: '$chat.Users.UserId' },
+                    pipeline: [
+                        { $match: { $expr: { $in: ['$_id', '$$userIds'] } } }
+                    ],
+                    as: 'userData'
                 }
             },
-            { $unwind: '$chat' }, // Unwind the chat array to get a single chat document
             {
                 $project: {
                     _id: 0,
                     RoomId: '$_id',
                     Users: '$chat.Users',
+                    users: '$userData',
                     GroupName: '$chat.GroupName',
-                    latestMessage: 1
+                    latestMessage: 1,
+                    Profile: "$chat.Profile"
                 }
             }
         ]);
@@ -186,3 +244,254 @@ const getChats = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.getChats = getChats;
+const getChat = (RoomId) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const [data] = yield Chat_1.default.aggregate([{ $match: { 'RoomId': RoomId } },
+            {
+                $lookup: {
+                    from: 'messages',
+                    localField: 'RoomId',
+                    foreignField: 'RoomId',
+                    as: 'messages'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'Users.UserId',
+                    foreignField: '_id',
+                    as: 'users'
+                }
+            }]);
+        return data;
+    }
+    catch (e) {
+        return null;
+    }
+});
+exports.getChat = getChat;
+const getFollowers = (UserId) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const [response] = yield Connetions_1.default.aggregate([
+            { $match: { UserId: UserId } },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'Followers',
+                    foreignField: '_id',
+                    as: 'follow'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'Following',
+                    foreignField: '_id',
+                    as: 'following'
+                }
+            },
+            {
+                $project: {
+                    Following: 1,
+                    Followers: 1,
+                    follow: 1,
+                    following: 1,
+                    mutual: {
+                        $filter: {
+                            input: '$follow',
+                            as: 'f',
+                            cond: {
+                                $in: ['$$f._id', '$Following']
+                            }
+                        }
+                    }
+                }
+            },
+            { $addFields: { mutual: { $slice: ['$mutual', 10] } } }
+        ]);
+        return response;
+    }
+    catch (e) {
+        console.error('Error fetching followers:', e);
+        return null;
+    }
+});
+exports.getFollowers = getFollowers;
+const checkChat = (UserIds) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        return yield Chat_1.default.findOne({
+            "Users.UserId": {
+                $all: UserIds.map((usr) => new mongoose_1.Types.ObjectId(usr))
+            }
+        });
+    }
+    catch (e) {
+        return null;
+    }
+});
+exports.checkChat = checkChat;
+const getPosts = (UserIds_1, skip_1, ...args_1) => __awaiter(void 0, [UserIds_1, skip_1, ...args_1], void 0, function* (UserIds, skip, limit = 10) {
+    try {
+        console.log(UserIds);
+        const posts = yield ImagesPost_1.default.aggregate([
+            { $match: { UserId: { $in: UserIds } } },
+            { $skip: skip },
+            { $limit: limit },
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { userId: '$UserId' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
+                        { $project: { Username: 1, Name: 1, Profile: 1, ProfileLink: 1, _id: 1 } }
+                    ],
+                    as: 'user'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { tagIds: '$Tags' },
+                    pipeline: [
+                        { $match: { $expr: { $in: ['$_id', '$$tagIds'] } } },
+                        { $project: { Username: 1, Name: 1, Profile: 1, ProfileLink: 1, _id: 1 } }
+                    ],
+                    as: 'tags'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'reactions',
+                    localField: 'Reactions',
+                    foreignField: '_id',
+                    as: 'reactions'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$reactions',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { likeIds: '$reactions.Likes' },
+                    pipeline: [
+                        { $match: { $expr: { $in: ['$_id', '$$likeIds'] } } },
+                        { $project: { Username: 1, Name: 1, Profile: 1, ProfileLink: 1, _id: 1 } }
+                    ],
+                    as: 'reactions.LikesDetails'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { dislikeIds: '$reactions.Dislikes' },
+                    pipeline: [
+                        { $match: { $expr: { $in: ['$_id', '$$dislikeIds'] } } },
+                        { $project: { Username: 1, Name: 1, Profile: 1, ProfileLink: 1, _id: 1 } }
+                    ],
+                    as: 'reactions.DislikesDetails'
+                }
+            },
+            {
+                $addFields: {
+                    user: { $arrayElemAt: ['$user', 0] },
+                    'reactions.LikesDetails': '$reactions.LikesDetails',
+                    'reactions.DislikesDetails': '$reactions.DislikesDetails',
+                    tags: '$tags'
+                }
+            },
+            {
+                $group: {
+                    _id: '$_id',
+                    doc: { $mergeObjects: '$$ROOT' },
+                    comments: { $push: '$comments' }
+                }
+            },
+            {
+                $replaceRoot: {
+                    newRoot: {
+                        $mergeObjects: ['$doc', { comments: '$comments' }]
+                    }
+                }
+            }
+        ]);
+        return posts;
+    }
+    catch (e) {
+        console.error('Error fetching posts:', e);
+        return null;
+    }
+});
+exports.getPosts = getPosts;
+const getComments = (PostId, UserId) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const comments = yield Comments_1.default.aggregate([
+            { $match: { PostId: new mongoose_1.Types.ObjectId(PostId) } },
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { userId: '$UserId' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
+                        { $project: { Username: 1, Name: 1, Profile: 1, ProfileLink: 1, _id: 1 } }
+                    ],
+                    as: 'user'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'comments',
+                    let: { commentId: '$PostId' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$PostId', '$$commentId'] } } },
+                        {
+                            $lookup: {
+                                from: 'users',
+                                let: { userId: '$UserId' },
+                                pipeline: [
+                                    { $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
+                                    { $project: { Username: 1, Name: 1, Profile: 1, ProfileLink: 1, _id: 1 } }
+                                ],
+                                as: 'user'
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: 'users',
+                                let: { tagIds: { $ifNull: ['$Tags', []] } },
+                                pipeline: [
+                                    { $match: { $expr: { $in: ['$_id', '$$tagIds'] } } },
+                                    { $project: { Username: 1, Name: 1, Profile: 1, ProfileLink: 1, _id: 1 } }
+                                ],
+                                as: 'tags'
+                            }
+                        },
+                    ],
+                    as: 'comments'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$comments',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $addFields: {
+                    user: { $arrayElemAt: ['$user', 0] },
+                    'comments.user': { $arrayElemAt: ['$comments.user', 0] },
+                    'comments.tags': '$comments.tags'
+                }
+            }
+        ]);
+        return comments;
+    }
+    catch (e) {
+        console.log(e);
+        return [];
+    }
+});
+exports.getComments = getComments;

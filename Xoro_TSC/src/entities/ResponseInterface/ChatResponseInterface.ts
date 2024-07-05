@@ -1,11 +1,13 @@
 import { Chat, Messages } from "../ModelsInterface/Chat";
 import UserDocument from "../../entities/ModelsInterface/User";
+import { ConnectionsInterface } from "../ModelsInterface/Connections";
 
-export interface getChatsResponse {
+export interface getChats {
     user:UserDocument;
     allChats?:Chat[];
     message:string;
     status:number;
+    users?:ConnectionsInterface;
 }
 
 export interface SendMessage {
@@ -18,5 +20,11 @@ export interface StartChat {
     status:number;
     message:string;
     newChat?:Chat;
-    Users:UserDocument[];
+    users:UserDocument[];
+}
+
+export interface getChat {
+    message:string;
+    chat:Chat;
+    status:number;
 }

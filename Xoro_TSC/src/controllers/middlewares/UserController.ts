@@ -32,8 +32,7 @@ export const Login: Middleware = async (req, res) => {
             Email, Password, Type
         }: UserEntity.Login = req.body
         const result: Responses.LoginResponse = await UseCases.LoginUser({ Email, Password, Type })
-        console.log(result);
-
+        console.log(result.refresh);
         res.status(result.status).json(result)
     } catch (e) {
         res.status(500).json({ message: 'Internal Server Error' })
@@ -80,8 +79,10 @@ export const OtpVerify: Middleware = async (req, res) => {
 export const VerifyUserAuth: Middleware = async (req, res, next) => {
     try {
         const token = req.headers.authorization
-        const result: Responses.VerifyUserAuthResponse = await UseCases.verifyUserAuth(token)
+        const refresh: string | undefined = req.cookies.refresh
+        const result: Responses.VerifyUserAuthResponse = await UseCases.verifyUserAuth(token, refresh ? refresh : token)
         if (result.status === 200) {
+            res.cookie("token", result.token)
             req.result = result
             return next()
         }

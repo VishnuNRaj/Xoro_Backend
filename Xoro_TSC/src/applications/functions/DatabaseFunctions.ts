@@ -5,6 +5,13 @@ import User from '../../frameworks/database/models/User'
 import PostImages from '../../frameworks/database/models/ImagesPost'
 import Chats from '../../frameworks/database/models/Chat'
 import { Chat } from '../../entities/ModelsInterface/Chat'
+import Connections from '../../frameworks/database/models/Connetions'
+import { ConnectionsInterface } from '../../entities/ModelsInterface/Connections'
+import { ChannelInterface } from '../../entities/ModelsInterface/Channels'
+import ChannelModel from '../../frameworks/database/models/Channels'
+import Reactions from '../../frameworks/database/models/Reactions'
+import Notifications from '../../frameworks/database/models/Notifications'
+import CommentModel from '../../frameworks/database/models/Comments'
 export const findOneData: Function = async (Db: any, query: object): Promise<any> => {
     return await Db.findOne(query)
 }
@@ -35,11 +42,11 @@ export const findAndPull = async (Db: any, id: string, query: string, value: str
     return await Db.findByIdAndUpdate(id, { $pull: { [query]: new mongoose.Types.ObjectId(value) } })
 }
 
-export const pullReactions = async (Db: any, id: string, value: string) => {
+export const pullReactions = async (Db: any, id: any, UserId: ObjectId) => {
     return await Db.findByIdAndUpdate(id, {
         $pull: {
-            Likes: new mongoose.Types.ObjectId(value),
-            Dislikes: new mongoose.Types.ObjectId(value)
+            Likes: UserId,
+            Dislikes: UserId
         }
     });
 }
@@ -69,21 +76,66 @@ export const findData: Function = async (Db: any, query: object) => {
     return await Db.find(query)
 }
 
-export const findUsers: Function = async (userId: string[]) => {
-    const objectIdArray = userId.map(id => new Types.ObjectId(id));
+export const getUnReadNotifications: Function = async (UserId: ObjectId) => {
+    try {
+        const notifications = await Notifications.aggregate([
+            { $match: { UserId: UserId } },
+            {
+                $project: {
+                    Messages: {
+                        $filter: {
+                            input: "$Messages",
+                            as: "message",
+                            cond: { $eq: ["$$message.Seen", false] }
+                        }
+                    }
+                }
+            },
+            { $unwind: "$Messages" },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "Messages.SenderId",
+                    foreignField: "_id",
+                    as: "SenderInfo"
+                }
+            },
+            { $unwind: "$SenderInfo" },
+            {
+                $project: {
+                    _id: 1,
+                    UserId: 1,
+                    Messages: 1,
+                    "SenderInfo.Username": 1,
+                    "SenderInfo.Profile": 1,
+                    "SenderInfo.ProfileLink": 1,
+                    "SenderInfo._id": 1
+                }
+            }
+        ])
+        return notifications;
+    } catch (e) {
+        console.error(e);
+        return null;
+    }
+}
+
+export const findUsers: Function = async (userId: { UserId: string, Admin: boolean }[]) => {
+    const objectIdArray = userId.map(id => new Types.ObjectId(id.UserId.toString()));
     return await User.find({ _id: { $in: objectIdArray } })
 }
 
-export const deleteUsingId: Function = async (Db: any, id: string) => {
-    return await Db.findByIdAndDelete(id)
+export const findUsersObjectId: Function = async (userId: string[]) => {
+    const objectIdArray = userId.map(UserId => new Types.ObjectId(UserId.toString()));
+    return await User.find({ _id: { $in: objectIdArray } }, { _id: 1 })
 }
 
-export const saveData: Function = async (data: Document) => {
-    await data.save()
-}
+export const deleteUsingId: Function = async (Db: any, id: string) => await Db.findByIdAndDelete(id)
 
-export const likeDislikePost: Function = async (Db: any, id: string, value: string, field1: string, field2: string) => {
-    return await Db.findByIdAndUpdate(id, { $addToSet: { [field1]: new mongoose.Types.ObjectId(value) }, $pull: { [field2]: new mongoose.Types.ObjectId(value) } }, { new: true })
+export const saveData: Function = async (data: Document) => await data.save()
+
+export const likeDislikePost: Function = async (id: ObjectId, value: ObjectId, field1: string, field2: string) => {
+    return await Reactions.findByIdAndUpdate(id, { $addToSet: { [field1]: value }, $pull: { [field2]: value } }, { upsert: true })
 }
 
 export const countDocuments: Function = async (Db: any, id: ObjectId, key: string): Promise<number> => {
@@ -91,8 +143,9 @@ export const countDocuments: Function = async (Db: any, id: ObjectId, key: strin
 }
 
 export const searchData = async (search: string): Promise<{
-    user: UserDocument[],
+    users: UserDocument[],
     post: PostImage[],
+    channel: ChannelInterface[]
 }> => {
     try {
         const users: UserDocument[] = await findData(User, {
@@ -102,21 +155,24 @@ export const searchData = async (search: string): Promise<{
             ]
         })
         const posts: PostImage[] = await findData(PostImages, { Hashtags: { $elemMatch: { $regex: search, $options: 'i' } } })
-
+        const channel: ChannelInterface[] = await findData(ChannelModel, { Name: { $regex: search, $options: 'i' } })
         return {
-            user: users,
-            post: posts
+            users,
+            post: posts,
+            channel
         };
     } catch (error) {
         console.error("Error searching:", error);
         return {
-            user: [],
-            post: []
+            users: [],
+            post: [],
+            channel: []
         };
     }
 };
 
-export const getChats = async (userId: ObjectId) => {
+
+export const getChats: Function = async (userId: ObjectId) => {
     try {
         const data = await Chats.aggregate([
             { $match: { 'Users.UserId': { $in: [userId] } } },
@@ -128,30 +184,34 @@ export const getChats = async (userId: ObjectId) => {
                     as: 'messages'
                 }
             },
-            { $unwind: { path: '$messages', preserveNullAndEmptyArrays: true } }, // Unwind messages, allowing for empty arrays
-            { $sort: { 'messages.Time': -1 } }, // Sort messages by time in descending order
+            { $unwind: { path: '$messages', preserveNullAndEmptyArrays: true } },
+            { $sort: { 'messages._id': -1 } },
             {
                 $group: {
                     _id: '$RoomId',
-                    latestMessage: { $first: '$messages' }
+                    latestMessage: { $first: '$messages' },
+                    chat: { $first: '$$ROOT' }
                 }
             },
             {
                 $lookup: {
-                    from: 'chats',
-                    localField: '_id',
-                    foreignField: 'RoomId',
-                    as: 'chat'
+                    from: 'users',
+                    let: { userIds: '$chat.Users.UserId' },
+                    pipeline: [
+                        { $match: { $expr: { $in: ['$_id', '$$userIds'] } } }
+                    ],
+                    as: 'userData'
                 }
             },
-            { $unwind: '$chat' }, // Unwind the chat array to get a single chat document
             {
                 $project: {
                     _id: 0,
                     RoomId: '$_id',
                     Users: '$chat.Users',
+                    users: '$userData',
                     GroupName: '$chat.GroupName',
-                    latestMessage: 1
+                    latestMessage: 1,
+                    Profile: "$chat.Profile"
                 }
             }
         ]);
@@ -160,5 +220,256 @@ export const getChats = async (userId: ObjectId) => {
     } catch (e) {
         console.error('Error fetching chats:', e);
         throw e;
+    }
+};
+
+export const getChat: Function = async (RoomId: string) => {
+    try {
+        const [data] = await Chats.aggregate([{ $match: { 'RoomId': RoomId } },
+        {
+            $lookup: {
+                from: 'messages',
+                localField: 'RoomId',
+                foreignField: 'RoomId',
+                as: 'messages'
+            }
+        },
+        {
+            $lookup: {
+                from: 'users',
+                localField: 'Users.UserId',
+                foreignField: '_id',
+                as: 'users'
+            }
+        }])
+        return data;
+    } catch (e) {
+        return null;
+    }
+}
+
+export const getFollowers: Function = async (UserId: ObjectId) => {
+    try {
+        const [response]: ConnectionsInterface[] = await Connections.aggregate([
+            { $match: { UserId: UserId } },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'Followers',
+                    foreignField: '_id',
+                    as: 'follow'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'Following',
+                    foreignField: '_id',
+                    as: 'following'
+                }
+            },
+            {
+                $project: {
+                    Following: 1,
+                    Followers: 1,
+                    follow: 1,
+                    following: 1,
+                    mutual: {
+                        $filter: {
+                            input: '$follow',
+                            as: 'f',
+                            cond: {
+                                $in: ['$$f._id', '$Following']
+                            }
+                        }
+                    }
+                }
+            },
+            { $addFields: { mutual: { $slice: ['$mutual', 10] } } }
+        ]);
+        return response;
+    } catch (e) {
+        console.error('Error fetching followers:', e);
+        return null;
+    }
+}
+
+export const checkChat: Function = async (UserIds: string[]) => {
+    try {
+
+        return await Chats.findOne({
+            "Users.UserId": {
+                $all: UserIds.map((usr) => new Types.ObjectId(usr))
+            }
+        })
+    } catch (e) {
+        return null
+    }
+}
+
+export const getPosts = async (UserIds: ObjectId[], skip: number, limit: number = 10): Promise<PostImage[] | null> => {
+    try {
+        console.log(UserIds);
+
+        const posts: PostImage[] = await PostImages.aggregate([
+            { $match: { UserId: { $in: UserIds } } },
+            { $skip: skip },
+            { $limit: limit },
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { userId: '$UserId' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
+                        { $project: { Username: 1, Name: 1, Profile: 1, ProfileLink: 1, _id: 1 } }
+                    ],
+                    as: 'user'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { tagIds: '$Tags' },
+                    pipeline: [
+                        { $match: { $expr: { $in: ['$_id', '$$tagIds'] } } },
+                        { $project: { Username: 1, Name: 1, Profile: 1, ProfileLink: 1, _id: 1 } }
+                    ],
+                    as: 'tags'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'reactions',
+                    localField: 'Reactions',
+                    foreignField: '_id',
+                    as: 'reactions'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$reactions',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { likeIds: '$reactions.Likes' },
+                    pipeline: [
+                        { $match: { $expr: { $in: ['$_id', '$$likeIds'] } } },
+                        { $project: { Username: 1, Name: 1, Profile: 1, ProfileLink: 1, _id: 1 } }
+                    ],
+                    as: 'reactions.LikesDetails'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { dislikeIds: '$reactions.Dislikes' },
+                    pipeline: [
+                        { $match: { $expr: { $in: ['$_id', '$$dislikeIds'] } } },
+                        { $project: { Username: 1, Name: 1, Profile: 1, ProfileLink: 1, _id: 1 } }
+                    ],
+                    as: 'reactions.DislikesDetails'
+                }
+            },
+            {
+                $addFields: {
+                    user: { $arrayElemAt: ['$user', 0] },
+                    'reactions.LikesDetails': '$reactions.LikesDetails',
+                    'reactions.DislikesDetails': '$reactions.DislikesDetails',
+                    tags: '$tags'
+                }
+            },
+            {
+                $group: {
+                    _id: '$_id',
+                    doc: { $mergeObjects: '$$ROOT' },
+                    comments: { $push: '$comments' }
+                }
+            },
+            {
+                $replaceRoot: {
+                    newRoot: {
+                        $mergeObjects: ['$doc', { comments: '$comments' }]
+                    }
+                }
+            }
+        ]);
+
+        return posts;
+    } catch (e) {
+        console.error('Error fetching posts:', e);
+        return null;
+    }
+};
+
+
+export const getComments: Function = async (PostId: string, UserId: ObjectId) => {
+    try {
+        const comments = await CommentModel.aggregate([
+            { $match: { PostId: new Types.ObjectId(PostId) } },
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { userId: '$UserId' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
+                        { $project: { Username: 1, Name: 1, Profile: 1, ProfileLink: 1, _id: 1 } }
+                    ],
+                    as: 'user'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'comments',
+                    let: { commentId: '$PostId' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$PostId', '$$commentId'] } } },
+                        {
+                            $lookup: {
+                                from: 'users',
+                                let: { userId: '$UserId' },
+                                pipeline: [
+                                    { $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
+                                    { $project: { Username: 1, Name: 1, Profile: 1, ProfileLink: 1, _id: 1 } }
+                                ],
+                                as: 'user'
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: 'users',
+                                let: { tagIds: { $ifNull: ['$Tags', []] } },
+                                pipeline: [
+                                    { $match: { $expr: { $in: ['$_id', '$$tagIds'] } } },
+                                    { $project: { Username: 1, Name: 1, Profile: 1, ProfileLink: 1, _id: 1 } }
+                                ],
+                                as: 'tags'
+                            }
+                        },
+                    ],
+                    as: 'comments'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$comments',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $addFields: {
+                    user: { $arrayElemAt: ['$user', 0] },
+                    'comments.user': { $arrayElemAt: ['$comments.user', 0] },
+                    'comments.tags': '$comments.tags'
+                }
+            }
+        ]);
+
+        return comments;
+    } catch (e) {
+        console.log(e);
+        return [];
     }
 };

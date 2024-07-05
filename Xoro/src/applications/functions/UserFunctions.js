@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getRandomVideos = exports.updateVideoLink = exports.createNotification = exports.uploadToFirebase = exports.VerifyUser = exports.uploadBase64Image = exports.UploadFile = void 0;
+exports.getVideo = exports.getRandomVideos = exports.updateVideoLink = exports.sendNotifications = exports.createNotification = exports.uploadToFirebase = exports.VerifyUser = exports.uploadBase64Image = exports.UploadFile = void 0;
 const cloudinary_1 = __importDefault(require("../../config/cloudinary"));
 const fs_1 = __importDefault(require("fs"));
 const firebase_1 = __importDefault(require("../../config/firebase"));
@@ -102,7 +102,14 @@ const uploadToFirebase = (file, path) => __awaiter(void 0, void 0, void 0, funct
 exports.uploadToFirebase = uploadToFirebase;
 const createNotification = (data, UserId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        yield (0, DatabaseFunctions_1.findOneAndUpdate)(Notifications_1.default, { UserId: UserId }, { $push: { Messages: data } }, {});
+        const datas = yield Notifications_1.default.findOne({ UserId: UserId });
+        if (!datas) {
+            Notifications_1.default.insertMany([{ UserId: UserId, Messages: [data] }]);
+        }
+        else {
+            datas.Messages.push(data);
+            yield datas.save();
+        }
         return true;
     }
     catch (e) {
@@ -110,6 +117,18 @@ const createNotification = (data, UserId) => __awaiter(void 0, void 0, void 0, f
     }
 });
 exports.createNotification = createNotification;
+const sendNotifications = (Message, Type, userId, SenderId, Link) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const data = {
+            Message, Type, Link, SenderId, Time: new Date(),
+        };
+        const notification = yield Notifications_1.default.updateMany({ UserId: { $or: userId } }, { $push: { Messages: data } });
+    }
+    catch (e) {
+        return null;
+    }
+});
+exports.sendNotifications = sendNotifications;
 const updateVideoLink = (videoId, link) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield (0, DatabaseFunctions_1.updateById)(Videos_1.default, videoId, { Video: link, Uploaded: true });
@@ -122,24 +141,27 @@ const updateVideoLink = (videoId, link) => __awaiter(void 0, void 0, void 0, fun
 exports.updateVideoLink = updateVideoLink;
 const getRandomVideos = (skip, random) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const totalVideos = yield Videos_1.default.countDocuments();
-        const randomOffset = random === 0 ? Math.floor(Math.random() * totalVideos) : random;
+        const totalVideos = yield Videos_1.default.countDocuments({});
         const videos = yield Videos_1.default.aggregate([
             { $sample: { size: totalVideos } },
-            { $skip: randomOffset + skip },
+            { $skip: skip },
             { $limit: 10 },
-            { $lookup: {
+            {
+                $lookup: {
                     from: 'channels',
                     localField: 'UserId',
                     foreignField: '_id',
                     as: 'Channel'
-                } },
-            { $lookup: {
+                }
+            },
+            {
+                $lookup: {
                     from: 'reactions',
                     localField: '_id',
                     foreignField: 'PostId',
                     as: 'Reactions'
-                } },
+                }
+            },
         ]);
         return videos;
     }
@@ -149,3 +171,32 @@ const getRandomVideos = (skip, random) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.getRandomVideos = getRandomVideos;
+const getVideo = (VideoLink) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const [video] = yield Videos_1.default.aggregate([
+            { $match: { VideoLink: VideoLink } },
+            {
+                $lookup: {
+                    from: 'channels',
+                    localField: 'UserId',
+                    foreignField: '_id',
+                    as: 'Channel'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'reactions',
+                    localField: '_id',
+                    foreignField: 'PostId',
+                    as: 'Reactions'
+                }
+            },
+        ]);
+        return video;
+    }
+    catch (error) {
+        console.error('Error fetching video:', error);
+        throw error;
+    }
+});
+exports.getVideo = getVideo;

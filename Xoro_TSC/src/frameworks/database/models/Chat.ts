@@ -1,6 +1,5 @@
 import { model, Schema, Types } from 'mongoose';
 import { Chat } from '../../../entities/ModelsInterface/Chat'
-import { string } from 'joi';
 const ChatSchema = new Schema<Chat>({
     Users: [{
         UserId:Types.ObjectId,

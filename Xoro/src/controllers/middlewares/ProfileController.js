@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateChannel = exports.GetProfile = exports.SearchUser = exports.UnFollowUser = exports.FollowUser = exports.EditProfile = exports.ProfileSettings = exports.SecureAccount = exports.EditProfilePic = exports.EditBanner = void 0;
+exports.CreateChannel = exports.GetProfile = exports.SearchUser = exports.RemoveFollowUser = exports.UnFollowUser = exports.FollowUser = exports.EditProfile = exports.ProfileSettings = exports.SecureAccount = exports.EditProfilePic = exports.EditBanner = void 0;
 const UseCases = __importStar(require("../../applications/usecases/UserProfile"));
 const EditBanner = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -118,6 +118,18 @@ const UnFollowUser = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.UnFollowUser = UnFollowUser;
+const RemoveFollowUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const result = req.result;
+        const { UserId } = req.params;
+        const data = yield UseCases.RemoveFollowUser({ user: result === null || result === void 0 ? void 0 : result.user, UserId });
+        return res.status(data.status).json(data);
+    }
+    catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+exports.RemoveFollowUser = RemoveFollowUser;
 const SearchUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const result = req.result;

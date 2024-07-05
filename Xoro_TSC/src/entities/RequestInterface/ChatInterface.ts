@@ -19,9 +19,19 @@ export interface StartChat {
     GroupName?:string;
     Profile?:string;
     UserId:string[];
+    Users:{
+        UserId:string;
+        Admin:boolean;
+    }[]
     user:UserDocument;
     LastClear:{
         UserId:string,
         Time:Date;
-    }[]
+    }[],
+    RoomId:string;
+}
+
+export interface getChat {
+    RoomId:string;
+    user:UserDocument;
 }

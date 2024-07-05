@@ -14,6 +14,7 @@ import { VerifyUser } from '../../functions/UserFunctions';
 import Connections from '../../../frameworks/database/models/Connetions';
 import { ConnectionsInterface } from '../../../entities/ModelsInterface/Connections';
 import Notifications from '../../../frameworks/database/models/Notifications';
+// import { Notification } from '../../../entities/ModelsInterface/Notification';
 // import { ObjectId } from 'mongodb';
 
 export const RegisterRepository: Function = async (data: UserEntity.Register): Promise<Responses.SignUpResponse> => {
@@ -61,9 +62,15 @@ export const RegisterRepository: Function = async (data: UserEntity.Register): P
 
 export const LoginRepository: Function = async ({ Email, Password, Type }: UserEntity.Login): Promise<Responses.LoginResponse> => {
     try {
-        console.log(Email, typeof Password, Type)
         const user: UnverifiedUsers = await DatabaseFunctions.findOneData(UserAuth, { Email: Email })
         const userauth: any = await VerifyUser(user)
+        if(user && user.Type !== Type) {
+            return ResponseFunctions.VerityAccountAuthRes(<Responses.VerifyUserAuthResponse>{
+                message: "Account Loggin Incorrect",
+                status: 202,
+                user: null
+            })
+        }
         if (!userauth.status) {
             return ResponseFunctions.VerityAccountAuthRes(<Responses.VerifyUserAuthResponse>{
                 message: userauth.message,
@@ -92,11 +99,13 @@ export const LoginRepository: Function = async ({ Email, Password, Type }: UserE
             })
         }
         if (!user.TwoStepVerification) {
-            const token: string = await CreatePayload({ Payload: { UserId: user._id, Email: user.Email }, RememberMe: true })
+            const token: string = await CreatePayload({ Payload: { UserId: user._id, Email: user.Email, Admin: false }, RememberMe: false })
+            const refresh = await CreatePayload({ Payload: { UserId: user._id, Email: user.Email, Admin: false }, RememberMe:true }) 
             return ResponseFunctions.LoginRes(<Responses.LoginResponse>{
                 message: token,
                 status: 210,
                 errors: [],
+                refresh:refresh,
                 user: await DatabaseFunctions.findUsingId(User, user._id)
             })
         }
@@ -176,7 +185,8 @@ export const VerifyAccountRepository: Function = async ({ VerificationLink, User
             status: 200,
             token: token,
             user: user,
-            data:{
+            refresh:token,
+            data: {
                 Message: 'Welcome to Xoro Streams',
                 Type: 'Auth',
                 SenderId: '',
@@ -225,12 +235,14 @@ export const AddProfilePicRepository: Function = async ({ file }: UserEntity.Fil
         user.Profile = typeof file == 'string' && file != '' ? file : user.Profile
         await DatabaseFunctions.saveData(user)
         await DatabaseFunctions.updateById(User, UserId, { Profile: user.Profile, Username: user.Username })
-        const token: string = await CreatePayload({ Payload: { UserId: user._id, Email: user.Email, Admin: false }, RememberMe })
+        const token: string = await CreatePayload({ Payload: { UserId: user._id, Email: user.Email, Admin: false }, RememberMe:false })
+        const refresh:string = RememberMe ? await CreatePayload({ Payload: { UserId: user._id, Email: user.Email, Admin: false }, RememberMe }) : token
         return ResponseFunctions.AddProfileRes(<Responses.AddProfileResponse>{
             message: 'Uploaded Successfully',
             status: 200,
             token: token,
-            user: user
+            user: user,
+            refresh:refresh
         })
     } catch (e) {
         console.log(e)
@@ -278,13 +290,15 @@ export const OTPVerifyRepository: Function = async ({ OTP, RememberMe }: UserEnt
                 token: ''
             })
         }
-        const token = await CreatePayload({ Payload: { UserId: user._id, Email: user.Email }, RememberMe })
-        console.log(token)
+        const token = await CreatePayload({ Payload: { UserId: user._id, Email: user.Email, Admin: false }, RememberMe: false })
+        const refresh = RememberMe ? await CreatePayload({ Payload: { UserId: user._id, Email: user.Email, Admin: false }, RememberMe }) : token
+
         return ResponseFunctions.OTPVerifyRes(<Responses.OTPVerifyResponse>{
             message: 'Verified Succesfully',
             status: 200,
             token: token,
-            user: user
+            user: user,
+            refresh:refresh
         })
     } catch (e) {
         console.log(e)
@@ -296,9 +310,9 @@ export const OTPVerifyRepository: Function = async ({ OTP, RememberMe }: UserEnt
     }
 }
 
-export const verifyUserAuthRepository: Function = async (token: string): Promise<Responses.VerifyUserAuthResponse> => {
+export const verifyUserAuthRepository: Function = async (token: string, refresh: string): Promise<Responses.VerifyUserAuthResponse> => {
     try {
-        const result = await VerifyPayload({ token })
+        const result: any = await VerifyPayload({ token, refresh })
         if (!result.status) {
             return ResponseFunctions.VerityAccountAuthRes(<Responses.VerifyUserAuthResponse>{
                 message: result.error,
@@ -313,7 +327,7 @@ export const verifyUserAuthRepository: Function = async (token: string): Promise
                 user: null
             })
         }
-        const user: UserDocument = await DatabaseFunctions.findUsingId(User, result.user.UserId)
+        let user: UserDocument = await DatabaseFunctions.findUsingId(User, result.user.UserId)
         const auth = await VerifyUser(user)
         if (!auth.status) {
             return ResponseFunctions.VerityAccountAuthRes(<Responses.VerifyUserAuthResponse>{
@@ -322,10 +336,12 @@ export const verifyUserAuthRepository: Function = async (token: string): Promise
                 user: null
             })
         }
+        console.log(user)
         return ResponseFunctions.VerityAccountAuthRes(<Responses.VerifyUserAuthResponse>{
             message: 'Verified Succesfully',
             status: 200,
-            user: user
+            user:user,
+            token:result.token
         })
     } catch (e) {
         console.log(e)

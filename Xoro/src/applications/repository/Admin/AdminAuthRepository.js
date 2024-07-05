@@ -168,8 +168,7 @@ const ResendOTPRepository = (_c) => __awaiter(void 0, [_c], void 0, function* ({
 exports.ResendOTPRepository = ResendOTPRepository;
 const VerifyAdminRepository = (_d) => __awaiter(void 0, [_d], void 0, function* ({ token }) {
     try {
-        console.log(token);
-        const result = yield (0, JWT_1.VerifyPayload)({ token });
+        const result = yield (0, JWT_1.VerifyPayload)({ token, refresh: token });
         console.log(result);
         if (!result.status) {
             return ResponseFunctions.AdminVerifyAuthRes({
