@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ManageUser = exports.getUsers = exports.VerifyAdmin = exports.ResendAdminOTP = exports.AdminOTPVerify = exports.AdminLogin = void 0;
+exports.addCategory = exports.ManageUser = exports.getUsers = exports.VerifyAdmin = exports.ResendAdminOTP = exports.AdminOTPVerify = exports.AdminLogin = void 0;
 const Validations = __importStar(require("../validations/UserValidation"));
 const Repository = __importStar(require("../repository/Admin/AdminAuthRepository"));
 const AdminUserRepository = __importStar(require("../repository/Admin/AdminUserManagementRepository"));
@@ -149,3 +149,10 @@ const ManageUser = (_e) => __awaiter(void 0, [_e], void 0, function* ({ UserId, 
     }
 });
 exports.ManageUser = ManageUser;
+const addCategory = (_f) => __awaiter(void 0, [_f], void 0, function* ({}) {
+    try {
+    }
+    catch (e) {
+    }
+});
+exports.addCategory = addCategory;

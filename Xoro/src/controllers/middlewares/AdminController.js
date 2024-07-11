@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ManageUsers = exports.getUsers = exports.verifyAccountResponse = exports.VerifyAdminAuth = exports.ResendOTP = exports.AdminVerifyOTP = exports.AdminLogin = void 0;
+exports.addCategory = exports.ManageUsers = exports.getUsers = exports.verifyAccountResponse = exports.VerifyAdminAuth = exports.ResendOTP = exports.AdminVerifyOTP = exports.AdminLogin = void 0;
 const UseCases = __importStar(require("../../applications/usecases/Admin"));
 const console_1 = require("console");
 const AdminLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -125,3 +125,11 @@ const ManageUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.ManageUsers = ManageUsers;
+const addCategory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const result = req.result;
+    }
+    catch (e) {
+    }
+});
+exports.addCategory = addCategory;

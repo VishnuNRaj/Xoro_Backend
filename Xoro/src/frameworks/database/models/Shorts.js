@@ -30,6 +30,10 @@ const SchemaData = new mongoose_1.Schema({
         type: Number,
         default: 0
     },
+    Uploaded: {
+        type: Boolean,
+        default: false
+    }
 });
 const ShortVideos = (0, mongoose_1.model)("shorts", SchemaData);
 exports.default = ShortVideos;

@@ -20,7 +20,6 @@ const disconnect = (socket) => {
 };
 exports.disconnect = disconnect;
 const sendNotifications = (socket, data, UserId) => {
-    console.log(data);
     socket.to(UserId).emit('notification', data);
 };
 exports.sendNotifications = sendNotifications;

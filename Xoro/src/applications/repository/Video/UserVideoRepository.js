@@ -73,9 +73,6 @@ const uploadVideoRepository = (_a) => __awaiter(void 0, [_a], void 0, function* 
             yield DatabaseFunctions.insertData(Reactions_1.default, {
                 PostId: video._id
             }),
-            yield DatabaseFunctions.insertData(Comments_1.default, {
-                PostId: video._id
-            })
         ]);
         return ResponseFunctions.uploadVideoRes({
             message: 'Video uploaded Sucessfully',
