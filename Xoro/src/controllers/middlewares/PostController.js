@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GetPosts = exports.RemoveReactions = exports.DislikePost = exports.LikePost = exports.DeletePost = exports.ShowPostImages = exports.PostImages = void 0;
+exports.ReportPost = exports.GetPosts = exports.RemoveReactions = exports.DislikePost = exports.LikePost = exports.DeletePost = exports.ShowPostImages = exports.PostImages = void 0;
 const UseCases = __importStar(require("../../applications/usecases/Post"));
 const PostImages = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -126,3 +126,16 @@ const GetPosts = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.GetPosts = GetPosts;
+const ReportPost = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _e;
+    try {
+        const result = req.result;
+        const { PostId } = req.params;
+        const { Message, Content } = req.body;
+        const data = yield UseCases.ReportPost({ Message, Content, PostId, UserId: (_e = result === null || result === void 0 ? void 0 : result.user) === null || _e === void 0 ? void 0 : _e._id });
+    }
+    catch (e) {
+        return res.status(500).json({ Message: "Internal Server Error" });
+    }
+});
+exports.ReportPost = ReportPost;

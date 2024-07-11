@@ -14,6 +14,8 @@ import PostImages from '../../../frameworks/database/models/ImagesPost';
 import { Notification } from '../../../entities/ModelsInterface/Notification';
 import Channels from '../../../frameworks/database/models/Channels'
 import { ChannelInterface } from '../../../entities/ModelsInterface/Channels';
+import { generateVerificationLink } from '../../functions/CommonFunctions';
+import { ObjectId } from 'mongoose';
 
 export const editBannerRepository: Function = async ({ Image, user }: UserEntity.EditBanner) => {
     try {
@@ -117,6 +119,12 @@ export const ProfileSettingsRepository: Function = async ({ user, Private, Notif
 
 export const EditProfileData: Function = async ({ Name, user, Username, Description }: UserEntity.EditProfileData) => {
     try {
+        const response = await DatabaseFunctions.findOneData(User,{Username:Username,ProfileLink:{$ne:user.ProfileLink}})
+        if(response) return ResponseFunctions.EditProfileDataRes(<Responses.EditProfileDataResponse>{
+            user: user,
+            status: 201,
+            message: 'Username Already Exists'
+        });
         user.Name = Name;
         user.Username = Username;
         user.Description = Description;
@@ -390,7 +398,7 @@ export const CreateChannelRepository: Function = async ({ Name, Description, Typ
             })
         }
         const [newChannel]: ChannelInterface[] = await DatabaseFunctions.insertData(Channels, {
-            Name, Description, Type, UserId: user._id, Logo: Link
+            Name, Description, Type, UserId: user._id, Logo: Link, ChannelLink: generateVerificationLink()
         })
         user.Channel = newChannel._id
         await DatabaseFunctions.saveData(user)
@@ -402,6 +410,26 @@ export const CreateChannelRepository: Function = async ({ Name, Description, Typ
         console.log(e)
         return ResponseFunctions.createChannelRes(<Responses.createChannelResponse>{
             message: 'Internal Server Error',
+            status: 500
+        })
+    }
+}
+
+export const editChannelRepository: Function = async ({ ChannelId, Description, Name, Type }: UserEntity.editChannel) => {
+    try {
+        const channel: ChannelInterface = await DatabaseFunctions.findUsingId(Channels, ChannelId)
+        channel.Name = Name,
+            channel.Description = Description
+        channel.Type = Type
+        await DatabaseFunctions.saveData(channel)
+        return ResponseFunctions.editChannelRes(<Responses.editChannel>{
+            Channel: channel,
+            message: "Channel Edited Successfully",
+            status: 200
+        })
+    } catch (e) {
+        return ResponseFunctions.editChannelRes(<Responses.editChannel>{
+            message: "Internal Server Error",
             status: 500
         })
     }

@@ -26,3 +26,8 @@ export interface getPostResponse {
     status:number;
     message:string;
 }
+
+export interface reportPostResponse {
+    message:string;
+    status:number;
+}

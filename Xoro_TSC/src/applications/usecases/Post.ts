@@ -122,3 +122,14 @@ export const GetPosts: Function = async ({ UserId, skip }: PostEntity.getPost) =
         }
     }
 }
+
+export const ReportPost: Function = ({Content,Message,PostId,UserId}:PostEntity.ReportPost) => {
+    try {
+        
+    } catch (e) {
+        return <Responses.reportPostResponse>{
+            message:"Internal Server Error",
+            status:500,
+        }
+    }
+}

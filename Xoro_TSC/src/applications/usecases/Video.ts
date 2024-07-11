@@ -4,6 +4,7 @@ import * as Responses from '../../entities/ResponseInterface/VideoResponseInterf
 import * as Repository from '../repository/Video/UserVideoRepository';
 import * as UserFunctions from '../functions/UserFunctions';
 import UserDocument from '../../entities/ModelsInterface/User';
+import { checkObjectId } from '../functions/DatabaseFunctions';
 
 export const uploadVideo: Function = async (data: VideoEntity.uploadVideo): Promise<Responses.uploadVideoResponse> => {
     try {
@@ -56,21 +57,63 @@ export const getVideos: Function = async (user: UserDocument | null, skip: numbe
     }
 }
 
-export const getVideo: Function = async (VideoLink: string,user:UserDocument) => {
+export const getVideo: Function = async (VideoLink: string, user: UserDocument) => {
     try {
         if (!VideoLink || VideoLink.length < 32) {
             return <Responses.getVideoResponse>{
                 message: 'Fault Queries',
                 status: 201,
-                user:user
+                user: user
             }
         }
-        return await Repository.getVideoRepository(VideoLink,user)
+        return await Repository.getVideoRepository(VideoLink, user)
     } catch (e) {
         return <Responses.getVideoResponse>{
             message: 'Internal server Error',
             status: 201,
-            user:user
+            user: user
+        }
+    }
+}
+
+export const likeDislikeRemove: Function = async ({ UserId, VideoId, type }: VideoEntity.likeDislikeRemove): Promise<Responses.likeDislikeRemoveResponse> => {
+    try {
+        const response = checkObjectId(VideoId)
+        if (!response) {
+            return <Responses.likeDislikeRemoveResponse>{
+                message: "Invalid Credentials",
+                status: 201
+            }
+        }
+        if (type === "like") return await Repository.LikeVideoRepository({ UserId, VideoId })
+        if (type === "dislike") return await Repository.DislikeVideoRepository({ UserId, VideoId })
+        if (type === "remove") return await Repository.RemoveReactionRepository({ UserId, VideoId })
+        return <Responses.likeDislikeRemoveResponse>{
+            message: "Invalid Credentials",
+            status: 500
+        }
+    } catch (e) {
+        console.log(e)
+        return <Responses.likeDislikeRemoveResponse>{
+            message: "Internal Server Error",
+            status: 500
+        }
+    }
+}
+
+export const deleteVideo: Function = async ({UserId,VideoId}:VideoEntity.likeDislikeRemove) => {
+    try {
+        if(!VideoId || !checkObjectId(VideoId)) {
+            return <Responses.likeDislikeRemoveResponse>{
+                message:"Invalid Credentials",
+                status:201
+            }
+        }
+        return Repository.deleteVideoRepository({UserId,VideoId})
+    } catch (e) {
+        return <Responses.likeDislikeRemoveResponse>{
+            message:"Internal Server Error",
+            status:500
         }
     }
 }

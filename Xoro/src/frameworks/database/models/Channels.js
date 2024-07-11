@@ -18,6 +18,7 @@ const ChannelSchema = new mongoose_1.Schema({
         type: String,
         default: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSojclzzRsQKY9EiIzhdDfH1Bb4M2KRFXWKXQ&s'
     },
+    ChannelLink: String,
 });
 const ChannelModel = (0, mongoose_1.model)('channels', ChannelSchema);
 exports.default = ChannelModel;

@@ -38,4 +38,5 @@ postRouter.get('/delete/:PostId', UserController_1.VerifyUserAuth, Middleware.De
 postRouter.patch('/like/:PostId', UserController_1.VerifyUserAuth, Middleware.LikePost);
 postRouter.patch('/dislike/:PostId', UserController_1.VerifyUserAuth, Middleware.DislikePost);
 postRouter.patch('/remove/:PostId', UserController_1.VerifyUserAuth, Middleware.RemoveReactions);
+postRouter.post('/report/:PostId', UserController_1.VerifyUserAuth, Middleware.RemoveReactions);
 exports.default = postRouter;

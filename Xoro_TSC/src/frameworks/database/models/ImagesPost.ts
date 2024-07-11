@@ -24,8 +24,12 @@ export const PostSchema = new Schema<Post>({
     ShowReactions: {
         type: Boolean,
         default: true
+    },
+    Banned:{
+        type:Boolean,
+        default:false
     }
 });
 
 const PostImages = model<Post>('postimages', PostSchema);
-export default PostImages;
+export default PostImages; 

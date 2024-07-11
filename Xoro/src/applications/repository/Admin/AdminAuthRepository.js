@@ -109,7 +109,7 @@ const AdminOTPVerifyRepository = (_b) => __awaiter(void 0, [_b], void 0, functio
                 status: 203
             });
         }
-        return ResponseFunctions.AdminOTPVerifyRes({
+        return yield ResponseFunctions.AdminOTPVerifyRes({
             message: 'OTP Verified',
             admin: admin,
             status: 200,
@@ -168,7 +168,7 @@ const ResendOTPRepository = (_c) => __awaiter(void 0, [_c], void 0, function* ({
 exports.ResendOTPRepository = ResendOTPRepository;
 const VerifyAdminRepository = (_d) => __awaiter(void 0, [_d], void 0, function* ({ token }) {
     try {
-        const result = yield (0, JWT_1.VerifyPayload)({ token, refresh: token });
+        const result = yield (0, JWT_1.VerifyPayloadAdmin)({ token, refresh: token });
         console.log(result);
         if (!result.status) {
             return ResponseFunctions.AdminVerifyAuthRes({

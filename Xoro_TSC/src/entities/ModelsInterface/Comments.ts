@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb';
+import { ObjectId, Document } from 'mongoose';
 import UserDocument from './User';
 
 export interface CommentReply extends Document {
@@ -13,7 +13,7 @@ export interface CommentReply extends Document {
 }
 
 
-export interface Comment extends Document {
+export interface Comments extends Document {
     Comment: string[];
     PostId: ObjectId;
     UserId: ObjectId;

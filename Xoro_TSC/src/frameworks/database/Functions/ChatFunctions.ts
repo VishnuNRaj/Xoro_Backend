@@ -6,7 +6,7 @@ import Message from "../models/Messages";
 import User from "../models/User";
 import { Types } from "mongoose"
 
-export const saveChat: Function = async (data: chatupload) => {
+export const saveChat: Function = async (data: any) => {
     try {
         let [response]: any[] = await Message.insertMany([{ ...data, Time: new Date() }])
         const user = await User.findById(data.SenderId)

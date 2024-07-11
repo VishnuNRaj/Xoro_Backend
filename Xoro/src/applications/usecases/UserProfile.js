@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateChannel = exports.GetUserProfile = exports.RemoveFollowUser = exports.UnFollowUser = exports.FollowUser = exports.SearchUser = exports.ProfileSettings = exports.SecureAccount = exports.EditProfile = exports.EditProfilePic = exports.EditBanner = void 0;
+exports.editChannel = exports.CreateChannel = exports.GetUserProfile = exports.RemoveFollowUser = exports.UnFollowUser = exports.FollowUser = exports.SearchUser = exports.ProfileSettings = exports.SecureAccount = exports.EditProfile = exports.EditProfilePic = exports.EditBanner = void 0;
 const Validations = __importStar(require("../validations/UserValidation"));
 const ResponseFunctions = __importStar(require("../responses/UserResponse"));
 const Repository = __importStar(require("../repository/User/UserProfileRepository"));
@@ -290,3 +290,27 @@ const CreateChannel = (_l, user_1) => __awaiter(void 0, [_l, user_1], void 0, fu
     }
 });
 exports.CreateChannel = CreateChannel;
+const editChannel = (_m) => __awaiter(void 0, [_m], void 0, function* ({ ChannelId, Description, Name, Type }) {
+    try {
+        if (!Name || !Description || Type.length < 1) {
+            return {
+                message: "Enter Essential Details",
+                status: 201
+            };
+        }
+        if (!ChannelId) {
+            return {
+                message: "No Channel Created",
+                status: 201
+            };
+        }
+        return yield Repository.editChannelRepository({ ChannelId, Description, Name, Type });
+    }
+    catch (e) {
+        return {
+            message: "Internal Server Error",
+            status: 500
+        };
+    }
+});
+exports.editChannel = editChannel;

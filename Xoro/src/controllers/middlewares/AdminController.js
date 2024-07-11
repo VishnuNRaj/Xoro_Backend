@@ -71,8 +71,9 @@ const ResendOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.ResendOTP = ResendOTP;
 const VerifyAdminAuth = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const token = req.headers.authorization;
+        const token = req.cookies.admin;
         const result = yield UseCases.VerifyAdmin({ token });
+        console.log(result, token);
         req.result = result;
         if (result.status === 200) {
             req.result = result;

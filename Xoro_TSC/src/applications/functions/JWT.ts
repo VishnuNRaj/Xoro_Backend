@@ -23,7 +23,7 @@ export const VerifyPayload = async ({ token, refresh }: JWTVerify): Promise<JWTV
                 Email: string;
             },
             error: null,
-            token:token,
+            token: token,
         };
     } catch (error: any) {
         console.error(error);
@@ -58,6 +58,36 @@ export const VerifyPayload = async ({ token, refresh }: JWTVerify): Promise<JWTV
                         error: 'Session Expired'
                     };
                 }
+            }
+        }
+        return <JWTVerifyResponse>{
+            status: false,
+            user: null,
+            error: 'Internal server error'
+        };
+    }
+};
+
+
+export const VerifyPayloadAdmin = async ({ token }: JWTVerify): Promise<JWTVerifyResponse> => {
+    const { JWT_SECRET }: AuthInterface = auth;
+    try {
+        const decodedToken = jwt.verify(token, JWT_SECRET);
+        return <JWTVerifyResponse>{
+            status: true,
+            user: decodedToken as {
+                UserId: string;
+                Email: string;
+            },
+            error: null,
+            token: token,
+        };
+    } catch (error: any) {
+        console.error(error);
+        if (error instanceof TokenExpiredError) {
+            return <JWTVerifyResponse>{
+                error:"Session Expired",
+                status:false,
             }
         }
         return <JWTVerifyResponse>{

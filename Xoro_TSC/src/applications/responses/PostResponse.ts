@@ -14,7 +14,7 @@ export const showPostRes = async (data: Responses.showImagesResponse) => {
         post: data.post,
         status: data.status,
         user: data.user,
-        connections:data.connections
+        connections: data.connections
     }
 }
 
@@ -29,7 +29,11 @@ export const getPostRes = async (data: Responses.getPostResponse) => {
     return <Responses.getPostResponse>{
         message: data.message,
         status: data.status,
-        post:data.post,
-        connections:data.connections,
+        post: data.post,
+        connections: data.connections,
     }
+}
+
+export const reportPostRes = async (data: Responses.reportPostResponse):Promise<Responses.reportPostResponse> => {
+    return <Responses.reportPostResponse>data
 }

@@ -113,4 +113,10 @@ export const ManageUser: Function = async ({ UserId, Admin, Suspended, Suspended
     }
 }
 
-
+export const addCategory : Function = async ({}) => {
+    try {
+        
+    } catch (e) {
+        
+    }
+}

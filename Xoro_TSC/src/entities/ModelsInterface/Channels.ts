@@ -8,4 +8,5 @@ export interface ChannelInterface extends Document {
     Reports:number;
     Description:string;
     Logo:string;
+    ChannelLink:string;
 }

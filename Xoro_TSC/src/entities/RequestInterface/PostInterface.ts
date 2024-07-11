@@ -34,3 +34,11 @@ export interface getPost {
     UserId:ObjectId;
     skip:number;
 }
+
+export interface ReportPost {
+    UserId:ObjectId;
+    PostId:string;
+    Message:string;
+    Content:string;
+}
+

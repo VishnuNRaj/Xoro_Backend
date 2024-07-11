@@ -9,6 +9,7 @@ const cors_1 = __importDefault(require("cors"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const express_mongo_sanitize_1 = __importDefault(require("express-mongo-sanitize"));
 const helmet_1 = __importDefault(require("helmet"));
+const cors_2 = __importDefault(require("../../config/cors"));
 const expressConfig = (app) => {
     app.use(express_1.default.json({ limit: '10mb' }));
     app.use(express_1.default.urlencoded({ limit: '100mb', extended: true }));
@@ -16,10 +17,6 @@ const expressConfig = (app) => {
     app.use((0, helmet_1.default)({ xssFilter: true }));
     app.use((0, express_mongo_sanitize_1.default)());
     app.use((0, cookie_parser_1.default)());
-    app.use((0, cors_1.default)({
-        origin: 'http://localhost:6767',
-        credentials: true,
-        preflightContinue: true,
-    }));
+    app.use((0, cors_1.default)(cors_2.default));
 };
 exports.default = expressConfig;

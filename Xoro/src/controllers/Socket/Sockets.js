@@ -31,10 +31,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const SocketFunctions = __importStar(require("./SocketFunctions"));
-// import {chatUploadQueue} from "../../frameworks/mq/queue/chatUploadQueue"
 const ChatFunctions_1 = require("../../frameworks/database/Functions/ChatFunctions");
+const Channels_1 = __importDefault(require("../../frameworks/database/models/Channels"));
 const socketRoutes = (io) => {
     if (!io) {
         throw new Error('Socket instance is undefined. Ensure initializeSocketServer is called.');
@@ -64,6 +67,10 @@ const socketRoutes = (io) => {
             console.log(typing, Username);
             socket.to(RoomId).emit("typing", { typing, Username });
         });
+        socket.on("get-channel", (ChannelId) => __awaiter(void 0, void 0, void 0, function* () {
+            const channel = yield Channels_1.default.findById(ChannelId);
+            socket.send(channel);
+        }));
     });
     return io;
 };

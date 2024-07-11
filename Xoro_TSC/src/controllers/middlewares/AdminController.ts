@@ -46,11 +46,12 @@ export const ResendOTP: Middleware = async (req, res) => {
 
 export const VerifyAdminAuth: Middleware = async (req, res, next) => {
     try {
-        const token = req.headers.authorization
+        const token:string = req.cookies.admin
         const result: Responses.AdminVerifyAuthResponse = await UseCases.VerifyAdmin({ token })
+        console.log(result,token)
         req.result = result
         if (result.status === 200) {
-            req.result = result
+            req.result = result 
             return next()
         }
         else return res.status(result.status).json(result)
@@ -94,3 +95,10 @@ export const ManageUsers: Middleware = async (req, res) => {
     }
 }
 
+export const addCategory: Middleware = async (req,res) => {
+    try {
+        const result = req.result        
+    } catch (e) {
+        
+    }
+}

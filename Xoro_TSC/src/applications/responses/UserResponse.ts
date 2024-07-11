@@ -163,3 +163,11 @@ export const createChannelRes: Function = async (data:Responses.createChannelRes
         status:data.status
     }
 }
+
+export const editChannelRes: Function = async (data:Responses.editChannel) => {
+    return <Responses.editChannel>{
+        message:data.message,
+        status:data.status,
+        Channel:data.Channel
+    }
+}

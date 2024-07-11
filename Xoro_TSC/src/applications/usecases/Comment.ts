@@ -68,3 +68,20 @@ export const getComments: Function = async (PostId:string,user:UserDocument) => 
         }   
     }
 }
+
+export const deleteComment: Function = async ({CommentId,UserId}:CommentEntity.deleteComment) => {
+    try {
+        if(!CommentId) {
+            return <Responses.deleteCommentResponse>{
+                message:"Invalid Credentials",
+                status:201
+            }
+        }
+        return await Repository.deleteComment({CommentId,UserId})
+    } catch (e) {
+        return <Responses.deleteCommentResponse>{
+            message:"Internal Server Error",
+            status:500
+        }
+    }
+}

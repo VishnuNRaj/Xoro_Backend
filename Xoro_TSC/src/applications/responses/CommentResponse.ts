@@ -11,3 +11,8 @@ export const addCommentReplyRes: Function = async (data:Responses.addReplyRespon
 export const getCommentsRes: Function = async (data:Responses.getCommentsResponse) => {
     return<Responses.getCommentsResponse>data
 }
+
+export const deleteCommentRes: Function = async (data:Responses.deleteCommentResponse) => {
+    return<Responses.deleteCommentResponse>data
+
+}

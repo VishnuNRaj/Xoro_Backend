@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getVideo = exports.getVideos = exports.uploadVideo = void 0;
+exports.deleteVideo = exports.LikeDislikeRemoveVideo = exports.getVideo = exports.getVideos = exports.uploadVideo = void 0;
 const UseCases = __importStar(require("../../applications/usecases/Video"));
 const uploadVideo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -79,7 +79,6 @@ const getVideo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const result = req === null || req === void 0 ? void 0 : req.result;
         const { VideoLink } = req === null || req === void 0 ? void 0 : req.params;
         const data = yield UseCases.getVideo(VideoLink, result === null || result === void 0 ? void 0 : result.user);
-        console.log(data);
         return res.status(data.status).json(data);
     }
     catch (e) {
@@ -87,3 +86,32 @@ const getVideo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.getVideo = getVideo;
+const LikeDislikeRemoveVideo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const result = req.result;
+        const { VideoId, type } = req.params;
+        const array = ["like", "dislike", "remove"];
+        if (!array.find((value) => value === type))
+            return res.status(201).json({ message: "Invalid Credentials" });
+        const data = UseCases.likeDislikeRemove({ VideoId, type, UserId: (_a = result === null || result === void 0 ? void 0 : result.user) === null || _a === void 0 ? void 0 : _a._id });
+        return res.status(data.status).json(data);
+    }
+    catch (e) {
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+});
+exports.LikeDislikeRemoveVideo = LikeDislikeRemoveVideo;
+const deleteVideo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b;
+    try {
+        const result = req.result;
+        const { VideoId } = req.params;
+        const data = yield UseCases.deleteVideo({ UserId: (_b = result === null || result === void 0 ? void 0 : result.user) === null || _b === void 0 ? void 0 : _b.Channel, VideoId });
+        return res.status(data.status).json(data);
+    }
+    catch (e) {
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+});
+exports.deleteVideo = deleteVideo;

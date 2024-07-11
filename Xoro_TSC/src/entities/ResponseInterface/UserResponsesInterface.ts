@@ -1,3 +1,4 @@
+import { ChannelInterface } from "../ModelsInterface/Channels";
 import { Notification } from "../ModelsInterface/Notification";
 import { Post } from "../ModelsInterface/PostImages";
 import UnverifiedUsers from "../ModelsInterface/UnverifiedUsers";
@@ -131,6 +132,12 @@ export interface GetProfileResponse {
     post:{
         Images:Post[]
     }
+}
+
+export interface editChannel {
+    Channel:ChannelInterface;
+    message:string;
+    status:number;
 }
 
 export interface setTwoStepResponse {

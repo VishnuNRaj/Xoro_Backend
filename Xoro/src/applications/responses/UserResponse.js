@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createChannelRes = exports.setTwoStepRes = exports.GetUserProfileRes = exports.SearchUserRes = exports.UnFollowUserRes = exports.FollowUserRes = exports.EditProfileDataRes = exports.ProfileSettingsRes = exports.SecureAccountRes = exports.EditProfilePicRes = exports.EditBannerRes = exports.GetSecurityRes = exports.ResendOTPRes = exports.VerityAccountAuthRes = exports.OTPVerifyRes = exports.AddProfileRes = exports.VerifyAccountRes = exports.LoginRes = exports.SignupRes = void 0;
+exports.editChannelRes = exports.createChannelRes = exports.setTwoStepRes = exports.GetUserProfileRes = exports.SearchUserRes = exports.UnFollowUserRes = exports.FollowUserRes = exports.EditProfileDataRes = exports.ProfileSettingsRes = exports.SecureAccountRes = exports.EditProfilePicRes = exports.EditBannerRes = exports.GetSecurityRes = exports.ResendOTPRes = exports.VerityAccountAuthRes = exports.OTPVerifyRes = exports.AddProfileRes = exports.VerifyAccountRes = exports.LoginRes = exports.SignupRes = void 0;
 const SignupRes = (data) => __awaiter(void 0, void 0, void 0, function* () {
     return {
         errors: data.errors,
@@ -174,3 +174,11 @@ const createChannelRes = (data) => __awaiter(void 0, void 0, void 0, function* (
     };
 });
 exports.createChannelRes = createChannelRes;
+const editChannelRes = (data) => __awaiter(void 0, void 0, void 0, function* () {
+    return {
+        message: data.message,
+        status: data.status,
+        Channel: data.Channel
+    };
+});
+exports.editChannelRes = editChannelRes;

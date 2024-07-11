@@ -9,58 +9,71 @@ import UnverifiedUsers from '../../../entities/ModelsInterface/UnverifiedUsers';
 import User from '../../../frameworks/database/models/User';
 import auth from '../../../config/auth'
 import UserDocument from '../../../entities/ModelsInterface/User';
-import CommentModel,{CommentReplies} from "../../../frameworks/database/models/Comments"
-import { Comment, CommentReply } from '../../../entities/ModelsInterface/Comments';
+import CommentModel, { CommentReplies } from "../../../frameworks/database/models/Comments"
+import { Comments, CommentReply } from '../../../entities/ModelsInterface/Comments';
 
-export const addComment: Function = async ({Comment,PostId,user,tags}:CommentEntity.addComment):Promise<Responses.addCommentResponse> => {
+export const addComment: Function = async ({ Comment, PostId, user, tags }: CommentEntity.addComment): Promise<Responses.addCommentResponse> => {
     try {
-        const [comment]:Comment[] = await DatabaseFunctions.insertData(CommentModel,{Comment,PostId,UserId:user._id,Tags:tags})
-        console.log(comment)
-        // UserFunctions.createNotification
+        const [comment]: Comments[] = await DatabaseFunctions.insertData(CommentModel, { Comment, PostId, UserId: user._id, Tags: tags })
+        const [newComment]: Comments[] = await DatabaseFunctions.getComment(comment._id)
         return ResponseFunctions.addCommentRes(<Responses.addCommentResponse>{
-            Comment:comment,
-            message:"Commented",
-            status:200
+            Comment: newComment,
+            message: "Commented",
+            status: 200
         })
     } catch (e) {
         console.log(e)
         return ResponseFunctions.addCommentRes(<Responses.addCommentResponse>{
-            message:"Internal Server Error",
-            status:500,
+            message: "Internal Server Error",
+            status: 500,
         })
     }
 }
 
-export const addCommentReply: Function = async ({Comment,CommentId,UserId,tags}:CommentEntity.addCommentReply):Promise<Responses.addReplyResponse> => {
+export const addCommentReply: Function = async ({ Comment, CommentId, UserId, tags }: CommentEntity.addCommentReply): Promise<Responses.addReplyResponse> => {
     try {
-        const [comment]:CommentReply[] = await DatabaseFunctions.insertData(CommentReplies,{Comment,CommentId,UserId,Tags:tags})
+        const [comment]: CommentReply[] = await DatabaseFunctions.insertData(CommentReplies, { Comment, CommentId, UserId, Tags: tags })
         return ResponseFunctions.addCommentReplyRes(<Responses.addReplyResponse>{
-            Comment:comment,
-            message:"Reply Sent",
-            status:200
+            Comment: comment,
+            message: "Reply Sent",
+            status: 200
         })
     } catch (e) {
         return ResponseFunctions.addCommentRes(<Responses.addReplyResponse>{
-            message:"Internal Server Error",
-            status:500,
+            message: "Internal Server Error",
+            status: 500,
         })
     }
 }
 
-export const getComments: Function = async (PostId:string,user:UserDocument) => {
+export const getComments: Function = async (PostId: string, user: UserDocument) => {
     try {
-        const allComments:Comment[] = await DatabaseFunctions.getComments(PostId)
-        const newData = allComments.filter((comment)=>comment.UserId === user._id)
-        const otherData = allComments.filter((comment)=>comment.UserId !== user._id)
+        const allComments: Comments[] = await DatabaseFunctions.getComments(PostId)
         return ResponseFunctions.getCommentsRes(<Responses.getCommentsResponse>{
-            comments:[...newData,...otherData],
-            message:"Found",
-            status:200
+            comments: allComments,
+            message: "Found",
+            status: 200
         })
     } catch (e) {
         return ResponseFunctions.getCommentsRes(<Responses.getCommentsResponse>{
-            message:"Internal Server Error",
-            status:500,
+            message: "Internal Server Error",
+            status: 500,
+        })
+    }
+}
+
+export const deleteComment: Function = async ({ CommentId, UserId }: CommentEntity.deleteComment) => {
+    try {
+        const comment: Comments = await DatabaseFunctions.findUsingId(CommentId)
+        if (!comment || comment.UserId !== UserId) {
+            return ResponseFunctions.deleteCommentRes(<Responses.deleteCommentResponse>{ message: "UnAuthorized", status: 201 })
+        }
+        await comment.deleteOne()
+        return ResponseFunctions.deleteCommentRes(<Responses.deleteCommentResponse>{ message: "Deleted Successfully", status: 200 })
+    } catch (e) {
+        return ResponseFunctions.deleteCommentRes(<Responses.deleteCommentResponse>{
+            message: "Internal Server Error",
+            status: 500
         })
     }
 }

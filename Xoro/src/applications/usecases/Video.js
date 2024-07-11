@@ -32,9 +32,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getVideo = exports.getVideos = exports.uploadVideo = void 0;
+exports.deleteVideo = exports.likeDislikeRemove = exports.getVideo = exports.getVideos = exports.uploadVideo = void 0;
 const Repository = __importStar(require("../repository/Video/UserVideoRepository"));
 const UserFunctions = __importStar(require("../functions/UserFunctions"));
+const DatabaseFunctions_1 = require("../functions/DatabaseFunctions");
 const uploadVideo = (data) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // const errors: {
@@ -109,3 +110,50 @@ const getVideo = (VideoLink, user) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.getVideo = getVideo;
+const likeDislikeRemove = (_a) => __awaiter(void 0, [_a], void 0, function* ({ UserId, VideoId, type }) {
+    try {
+        const response = (0, DatabaseFunctions_1.checkObjectId)(VideoId);
+        if (!response) {
+            return {
+                message: "Invalid Credentials",
+                status: 201
+            };
+        }
+        if (type === "like")
+            return yield Repository.LikeVideoRepository({ UserId, VideoId });
+        if (type === "dislike")
+            return yield Repository.DislikeVideoRepository({ UserId, VideoId });
+        if (type === "remove")
+            return yield Repository.RemoveReactionRepository({ UserId, VideoId });
+        return {
+            message: "Invalid Credentials",
+            status: 500
+        };
+    }
+    catch (e) {
+        console.log(e);
+        return {
+            message: "Internal Server Error",
+            status: 500
+        };
+    }
+});
+exports.likeDislikeRemove = likeDislikeRemove;
+const deleteVideo = (_b) => __awaiter(void 0, [_b], void 0, function* ({ UserId, VideoId }) {
+    try {
+        if (!VideoId || !(0, DatabaseFunctions_1.checkObjectId)(VideoId)) {
+            return {
+                message: "Invalid Credentials",
+                status: 201
+            };
+        }
+        return Repository.deleteVideoRepository({ UserId, VideoId });
+    }
+    catch (e) {
+        return {
+            message: "Internal Server Error",
+            status: 500
+        };
+    }
+});
+exports.deleteVideo = deleteVideo;

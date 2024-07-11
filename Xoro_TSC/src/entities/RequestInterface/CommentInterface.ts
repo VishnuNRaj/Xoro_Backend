@@ -26,5 +26,4 @@ export interface editComment {
 export interface deleteComment {
     CommentId:string;
     UserId:ObjectId;
-    type:string;
 }

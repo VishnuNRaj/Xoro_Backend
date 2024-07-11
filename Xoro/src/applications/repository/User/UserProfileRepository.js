@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateChannelRepository = exports.GetUserProfileRepository = exports.SearchUserRepository = exports.RemoveFollowUserRepository = exports.UnFollowUserRepository = exports.FollowUserRepository = exports.EditProfileData = exports.ProfileSettingsRepository = exports.SecureAccountRepository = exports.editProfilePicRepository = exports.editBannerRepository = void 0;
+exports.editChannelRepository = exports.CreateChannelRepository = exports.GetUserProfileRepository = exports.SearchUserRepository = exports.RemoveFollowUserRepository = exports.UnFollowUserRepository = exports.FollowUserRepository = exports.EditProfileData = exports.ProfileSettingsRepository = exports.SecureAccountRepository = exports.editProfilePicRepository = exports.editBannerRepository = void 0;
 const DatabaseFunctions = __importStar(require("../../functions/DatabaseFunctions"));
 const UnverifiedUsers_1 = __importDefault(require("../../../frameworks/database/models/UnverifiedUsers"));
 const ResponseFunctions = __importStar(require("../../responses/UserResponse"));
@@ -45,6 +45,7 @@ const User_1 = __importDefault(require("./../../../frameworks/database/models/Us
 const Connetions_1 = __importDefault(require("./../../../frameworks/database/models/Connetions"));
 const ImagesPost_1 = __importDefault(require("../../../frameworks/database/models/ImagesPost"));
 const Channels_1 = __importDefault(require("../../../frameworks/database/models/Channels"));
+const CommonFunctions_1 = require("../../functions/CommonFunctions");
 const editBannerRepository = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Image, user }) {
     try {
         const result = yield (0, UserFunctions_1.UploadFile)(Image);
@@ -151,6 +152,13 @@ const ProfileSettingsRepository = (_d) => __awaiter(void 0, [_d], void 0, functi
 exports.ProfileSettingsRepository = ProfileSettingsRepository;
 const EditProfileData = (_e) => __awaiter(void 0, [_e], void 0, function* ({ Name, user, Username, Description }) {
     try {
+        const response = yield DatabaseFunctions.findOneData(User_1.default, { Username: Username, ProfileLink: { $ne: user.ProfileLink } });
+        if (response)
+            return ResponseFunctions.EditProfileDataRes({
+                user: user,
+                status: 201,
+                message: 'Username Already Exists'
+            });
         user.Name = Name;
         user.Username = Username;
         user.Description = Description;
@@ -404,7 +412,7 @@ const CreateChannelRepository = (_l, user_1, Link_1) => __awaiter(void 0, [_l, u
             });
         }
         const [newChannel] = yield DatabaseFunctions.insertData(Channels_1.default, {
-            Name, Description, Type, UserId: user._id, Logo: Link
+            Name, Description, Type, UserId: user._id, Logo: Link, ChannelLink: (0, CommonFunctions_1.generateVerificationLink)()
         });
         user.Channel = newChannel._id;
         yield DatabaseFunctions.saveData(user);
@@ -422,3 +430,24 @@ const CreateChannelRepository = (_l, user_1, Link_1) => __awaiter(void 0, [_l, u
     }
 });
 exports.CreateChannelRepository = CreateChannelRepository;
+const editChannelRepository = (_m) => __awaiter(void 0, [_m], void 0, function* ({ ChannelId, Description, Name, Type }) {
+    try {
+        const channel = yield DatabaseFunctions.findUsingId(Channels_1.default, ChannelId);
+        channel.Name = Name,
+            channel.Description = Description;
+        channel.Type = Type;
+        yield DatabaseFunctions.saveData(channel);
+        return ResponseFunctions.editChannelRes({
+            Channel: channel,
+            message: "Channel Edited Successfully",
+            status: 200
+        });
+    }
+    catch (e) {
+        return ResponseFunctions.editChannelRes({
+            message: "Internal Server Error",
+            status: 500
+        });
+    }
+});
+exports.editChannelRepository = editChannelRepository;

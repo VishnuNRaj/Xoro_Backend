@@ -5,6 +5,7 @@ import * as CommonFunctions from "../../functions/CommonFunctions";
 import * as PostEntity from "../../../entities/RequestInterface/PostInterface";
 import PostImages from "../../../frameworks/database/models/ImagesPost";
 import Reactions from './../../../frameworks/database/models/Reactions';
+import VideoReport from './../../../frameworks/database/models/VideoReports';
 import { Post, PostImage } from "../../../entities/ModelsInterface/PostImages";
 import { ReactionsInterface } from "../../../entities/ModelsInterface/Reactions";
 import { ConnectionsInterface } from "../../../entities/ModelsInterface/Connections";
@@ -211,5 +212,16 @@ export const getPostsRepository: Function = async ({ UserId, skip }: PostEntity.
     }
 }
 
-
-
+export const ReportPostRepository: Function = async ({ Content, Message, PostId, UserId }: PostEntity.ReportPost): Promise<Responses.reportPostResponse> => {
+    try {
+        const post: Post = await DatabaseFunctions.findUsingId(PostImages, PostId)
+        if (!post) return await ResponseFunctions.reportPostRes({ message: "Invalid Credentials", status: 201 })
+        
+        await DatabaseFunctions.insertData(VideoReport, { Message, PostId, Content, UserId })
+        
+        return await ResponseFunctions.reportPostRes({ message: "Reported Successfully", status: 500 })
+    } catch (e) {
+        console.log(e)
+        return await ResponseFunctions.reportPostRes({ message: "Internal Server Error", status: 500 })
+    }
+}

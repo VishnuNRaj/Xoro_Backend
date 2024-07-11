@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GetPosts = exports.RemoveReactions = exports.DislikePost = exports.LikePost = exports.DeletePost = exports.ShowPost = exports.AddPost = void 0;
+exports.ReportPost = exports.GetPosts = exports.RemoveReactions = exports.DislikePost = exports.LikePost = exports.DeletePost = exports.ShowPost = exports.AddPost = void 0;
 const Repository = __importStar(require("../repository/Post/UserPostRepository"));
 const firebase_1 = require("../../config/firebase");
 const AddPost = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Caption, CommentsOn, Hashtags, Hidden, Media, Tags, user }) {
@@ -161,3 +161,14 @@ const GetPosts = (_g) => __awaiter(void 0, [_g], void 0, function* ({ UserId, sk
     }
 });
 exports.GetPosts = GetPosts;
+const ReportPost = ({ Content, Message, PostId, UserId }) => {
+    try {
+    }
+    catch (e) {
+        return {
+            message: "Internal Server Error",
+            status: 500,
+        };
+    }
+};
+exports.ReportPost = ReportPost;

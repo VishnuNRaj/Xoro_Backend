@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPostRes = exports.deletePostRes = exports.showPostRes = exports.addPostRes = void 0;
+exports.reportPostRes = exports.getPostRes = exports.deletePostRes = exports.showPostRes = exports.addPostRes = void 0;
 const addPostRes = (data) => __awaiter(void 0, void 0, void 0, function* () {
     return {
         message: data.message,
@@ -43,3 +43,7 @@ const getPostRes = (data) => __awaiter(void 0, void 0, void 0, function* () {
     };
 });
 exports.getPostRes = getPostRes;
+const reportPostRes = (data) => __awaiter(void 0, void 0, void 0, function* () {
+    return data;
+});
+exports.reportPostRes = reportPostRes;

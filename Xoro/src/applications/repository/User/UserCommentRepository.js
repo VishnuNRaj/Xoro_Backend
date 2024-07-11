@@ -32,17 +32,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getComments = exports.addCommentReply = exports.addComment = void 0;
+exports.deleteComment = exports.getComments = exports.addCommentReply = exports.addComment = void 0;
 const DatabaseFunctions = __importStar(require("../../functions/DatabaseFunctions"));
 const ResponseFunctions = __importStar(require("../../responses/CommentResponse"));
 const Comments_1 = __importStar(require("../../../frameworks/database/models/Comments"));
 const addComment = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Comment, PostId, user, tags }) {
     try {
         const [comment] = yield DatabaseFunctions.insertData(Comments_1.default, { Comment, PostId, UserId: user._id, Tags: tags });
-        console.log(comment);
-        // UserFunctions.createNotification
+        const [newComment] = yield DatabaseFunctions.getComment(comment._id);
         return ResponseFunctions.addCommentRes({
-            Comment: comment,
+            Comment: newComment,
             message: "Commented",
             status: 200
         });
@@ -76,10 +75,8 @@ exports.addCommentReply = addCommentReply;
 const getComments = (PostId, user) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const allComments = yield DatabaseFunctions.getComments(PostId);
-        const newData = allComments.filter((comment) => comment.UserId === user._id);
-        const otherData = allComments.filter((comment) => comment.UserId !== user._id);
         return ResponseFunctions.getCommentsRes({
-            comments: [...newData, ...otherData],
+            comments: allComments,
             message: "Found",
             status: 200
         });
@@ -92,3 +89,20 @@ const getComments = (PostId, user) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.getComments = getComments;
+const deleteComment = (_c) => __awaiter(void 0, [_c], void 0, function* ({ CommentId, UserId }) {
+    try {
+        const comment = yield DatabaseFunctions.findUsingId(CommentId);
+        if (!comment || comment.UserId !== UserId) {
+            return ResponseFunctions.deleteCommentRes({ message: "UnAuthorized", status: 201 });
+        }
+        yield comment.deleteOne();
+        return ResponseFunctions.deleteCommentRes({ message: "Deleted Successfully", status: 200 });
+    }
+    catch (e) {
+        return ResponseFunctions.deleteCommentRes({
+            message: "Internal Server Error",
+            status: 500
+        });
+    }
+});
+exports.deleteComment = deleteComment;

@@ -1,8 +1,10 @@
 import AdminDocument from "../ModelsInterface/Admin";
-import UnverifiedUsers from "../ModelsInterface/UnverifiedUsers";
 import UserDocument from "../ModelsInterface/User";
-import server from '../../frameworks/server/server';
-
+import {CategoryInterface} from "../ModelsInterface/Category"
+export interface normals {
+    message:string;
+    status:number;
+}
 export interface AdminLoginResponse {
     message: string;
     errors: string[];
@@ -37,4 +39,8 @@ export interface getUsersResponse {
 export interface UsermanageResponse {
     status: number;
     message: string;
+}
+
+export interface addCategoryResponse extends normals {
+    Category:CategoryInterface;
 }

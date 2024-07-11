@@ -1,28 +1,27 @@
-import { Schema, model } from "mongoose";
-import { ObjectId } from "mongodb";
-import { Comment, CommentReply } from "../../../entities/ModelsInterface/Comments";
+import { Schema, model,Types } from "mongoose";
+import { Comments, CommentReply } from "../../../entities/ModelsInterface/Comments";
 
 
 const CommentReplySchema = new Schema<CommentReply>({
     Comment: [String],
-    UserId: ObjectId,
+    UserId: Types.ObjectId,
     Likes: Number,
-    CommentId: ObjectId,
+    CommentId: Types.ObjectId,
     Edited:Boolean,
-    Tags:[ObjectId]
+    Tags:[Types.ObjectId]
 });
 
-const CommentSchema = new Schema<Comment>({
+const CommentSchema = new Schema<Comments>({
     Comment: [String],
-    PostId: ObjectId,
-    UserId: ObjectId,
+    PostId: Types.ObjectId,
+    UserId: Types.ObjectId,
     Likes: Number,
     Edited:Boolean,
-    Tags:[ObjectId]
+    Tags:[Types.ObjectId]
 });
 
 
 
-const CommentModel = model<Comment>("comments", CommentSchema);
+const CommentModel = model<Comments>("comments", CommentSchema);
 export const CommentReplies = model<CommentReply>("commentreplies", CommentReplySchema)
 export default CommentModel;

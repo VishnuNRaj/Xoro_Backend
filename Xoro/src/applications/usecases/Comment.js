@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getComments = exports.addCommentReply = exports.AddComment = void 0;
+exports.deleteComment = exports.getComments = exports.addCommentReply = exports.AddComment = void 0;
 const Repository = __importStar(require("../repository/User/UserCommentRepository"));
 const DatabaseFunctions = __importStar(require("../functions/DatabaseFunctions"));
 const AddComment = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Comment, PostId, user }) {
@@ -98,3 +98,21 @@ const getComments = (PostId, user) => __awaiter(void 0, void 0, void 0, function
     }
 });
 exports.getComments = getComments;
+const deleteComment = (_c) => __awaiter(void 0, [_c], void 0, function* ({ CommentId, UserId }) {
+    try {
+        if (!CommentId) {
+            return {
+                message: "Invalid Credentials",
+                status: 201
+            };
+        }
+        return yield Repository.deleteComment({ CommentId, UserId });
+    }
+    catch (e) {
+        return {
+            message: "Internal Server Error",
+            status: 500
+        };
+    }
+});
+exports.deleteComment = deleteComment;

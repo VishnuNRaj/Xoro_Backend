@@ -89,3 +89,15 @@ export const GetPosts: Middleware = async (req, res) => {
         return res.status(500).json({ message: 'Internal Server Error' })
     }
 }
+
+
+export const ReportPost: Middleware = async (req, res) => {
+    try {
+        const result = req.result;
+        const { PostId } = req.params;
+        const {Message,Content} = req.body
+        const data = await UseCases.ReportPost({Message,Content,PostId,UserId:result?.user?._id})
+    } catch (e) {
+        return res.status(500).json({ Message: "Internal Server Error" })
+    }
+}

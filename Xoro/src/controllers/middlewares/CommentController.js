@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getComments = exports.AddComment = void 0;
+exports.deleteComment = exports.getComments = exports.AddComment = void 0;
 const UseCases = __importStar(require("../../applications/usecases/Comment"));
 const AddComment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -53,6 +53,7 @@ const getComments = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         const result = req.result;
         const { PostId } = req.params;
         const data = yield UseCases.getComments(PostId, result === null || result === void 0 ? void 0 : result.user);
+        console.log(data.comments.length);
         return res.status(data.status).json(data);
     }
     catch (e) {
@@ -60,3 +61,15 @@ const getComments = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.getComments = getComments;
+const deleteComment = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const result = req.result;
+        const { CommentId } = req.params;
+        const data = yield UseCases.deleteComment({ CommentId, UserId: result === null || result === void 0 ? void 0 : result.user });
+        return res.status(data.status).json(data);
+    }
+    catch (e) {
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+});
+exports.deleteComment = deleteComment;

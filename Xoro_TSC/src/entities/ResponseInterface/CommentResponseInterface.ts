@@ -1,14 +1,14 @@
-import { Comment, CommentReply } from "../ModelsInterface/Comments"
+import { Comments, CommentReply } from "../ModelsInterface/Comments"
 export interface addCommentResponse {
     message: string;
     status: number;
-    Comment:Comment;
+    Comment:Comments;
 }
 
 export interface editCommentResponse {
     message: string;
     status: number;
-    Comment: Comment;
+    Comment: Comments;
 }
 
 export interface deleteCommentResponse {
@@ -24,6 +24,6 @@ export interface addReplyResponse {
 
 export interface getCommentsResponse {
     message:string;
-    comments:Comment[];
+    comments:Comments[];
     status:number;
 }

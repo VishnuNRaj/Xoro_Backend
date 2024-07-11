@@ -35,12 +35,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getVideoRepository = exports.getVideosRepository = exports.uploadVideoRepository = void 0;
+exports.deleteVideoRepository = exports.RemoveReactionRepository = exports.DislikeVideoRepository = exports.LikeVideoRepository = exports.getVideoRepository = exports.getVideosRepository = exports.uploadVideoRepository = void 0;
 const DatabaseFunctions = __importStar(require("../../functions/DatabaseFunctions"));
 const ResponseFunctions = __importStar(require("../../responses/VideoResponse"));
 const UserFunctions_1 = require("./../../functions/UserFunctions");
-// import { compare } from 'bcryptjs';
-// import User from './../../../frameworks/database/models/User';
 const CommonFunctions = __importStar(require("../../functions/CommonFunctions"));
 const Videos_1 = __importDefault(require("../../../frameworks/database/models/Videos"));
 const Reactions_1 = __importDefault(require("../../../frameworks/database/models/Reactions"));
@@ -127,8 +125,7 @@ const getVideosRepository = (user, skip, random) => __awaiter(void 0, void 0, vo
 exports.getVideosRepository = getVideosRepository;
 const getVideoRepository = (VideoLink, user) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const videoData = yield (0, UserFunctions_1.getVideo)(VideoLink);
-        console.log(user, "_+_+_+_++_+_+_+_+");
+        const videoData = yield (0, UserFunctions_1.getVideo)(VideoLink, user._id);
         return ResponseFunctions.getVideosRes({
             message: 'Found',
             status: 200,
@@ -146,3 +143,59 @@ const getVideoRepository = (VideoLink, user) => __awaiter(void 0, void 0, void 0
     }
 });
 exports.getVideoRepository = getVideoRepository;
+const LikeVideoRepository = (_b) => __awaiter(void 0, [_b], void 0, function* ({ UserId, VideoId }) {
+    try {
+        const video = yield DatabaseFunctions.findUsingId(VideoId);
+        if (!video)
+            return ResponseFunctions.likeDislikeRemoveRes({ message: "Invalid Credentials", status: 201 });
+        const response = yield DatabaseFunctions.likeDislikeVideo(video._id, UserId, "Likes", "Dislikes");
+        return ResponseFunctions.likeDislikeRemoveRes({ Dislikes: response.Dislikes.length, Likes: response.Likes.length, message: "Video Added to Liked Videos", status: 200 });
+    }
+    catch (e) {
+        return ResponseFunctions.likeDislikeRemoveRes({ message: "Internal Server Error", status: 500 });
+    }
+});
+exports.LikeVideoRepository = LikeVideoRepository;
+const DislikeVideoRepository = (_c) => __awaiter(void 0, [_c], void 0, function* ({ UserId, VideoId }) {
+    try {
+        const video = yield DatabaseFunctions.findUsingId(VideoId);
+        if (!video)
+            return ResponseFunctions.likeDislikeRemoveRes({ message: "Invalid Credentials", status: 201 });
+        const response = yield DatabaseFunctions.likeDislikeVideo(video._id, UserId, "Dislikes", "Likes");
+        return ResponseFunctions.likeDislikeRemoveRes({ Dislikes: response.Dislikes.length, Likes: response.Likes.length, message: "Success", status: 200 });
+    }
+    catch (e) {
+        return ResponseFunctions.likeDislikeRemoveRes({ message: "Internal Server Error", status: 500 });
+    }
+});
+exports.DislikeVideoRepository = DislikeVideoRepository;
+const RemoveReactionRepository = (_d) => __awaiter(void 0, [_d], void 0, function* ({ UserId, VideoId }) {
+    try {
+        const video = yield DatabaseFunctions.findUsingId(VideoId);
+        if (!video)
+            return ResponseFunctions.likeDislikeRemoveRes({ message: "Invalid Credentials", status: 201 });
+        const response = yield DatabaseFunctions.pullVideoReactions(video._id, UserId);
+        return ResponseFunctions.likeDislikeRemoveRes({ Dislikes: response === null || response === void 0 ? void 0 : response.Dislikes.length, Likes: response === null || response === void 0 ? void 0 : response.Likes.length, message: "Success", status: 200 });
+    }
+    catch (e) {
+        return ResponseFunctions.likeDislikeRemoveRes({ message: "Internal Server Error", status: 500 });
+    }
+});
+exports.RemoveReactionRepository = RemoveReactionRepository;
+const deleteVideoRepository = (_e) => __awaiter(void 0, [_e], void 0, function* ({ VideoId, UserId }) {
+    try {
+        const video = yield DatabaseFunctions.findUsingId(VideoId);
+        if (!video)
+            return ResponseFunctions.likeDislikeRemoveRes({ message: "Invalid Credentials", status: 201 });
+        if (video.UserId !== UserId)
+            return ResponseFunctions.likeDislikeRemoveRes({ message: "Unauthorized for Deletion", status: 201 });
+        yield DatabaseFunctions.deleteMany(Reactions_1.default, { PostId: video._id });
+        yield DatabaseFunctions.deleteMany(Comments_1.default, { PostId: video._id });
+        yield video.deleteOne();
+        return ResponseFunctions.likeDislikeRemoveRes({ message: "Success", status: 200 });
+    }
+    catch (e) {
+        return ResponseFunctions.likeDislikeRemoveRes({ message: "Internal Server Error", status: 500 });
+    }
+});
+exports.deleteVideoRepository = deleteVideoRepository;

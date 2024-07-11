@@ -115,3 +115,10 @@ export interface createChannel {
     Description:string;
     Logo:Express.Multer.File;
 }
+
+export interface editChannel {
+    Name:string;
+    Type:string[];
+    Description:string;
+    ChannelId:ObjectId;
+}

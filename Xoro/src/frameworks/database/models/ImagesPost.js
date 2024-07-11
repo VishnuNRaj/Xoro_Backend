@@ -24,6 +24,10 @@ exports.PostSchema = new mongoose_1.Schema({
     ShowReactions: {
         type: Boolean,
         default: true
+    },
+    Banned: {
+        type: Boolean,
+        default: false
     }
 });
 const PostImages = (0, mongoose_1.model)('postimages', exports.PostSchema);

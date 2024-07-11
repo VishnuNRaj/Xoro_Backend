@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateChannel = exports.GetProfile = exports.SearchUser = exports.RemoveFollowUser = exports.UnFollowUser = exports.FollowUser = exports.EditProfile = exports.ProfileSettings = exports.SecureAccount = exports.EditProfilePic = exports.EditBanner = void 0;
+exports.editChannel = exports.CreateChannel = exports.GetProfile = exports.SearchUser = exports.RemoveFollowUser = exports.UnFollowUser = exports.FollowUser = exports.EditProfile = exports.ProfileSettings = exports.SecureAccount = exports.EditProfilePic = exports.EditBanner = void 0;
 const UseCases = __importStar(require("../../applications/usecases/UserProfile"));
 const EditBanner = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -167,3 +167,16 @@ const CreateChannel = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 exports.CreateChannel = CreateChannel;
+const editChannel = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
+    try {
+        const result = req.result;
+        const { Name, Type, Description } = req.body;
+        const data = yield UseCases.editChannel({ Name, Description, Type, ChannelId: (_a = result === null || result === void 0 ? void 0 : result.user) === null || _a === void 0 ? void 0 : _a.Channel });
+        return res.status(data.status).json(data);
+    }
+    catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+exports.editChannel = editChannel;

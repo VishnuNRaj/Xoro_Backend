@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getComments = exports.getPosts = exports.checkChat = exports.getFollowers = exports.getChat = exports.getChats = exports.searchData = exports.countDocuments = exports.likeDislikePost = exports.saveData = exports.deleteUsingId = exports.findUsersObjectId = exports.findUsers = exports.getUnReadNotifications = exports.findData = exports.checkObjectId = exports.executeBulkWrite = exports.pullReactions = exports.findAndPull = exports.findOneAndUpdate = exports.updateByData = exports.updateById = exports.insertData = exports.findUsingId = exports.findOneData = void 0;
+exports.getChannel = exports.getComment = exports.getComments = exports.getPosts = exports.checkChat = exports.getFollowers = exports.getChat = exports.getChats = exports.searchData = exports.countDocuments = exports.likeDislikeVideo = exports.likeDislikePost = exports.saveData = exports.deleteMany = exports.deleteUsingId = exports.findUsersObjectId = exports.findUsers = exports.getUnReadNotifications = exports.findData = exports.checkObjectId = exports.executeBulkWrite = exports.pullVideoReactions = exports.pullReactions = exports.findAndPull = exports.findOneAndUpdate = exports.updateByData = exports.updateById = exports.insertData = exports.findUsingId = exports.findOneData = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const User_1 = __importDefault(require("../../frameworks/database/models/User"));
 const ImagesPost_1 = __importDefault(require("../../frameworks/database/models/ImagesPost"));
@@ -82,6 +82,15 @@ const pullReactions = (Db, id, UserId) => __awaiter(void 0, void 0, void 0, func
     });
 });
 exports.pullReactions = pullReactions;
+const pullVideoReactions = (id, UserId) => __awaiter(void 0, void 0, void 0, function* () {
+    return yield Reactions_1.default.findOneAndUpdate({ PostId: id }, {
+        $pull: {
+            Likes: UserId,
+            Dislikes: UserId
+        }
+    });
+});
+exports.pullVideoReactions = pullVideoReactions;
 const executeBulkWrite = (Db, bulkOperations) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield Db.bulkWrite(bulkOperations);
@@ -157,12 +166,20 @@ const findUsersObjectId = (userId) => __awaiter(void 0, void 0, void 0, function
 exports.findUsersObjectId = findUsersObjectId;
 const deleteUsingId = (Db, id) => __awaiter(void 0, void 0, void 0, function* () { return yield Db.findByIdAndDelete(id); });
 exports.deleteUsingId = deleteUsingId;
+const deleteMany = (db, query) => __awaiter(void 0, void 0, void 0, function* () {
+    return db.deleteMany(query);
+});
+exports.deleteMany = deleteMany;
 const saveData = (data) => __awaiter(void 0, void 0, void 0, function* () { return yield data.save(); });
 exports.saveData = saveData;
 const likeDislikePost = (id, value, field1, field2) => __awaiter(void 0, void 0, void 0, function* () {
     return yield Reactions_1.default.findByIdAndUpdate(id, { $addToSet: { [field1]: value }, $pull: { [field2]: value } }, { upsert: true });
 });
 exports.likeDislikePost = likeDislikePost;
+const likeDislikeVideo = (id, value, field1, field2) => __awaiter(void 0, void 0, void 0, function* () {
+    return yield Reactions_1.default.findOneAndUpdate({ PostId: id }, { $addToSet: { [field1]: value }, $pull: { [field2]: value } }, { upsert: true });
+});
+exports.likeDislikeVideo = likeDislikeVideo;
 const countDocuments = (Db, id, key) => __awaiter(void 0, void 0, void 0, function* () {
     return Db.countDocuments({ [key]: id });
 });
@@ -443,50 +460,22 @@ const getComments = (PostId, UserId) => __awaiter(void 0, void 0, void 0, functi
             },
             {
                 $lookup: {
-                    from: 'comments',
-                    let: { commentId: '$PostId' },
+                    from: 'users',
+                    let: { tagIds: '$Tags' },
                     pipeline: [
-                        { $match: { $expr: { $eq: ['$PostId', '$$commentId'] } } },
-                        {
-                            $lookup: {
-                                from: 'users',
-                                let: { userId: '$UserId' },
-                                pipeline: [
-                                    { $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
-                                    { $project: { Username: 1, Name: 1, Profile: 1, ProfileLink: 1, _id: 1 } }
-                                ],
-                                as: 'user'
-                            }
-                        },
-                        {
-                            $lookup: {
-                                from: 'users',
-                                let: { tagIds: { $ifNull: ['$Tags', []] } },
-                                pipeline: [
-                                    { $match: { $expr: { $in: ['$_id', '$$tagIds'] } } },
-                                    { $project: { Username: 1, Name: 1, Profile: 1, ProfileLink: 1, _id: 1 } }
-                                ],
-                                as: 'tags'
-                            }
-                        },
+                        { $match: { $expr: { $in: ['$_id', '$$tagIds'] } } },
+                        { $project: { Username: 1, Name: 1, Profile: 1, ProfileLink: 1, _id: 1 } }
                     ],
-                    as: 'comments'
-                }
-            },
-            {
-                $unwind: {
-                    path: '$comments',
-                    preserveNullAndEmptyArrays: true
+                    as: 'tags'
                 }
             },
             {
                 $addFields: {
-                    user: { $arrayElemAt: ['$user', 0] },
-                    'comments.user': { $arrayElemAt: ['$comments.user', 0] },
-                    'comments.tags': '$comments.tags'
+                    user: { $arrayElemAt: ['$user', 0] }
                 }
             }
         ]);
+        console.log(comments);
         return comments;
     }
     catch (e) {
@@ -495,3 +484,139 @@ const getComments = (PostId, UserId) => __awaiter(void 0, void 0, void 0, functi
     }
 });
 exports.getComments = getComments;
+const getComment = (CommentId) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const comments = yield Comments_1.default.aggregate([
+            { $match: { _id: CommentId } },
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { userId: '$UserId' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
+                        { $project: { Username: 1, Name: 1, Profile: 1, ProfileLink: 1, _id: 1 } }
+                    ],
+                    as: 'user'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { tagIds: '$Tags' },
+                    pipeline: [
+                        { $match: { $expr: { $in: ['$_id', '$$tagIds'] } } },
+                        { $project: { Username: 1, Name: 1, Profile: 1, ProfileLink: 1, _id: 1 } }
+                    ],
+                    as: 'tags'
+                }
+            },
+            {
+                $addFields: {
+                    user: { $arrayElemAt: ['$user', 0] }
+                }
+            }
+        ]);
+        console.log(comments);
+        return comments;
+    }
+    catch (e) {
+        console.log(e);
+        return [];
+    }
+});
+exports.getComment = getComment;
+const getChannel = (ChannelId, UserId) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const [response] = yield Channels_1.default.aggregate([
+            {
+                $match: { _id: ChannelId }
+            },
+            {
+                $lookup: {
+                    from: "videos",
+                    localField: "_id",
+                    foreignField: "ChannelId",
+                    as: "videos"
+                }
+            },
+            {
+                $addFields: {
+                    subscribed: {
+                        $cond: {
+                            if: { $eq: [UserId, null] },
+                            then: false,
+                            else: {
+                                $gt: [
+                                    {
+                                        $size: {
+                                            $filter: {
+                                                input: "$subscribers",
+                                                as: "subscriber",
+                                                cond: { $eq: ["$$subscriber.UserId", UserId] }
+                                            }
+                                        }
+                                    },
+                                    0
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $lookup: {
+                    from: "reactions",
+                    localField: "videos._id",
+                    foreignField: "VideoId",
+                    as: "reactions"
+                }
+            },
+            {
+                $addFields: {
+                    totalLikes: {
+                        $size: {
+                            $filter: {
+                                input: "$reactions",
+                                as: "reaction",
+                                cond: { $eq: ["$$reaction.type", "like"] }
+                            }
+                        }
+                    },
+                    totalDislikes: {
+                        $size: {
+                            $filter: {
+                                input: "$reactions",
+                                as: "reaction",
+                                cond: { $eq: ["$$reaction.type", "dislike"] }
+                            }
+                        }
+                    },
+                    totalViews: {
+                        $size: {
+                            $filter: {
+                                input: "$reactions",
+                                as: "reaction",
+                                cond: { $eq: ["$$reaction.type", "view"] }
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    videos: 1,
+                    subscribed: 1,
+                    totalLikes: 1,
+                    totalDislikes: 1,
+                    totalViews: 1
+                }
+            }
+        ]);
+        return response;
+    }
+    catch (e) {
+        console.log(e);
+        return null;
+    }
+});
+exports.getChannel = getChannel;

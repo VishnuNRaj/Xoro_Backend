@@ -19,6 +19,7 @@ const ChannelSchema = new Schema<ChannelInterface>({
         type:String,
         default:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSojclzzRsQKY9EiIzhdDfH1Bb4M2KRFXWKXQ&s'
     },
+    ChannelLink:String,
 }); 
 
 const ChannelModel = model<ChannelInterface>('channels',ChannelSchema);

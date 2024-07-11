@@ -1,7 +1,7 @@
 import { Server as SocketIOServer } from 'socket.io';
 import * as SocketFunctions from './SocketFunctions';
-// import {chatUploadQueue} from "../../frameworks/mq/queue/chatUploadQueue"
 import { saveChat } from "../../frameworks/database/Functions/ChatFunctions"
+import ChannelModel from '../../frameworks/database/models/Channels';
 
 const socketRoutes = (io: SocketIOServer): SocketIOServer => {
   if (!io) {
@@ -35,6 +35,10 @@ const socketRoutes = (io: SocketIOServer): SocketIOServer => {
     socket.on("typing", (RoomId: string, Username: String, typing: boolean) => {
       console.log(typing, Username)
       socket.to(RoomId).emit("typing", { typing, Username })
+    })
+    socket.on("get-channel",async (ChannelId:string)=>{
+      const channel = await ChannelModel.findById(ChannelId)
+      socket.send(channel)
     })
   });
 

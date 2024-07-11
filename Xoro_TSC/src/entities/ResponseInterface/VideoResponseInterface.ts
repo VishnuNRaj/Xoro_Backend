@@ -19,3 +19,10 @@ export interface getVideoResponse {
     status:number;
     user:UserDocument
 }
+
+export interface likeDislikeRemoveResponse {
+    message:string;
+    status:number;
+    Likes:number;
+    Dislikes:number;
+}

@@ -10,7 +10,7 @@ import AdminAuth from '../../../frameworks/database/models/Admin';
 import UserAuth from '../../../frameworks/database/models/UnverifiedUsers';
 
 export const UserDataRepository: Function = async (): Promise<Responses.getUsersResponse> => {
-    try {
+    try {    
         const users: UserDocument[] = await DatabaseFunctions.findData(UserAuth, {})
         return ResponseFunctions.AdminUserDataRes(<Responses.getUsersResponse>{
             message: 'All Available Users',

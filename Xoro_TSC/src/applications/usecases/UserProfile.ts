@@ -248,3 +248,26 @@ export const CreateChannel: Function = async ({ Description, Name, Type, Logo }:
         }
     }
 }
+
+export const editChannel: Function = async ({ChannelId,Description,Name,Type}:UserEntity.editChannel) => {
+    try {
+        if(!Name || !Description || Type.length < 1) {
+            return<Responses.editChannel>{
+                message:"Enter Essential Details",
+                status:201
+            }
+        }
+        if(!ChannelId) {
+            return<Responses.editChannel>{
+                message:"No Channel Created",
+                status:201
+            }
+        }
+        return await Repository.editChannelRepository({ChannelId,Description,Name,Type})
+    } catch (e) {
+        return<Responses.editChannel>{
+            message:"Internal Server Error",
+            status:500
+        }
+    }
+}

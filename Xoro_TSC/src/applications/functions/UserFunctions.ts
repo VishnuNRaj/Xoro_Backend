@@ -10,6 +10,7 @@ import Notifications from '../../frameworks/database/models/Notifications'
 import { findOneAndUpdate, updateById } from './DatabaseFunctions';
 import { Notification } from '../../entities/ModelsInterface/Notification';
 import Videos from '../../frameworks/database/models/Videos';
+import ShortVideos from "../../frameworks/database/models/Shorts"
 import PostVideo from '../../entities/ModelsInterface/Videos';
 
 
@@ -92,8 +93,8 @@ export const uploadToFirebase: Function = async (file: Express.Multer.File, path
 export const createNotification: Function = async (data: Notification, UserId: ObjectId) => {
     try {
         const datas = await Notifications.findOne({ UserId: UserId })
-        if(!datas) {
-            Notifications.insertMany([{UserId:UserId,Messages:[data]}])
+        if (!datas) {
+            Notifications.insertMany([{ UserId: UserId, Messages: [data] }])
         } else {
             datas.Messages.push(data)
             await datas.save()
@@ -109,7 +110,7 @@ export const sendNotifications: Function = async (Message: string, Type: string,
         const data = <Notification>{
             Message, Type, Link, SenderId, Time: new Date(),
         }
-        const notification = await Notifications.updateMany({ UserId: { $or: userId } }, { $push: { Messages: data } })
+        await Notifications.updateMany({ UserId: { $or: userId } }, { $push: { Messages: data } })
     } catch (e) {
         return null
     }
@@ -118,6 +119,15 @@ export const sendNotifications: Function = async (Message: string, Type: string,
 export const updateVideoLink: Function = async (videoId: string, link: string) => {
     try {
         await updateById(Videos, videoId, { Video: link, Uploaded: true })
+        return true
+    } catch (e) {
+        return false
+    }
+}
+
+export const updateShortsLink: Function = async (videoId: string, link: string) => {
+    try {
+        await updateById(ShortVideos, videoId, { Video: link, Uploaded: true })
         return true
     } catch (e) {
         return false
@@ -158,11 +168,10 @@ export const getRandomVideos = async (skip: number, random: number): Promise<Pos
 };
 
 
-export const getVideo = async (VideoLink:string): Promise<PostVideo> => {
+export const getVideo = async (VideoLink: string, UserId: ObjectId): Promise<PostVideo> => {
     try {
-
         const [video]: PostVideo[] = await Videos.aggregate([
-            {$match:{VideoLink:VideoLink}},
+            { $match: { VideoLink: VideoLink } },
             {
                 $lookup: {
                     from: 'channels',
@@ -176,9 +185,17 @@ export const getVideo = async (VideoLink:string): Promise<PostVideo> => {
                     from: 'reactions',
                     localField: '_id',
                     foreignField: 'PostId',
-                    as: 'Reactions'
+                    as: 'reactions'
                 }
             },
+            {
+                $addFields: {
+                    LikesCount: { $length: "$reactions.Likes" },
+                    DislikesCount: { $length: "$reactions.Dislikes" },
+                    Liked: { $in: [UserId, "$reactions.Likes"] },
+                    Disliked: { $in: [UserId, "$reactions.Dislikes"] }
+                }
+            }
         ]);
 
         return video;
@@ -186,4 +203,4 @@ export const getVideo = async (VideoLink:string): Promise<PostVideo> => {
         console.error('Error fetching video:', error);
         throw error;
     }
-};
+}; 

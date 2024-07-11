@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getVideosRes = exports.getVideoRes = exports.uploadVideoRes = void 0;
+exports.likeDislikeRemoveRes = exports.getVideosRes = exports.getVideoRes = exports.uploadVideoRes = void 0;
 const uploadVideoRes = (data) => {
     return {
         message: data.message,
@@ -25,3 +25,7 @@ const getVideosRes = (data) => __awaiter(void 0, void 0, void 0, function* () {
     return data;
 });
 exports.getVideosRes = getVideosRes;
+const likeDislikeRemoveRes = (data) => __awaiter(void 0, void 0, void 0, function* () {
+    return data;
+});
+exports.likeDislikeRemoveRes = likeDislikeRemoveRes;

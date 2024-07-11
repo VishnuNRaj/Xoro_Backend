@@ -30,4 +30,5 @@ export interface Post extends Document {
     user:UserDocument;
     tags:UserDocument[];
     reactions:ReactionsInterface;
+    Banned:boolean
 }

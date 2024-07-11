@@ -9,7 +9,6 @@ export const disconnect: Function = (socket: Socket) => {
 }
 
 export const sendNotifications: Function = (socket: Socket, data: any, UserId: string) => {
-    console.log(data)
     socket.to(UserId).emit('notification', data)
 }
 

@@ -12,13 +12,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getVideo = exports.getRandomVideos = exports.updateVideoLink = exports.sendNotifications = exports.createNotification = exports.uploadToFirebase = exports.VerifyUser = exports.uploadBase64Image = exports.UploadFile = void 0;
+exports.getVideo = exports.getRandomVideos = exports.updateShortsLink = exports.updateVideoLink = exports.sendNotifications = exports.createNotification = exports.uploadToFirebase = exports.VerifyUser = exports.uploadBase64Image = exports.UploadFile = void 0;
 const cloudinary_1 = __importDefault(require("../../config/cloudinary"));
 const fs_1 = __importDefault(require("fs"));
 const firebase_1 = __importDefault(require("../../config/firebase"));
 const Notifications_1 = __importDefault(require("../../frameworks/database/models/Notifications"));
 const DatabaseFunctions_1 = require("./DatabaseFunctions");
 const Videos_1 = __importDefault(require("../../frameworks/database/models/Videos"));
+const Shorts_1 = __importDefault(require("../../frameworks/database/models/Shorts"));
 const UploadFile = (file) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const fileBuffer = fs_1.default.readFileSync(file.path);
@@ -122,7 +123,7 @@ const sendNotifications = (Message, Type, userId, SenderId, Link) => __awaiter(v
         const data = {
             Message, Type, Link, SenderId, Time: new Date(),
         };
-        const notification = yield Notifications_1.default.updateMany({ UserId: { $or: userId } }, { $push: { Messages: data } });
+        yield Notifications_1.default.updateMany({ UserId: { $or: userId } }, { $push: { Messages: data } });
     }
     catch (e) {
         return null;
@@ -139,6 +140,16 @@ const updateVideoLink = (videoId, link) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.updateVideoLink = updateVideoLink;
+const updateShortsLink = (videoId, link) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield (0, DatabaseFunctions_1.updateById)(Shorts_1.default, videoId, { Video: link, Uploaded: true });
+        return true;
+    }
+    catch (e) {
+        return false;
+    }
+});
+exports.updateShortsLink = updateShortsLink;
 const getRandomVideos = (skip, random) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const totalVideos = yield Videos_1.default.countDocuments({});
@@ -171,7 +182,7 @@ const getRandomVideos = (skip, random) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.getRandomVideos = getRandomVideos;
-const getVideo = (VideoLink) => __awaiter(void 0, void 0, void 0, function* () {
+const getVideo = (VideoLink, UserId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const [video] = yield Videos_1.default.aggregate([
             { $match: { VideoLink: VideoLink } },
@@ -188,9 +199,17 @@ const getVideo = (VideoLink) => __awaiter(void 0, void 0, void 0, function* () {
                     from: 'reactions',
                     localField: '_id',
                     foreignField: 'PostId',
-                    as: 'Reactions'
+                    as: 'reactions'
                 }
             },
+            {
+                $addFields: {
+                    LikesCount: { $length: "$reactions.Likes" },
+                    DislikesCount: { $length: "$reactions.Dislikes" },
+                    Liked: { $in: [UserId, "$reactions.Likes"] },
+                    Disliked: { $in: [UserId, "$reactions.Dislikes"] }
+                }
+            }
         ]);
         return video;
     }

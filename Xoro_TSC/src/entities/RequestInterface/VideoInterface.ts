@@ -1,3 +1,4 @@
+import { ObjectId } from "mongoose";
 import UserDocument from "../ModelsInterface/User";
 
 export interface uploadVideo {
@@ -23,3 +24,8 @@ export interface uploadVideo {
 }
 
 
+export interface likeDislikeRemove {
+    VideoId:string;
+    type:string;
+    UserId:ObjectId;
+}

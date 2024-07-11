@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCommentsRes = exports.addCommentReplyRes = exports.addCommentRes = void 0;
+exports.deleteCommentRes = exports.getCommentsRes = exports.addCommentReplyRes = exports.addCommentRes = void 0;
 const addCommentRes = (data) => __awaiter(void 0, void 0, void 0, function* () {
     return data;
 });
@@ -22,3 +22,7 @@ const getCommentsRes = (data) => __awaiter(void 0, void 0, void 0, function* () 
     return data;
 });
 exports.getCommentsRes = getCommentsRes;
+const deleteCommentRes = (data) => __awaiter(void 0, void 0, void 0, function* () {
+    return data;
+});
+exports.deleteCommentRes = deleteCommentRes;

@@ -14,3 +14,6 @@ export const getVideoRes: Function = async (data: interfaces.getVideosResponse) 
 export const getVideosRes: Function = async (data: interfaces.getVideoResponse) => {
     return <interfaces.getVideoResponse>data
 }
+export const likeDislikeRemoveRes: Function = async (data: interfaces.likeDislikeRemoveResponse) => {
+    return <interfaces.likeDislikeRemoveResponse>data
+}

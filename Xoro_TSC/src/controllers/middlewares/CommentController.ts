@@ -25,6 +25,18 @@ export const getComments: Middleware = async (req, res) => {
         const result = req.result
         const { PostId } = req.params
         const data = await UseCases.getComments(PostId, result?.user)
+        console.log(data.comments.length)
+        return res.status(data.status).json(data)
+    } catch (e) {
+        return res.status(500).json({ message: "Internal Server Error" })
+    }
+}
+
+export const deleteComment: Middleware = async (req,res) => {
+    try {
+        const result = req.result
+        const {CommentId} = req.params
+        const data = await UseCases.deleteComment({CommentId,UserId:result?.user})
         return res.status(data.status).json(data)
     } catch (e) {
         return res.status(500).json({ message: "Internal Server Error" })

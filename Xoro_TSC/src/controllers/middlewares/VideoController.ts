@@ -60,10 +60,34 @@ export const getVideo: Middleware = async (req, res) => {
     try {
         const result = req?.result
         const { VideoLink } = req?.params
-        const data = await UseCases.getVideo(VideoLink,result?.user)
-        console.log(data)
+        const data = await UseCases.getVideo(VideoLink, result?.user)
         return res.status(data.status).json(data)
     } catch (e) {
         return res.status(500).json({ message: 'Internal Server Error' })
+    }
+}
+
+export const LikeDislikeRemoveVideo: Middleware = async (req, res) => {
+    try {
+        const result = req.result
+        const { VideoId, type } = req.params;
+        const array = ["like", "dislike", "remove"]
+        if (!array.find((value) => value === type)) return res.status(201).json({ message: "Invalid Credentials" });
+        const data = UseCases.likeDislikeRemove({ VideoId, type, UserId: result?.user?._id })
+        return res.status(data.status).json(data)
+    } catch (e) {
+        return res.status(500).json({ message: "Internal Server Error" })
+    }
+
+}
+
+export const deleteVideo:Middleware = async (req,res) => {
+    try {
+        const result = req.result;
+        const {VideoId} = req.params;
+        const data = await UseCases.deleteVideo({UserId:result?.user?.Channel,VideoId})
+        return res.status(data.status).json(data)
+    } catch (e) {
+        return res.status(500).json({message:"Internal Server Error"})
     }
 }

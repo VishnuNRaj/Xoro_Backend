@@ -4,7 +4,7 @@ import * as ResponseFunctions from '../../responses/AdminResponse';
 import * as Responses from '../../../entities/ResponseInterface/AdminResponseInterface';
 import * as CommonFunctions from '../../functions/CommonFunctions';
 import { SendVerificationOTP } from '../../functions/SendMail';
-import { CreatePayload, VerifyPayload } from '../../functions/JWT';
+import { CreatePayload, VerifyPayload, VerifyPayloadAdmin } from '../../functions/JWT';
 import Admin from '../../../frameworks/database/models/Admin';
 import AdminDocument from '../../../entities/ModelsInterface/Admin';
 
@@ -77,7 +77,7 @@ export const AdminOTPVerifyRepository: Function = async ({ OTP, UserId, Remember
                 status: 203
             })
         }
-        return ResponseFunctions.AdminOTPVerifyRes(<Responses.AdminOTPResponse>{
+        return await ResponseFunctions.AdminOTPVerifyRes(<Responses.AdminOTPResponse>{
             message: 'OTP Verified',
             admin: admin,
             status: 200,
@@ -134,7 +134,7 @@ export const ResendOTPRepository: Function = async ({ UserId }: AdminEntity.Admi
 
 export const VerifyAdminRepository: Function = async ({ token }: AdminEntity.AdminVerifyAuth): Promise<Responses.AdminVerifyAuthResponse> => {
     try {
-        const result:any = await VerifyPayload({ token,refresh:token })
+        const result:any = await VerifyPayloadAdmin({ token,refresh:token })
         console.log(result)
         if (!result.status) {
             return ResponseFunctions.AdminVerifyAuthRes(<Responses.AdminVerifyAuthResponse>{
@@ -147,7 +147,7 @@ export const VerifyAdminRepository: Function = async ({ token }: AdminEntity.Adm
                 message: 'Invalid Credentials',
                 status: 202
             })
-        }
+        } 
         const admin: AdminDocument = await DatabaseFunctions.findUsingId(Admin, result.user.UserId)
         console.log(admin)
         if (!admin) {

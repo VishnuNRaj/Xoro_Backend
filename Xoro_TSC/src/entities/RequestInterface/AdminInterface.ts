@@ -1,3 +1,5 @@
+import { ObjectId } from "mongoose";
+
 export interface AdminLogin {
     Email: string;
     Password: string;
@@ -23,4 +25,9 @@ export interface AdminUserManagement {
     Terminate: boolean;
     Admin: boolean;
     UserId:string;
+}
+
+export interface addCategory {
+    AdminId:ObjectId;
+    Name:string;
 }

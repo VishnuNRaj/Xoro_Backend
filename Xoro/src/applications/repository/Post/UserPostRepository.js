@@ -35,12 +35,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPostsRepository = exports.RemoveReactions = exports.DislikePostRepository = exports.LikePostRepository = exports.deletePostRepository = exports.showPostImagesRepository = exports.addPostImagesRepository = void 0;
+exports.ReportPostRepository = exports.getPostsRepository = exports.RemoveReactions = exports.DislikePostRepository = exports.LikePostRepository = exports.deletePostRepository = exports.showPostImagesRepository = exports.addPostImagesRepository = void 0;
 const DatabaseFunctions = __importStar(require("../../functions/DatabaseFunctions"));
 const ResponseFunctions = __importStar(require("../../responses/PostResponse"));
 const CommonFunctions = __importStar(require("../../functions/CommonFunctions"));
 const ImagesPost_1 = __importDefault(require("../../../frameworks/database/models/ImagesPost"));
 const Reactions_1 = __importDefault(require("./../../../frameworks/database/models/Reactions"));
+const VideoReports_1 = __importDefault(require("./../../../frameworks/database/models/VideoReports"));
 const addPostImagesRepository = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Caption, CommentsOn, Hashtags, Hidden, Images, Tags, user }) {
     try {
         let newPost = new ImagesPost_1.default({
@@ -248,3 +249,17 @@ const getPostsRepository = (_g) => __awaiter(void 0, [_g], void 0, function* ({ 
     }
 });
 exports.getPostsRepository = getPostsRepository;
+const ReportPostRepository = (_h) => __awaiter(void 0, [_h], void 0, function* ({ Content, Message, PostId, UserId }) {
+    try {
+        const post = yield DatabaseFunctions.findUsingId(ImagesPost_1.default, PostId);
+        if (!post)
+            return yield ResponseFunctions.reportPostRes({ message: "Invalid Credentials", status: 201 });
+        yield DatabaseFunctions.insertData(VideoReports_1.default, { Message, PostId, Content, UserId });
+        return yield ResponseFunctions.reportPostRes({ message: "Reported Successfully", status: 500 });
+    }
+    catch (e) {
+        console.log(e);
+        return yield ResponseFunctions.reportPostRes({ message: "Internal Server Error", status: 500 });
+    }
+});
+exports.ReportPostRepository = ReportPostRepository;
