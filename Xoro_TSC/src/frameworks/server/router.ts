@@ -19,6 +19,9 @@ const RouterConfig: Function = (app: Application) => {
     app.use('/chat', chatRouter)
     app.use('/live',liveRouter)
     app.use('/comment',commentRouter)
+    app.get("/hello",(req,res)=>{
+        return res.send("Vannu Gooys")
+    })
 }
 
 
