@@ -16,7 +16,7 @@ const expressConfig: Function = (app: Application) => {
     //     statusCode:201,
     //     message:"Too Many Requests",
     // }))
-    app.use(express.json({ limit: '10mb' }));
+    app.use(express.json({ limit: '50mb' }));
     app.use(express.urlencoded({ limit: '100mb', extended: true }));
     app.use(morgan('dev'));
     app.use(helmet({ xssFilter: true }));
