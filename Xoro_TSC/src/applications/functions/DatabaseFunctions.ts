@@ -154,8 +154,8 @@ export const likeDislikePost: Function = async (id: ObjectId, value: ObjectId, f
 
 export const likeDislikeVideo = async (id: ObjectId, value: ObjectId, field1: string, field2: string) => {
     try {
-        console.log(value, field1, field2,id)
-        const result = await Reactions.findByIdAndUpdate(id, { $addToSet: { [field1]: value }, $pull: { [field2]: value } });
+        console.log(value, field1, field2, id)
+        const result = await Reactions.findByIdAndUpdate(id, { $addToSet: { [field1]: value }, $pull: { [field2]: value } }, { upsert: true });
         console.log(result)
         return result;
     } catch (error) {
