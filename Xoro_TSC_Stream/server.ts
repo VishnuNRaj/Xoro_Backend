@@ -42,8 +42,8 @@ const config = {
     tasks: [
       {
         app: 'videos',
-        vc: 'copy',  // Copy video codec
-        ac: 'copy',  // Copy audio codec
+        vc: 'copy', 
+        ac: 'copy',  
         rtmp: true,
         hls: true,
         hlsFlags: '[hls_time=10:hls_list_size=0:hls_flags=delete_segments]',
