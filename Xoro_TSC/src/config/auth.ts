@@ -13,7 +13,7 @@ const auth = <AuthInterface>{
     JWT_SECRET:process.env.JWT_SECRET,
     JWT_EXPIRES_IN:process.env.JWT_EXPIRES_IN,
     JWT_REMEMBER_ME:process.env.JWT_REMEMBER_ME,
-    baseLink:'http://localhost:6767',
+    baseLink:process.env.BASE,
     verifyAccount:'verify-account'
 }
 
