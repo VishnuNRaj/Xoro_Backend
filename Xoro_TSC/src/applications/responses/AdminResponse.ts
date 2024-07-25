@@ -47,3 +47,11 @@ export const AdminUserManagementRes: Function = (data:Responses.UsermanageRespon
         message: data.message
     }
 }
+
+export const addCategoryRes: Function = (data:Responses.addCategoryResponse):Responses.addCategoryResponse => {
+    return {
+        Category:data.Category,
+        message:data.message,
+        status:data.status,
+    }
+}

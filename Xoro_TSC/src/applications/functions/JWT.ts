@@ -4,6 +4,7 @@ import { JWTCreate, JWTVerify, JWTVerifyResponse } from '../../entities/Configin
 
 export const CreatePayload = ({ Payload, RememberMe }: JWTCreate): string => {
     try {
+        console.log(Payload)
         const { JWT_EXPIRES_IN, JWT_REMEMBER_ME, JWT_SECRET }: AuthInterface = auth;
         return jwt.sign(Payload, JWT_SECRET, { expiresIn: RememberMe ? JWT_REMEMBER_ME : JWT_EXPIRES_IN });
     } catch (e) {

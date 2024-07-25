@@ -54,7 +54,6 @@ const uploadVideo = (data) => __awaiter(void 0, void 0, void 0, function* () {
                 status: 201,
             };
         const Links = {
-            Video: `${data.user.Channel}/${new Date()}-${data.Video.originalname}`,
             Thumbnail: yield UserFunctions.uploadBase64Image(data.Thumbnail)
         };
         return Repository.uploadVideoRepository(Object.assign(Object.assign({}, data), { Links: Links }));

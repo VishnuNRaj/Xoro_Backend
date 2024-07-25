@@ -13,6 +13,7 @@ import CommentsModel from '../../../frameworks/database/models/Comments'
 import { uploadVideoToMQ } from '../../functions/MQ'
 import { generatePresignedUrl } from '../../../config/s3bucket';
 import { ReactionsInterface } from '../../../entities/ModelsInterface/Reactions';
+import config from '../../../config/config';
 
 export const uploadVideoRepository: Function = async ({ Caption, Video, Duration, Hashtags, RelatedTags, Description, Restriction, Settings, Links, user }: VideoEntity.uploadVideo): Promise<Responses.uploadVideoResponse> => {
     try {
@@ -26,12 +27,15 @@ export const uploadVideoRepository: Function = async ({ Caption, Video, Duration
             Restriction: Restriction,
             Settings: Settings,
             Thumbnail: Links.Thumbnail,
-            Video: Links.Video,
+            Video: ``,
             Postdate: new Date(),
             Description: Description,
             VideoLink: await CommonFunctions.generateVerificationLink(),
             Key: Links.Video,
         })
+
+        video.Video = `${config.LIVE}/videos/${video._id}/index.m3u8`
+        await DatabaseFunctions.saveData(video)
 
         await Promise.all([
             await uploadVideoToMQ(<videoUpload>{
@@ -42,6 +46,7 @@ export const uploadVideoRepository: Function = async ({ Caption, Video, Duration
                 video: Video
             }),
             await DatabaseFunctions.insertData(Reactions, {
+                _id: video._id,
                 PostId: video._id
             }),
         ])
@@ -64,23 +69,11 @@ export const uploadVideoRepository: Function = async ({ Caption, Video, Duration
 export const getVideosRepository: Function = async (user: UserDocument | null, skip: number, random: number): Promise<Responses.getVideosResponse> => {
     try {
         const videoData: PostVideo[] = await getRandomVideos(skip, random)
-        const today = new Date()
-        const updated: PostVideo[] = videoData.map((video) => {
-            const date = new Date(video.Postdate)
-            date.setDate(date.getDate() + 7);
-            if (today > date) {
-                generatePresignedUrl('xoro-stream.online', video.Key).then((url: string) => {
-                    video.Video = url
-                })
-            }
-            return video
-        })
-        console.log(updated)
         return ResponseFunctions.getVideoRes(<Responses.getVideosResponse>{
             message: 'Found',
             status: 200,
             user: user,
-            Videos: updated,
+            Videos: videoData,
         })
     } catch (e) {
         console.log(e);
@@ -95,7 +88,7 @@ export const getVideosRepository: Function = async (user: UserDocument | null, s
 
 export const getVideoRepository: Function = async (VideoLink: string, user: UserDocument): Promise<Responses.getVideoResponse> => {
     try {
-        const videoData: PostVideo = await getVideo(VideoLink,user._id)
+        const videoData: PostVideo = await getVideo(VideoLink, user._id)
         return ResponseFunctions.getVideosRes(<Responses.getVideoResponse>{
             message: 'Found',
             status: 200,
@@ -115,20 +108,29 @@ export const getVideoRepository: Function = async (VideoLink: string, user: User
 
 export const LikeVideoRepository: Function = async ({ UserId, VideoId }: VideoEntity.likeDislikeRemove) => {
     try {
-        const video: PostVideo = await DatabaseFunctions.findUsingId(VideoId)
+        const video: PostVideo = await DatabaseFunctions.findUsingId(Videos, VideoId)
         if (!video) return ResponseFunctions.likeDislikeRemoveRes(<Responses.likeDislikeRemoveResponse>{ message: "Invalid Credentials", status: 201 })
-        const response: ReactionsInterface = await DatabaseFunctions.likeDislikeVideo(video._id, UserId, "Likes", "Dislikes")
+        const response: any = await DatabaseFunctions.likeDislikeVideo(video._id, UserId, "Likes", "Dislikes")
+        video.Likes = response.Likes.length;
+        video.Dislikes = response.Dislikes.length;
+        video.Views = response.Views.length;
+        await DatabaseFunctions.saveData(video)
         return ResponseFunctions.likeDislikeRemoveRes(<Responses.likeDislikeRemoveResponse>{ Dislikes: response.Dislikes.length, Likes: response.Likes.length, message: "Video Added to Liked Videos", status: 200 })
     } catch (e) {
+        console.log(e)
         return ResponseFunctions.likeDislikeRemoveRes(<Responses.likeDislikeRemoveResponse>{ message: "Internal Server Error", status: 500 })
     }
 }
 
 export const DislikeVideoRepository: Function = async ({ UserId, VideoId }: VideoEntity.likeDislikeRemove) => {
     try {
-        const video: PostVideo = await DatabaseFunctions.findUsingId(VideoId)
+        const video: PostVideo = await DatabaseFunctions.findUsingId(Videos, VideoId)
         if (!video) return ResponseFunctions.likeDislikeRemoveRes(<Responses.likeDislikeRemoveResponse>{ message: "Invalid Credentials", status: 201 })
-        const response: ReactionsInterface = await DatabaseFunctions.likeDislikeVideo(video._id, UserId, "Dislikes", "Likes")
+        const response: any = await DatabaseFunctions.likeDislikeVideo(video._id, UserId, "Dislikes", "Likes")
+        video.Likes = response.Likes.length;
+        video.Dislikes = response.Dislikes.length;
+        video.Views = response.Views.length;
+        await DatabaseFunctions.saveData(video)
         return ResponseFunctions.likeDislikeRemoveRes(<Responses.likeDislikeRemoveResponse>{ Dislikes: response.Dislikes.length, Likes: response.Likes.length, message: "Success", status: 200 })
     } catch (e) {
         return ResponseFunctions.likeDislikeRemoveRes(<Responses.likeDislikeRemoveResponse>{ message: "Internal Server Error", status: 500 })
@@ -137,11 +139,17 @@ export const DislikeVideoRepository: Function = async ({ UserId, VideoId }: Vide
 
 export const RemoveReactionRepository: Function = async ({ UserId, VideoId }: VideoEntity.likeDislikeRemove) => {
     try {
-        const video: PostVideo = await DatabaseFunctions.findUsingId(VideoId)
+        const video: PostVideo = await DatabaseFunctions.findUsingId(Videos, VideoId)
         if (!video) return ResponseFunctions.likeDislikeRemoveRes(<Responses.likeDislikeRemoveResponse>{ message: "Invalid Credentials", status: 201 })
         const response: ReactionsInterface | null = await DatabaseFunctions.pullVideoReactions(video._id, UserId)
+        console.log(response)
+        video.Likes = response?.Likes.length || 0;
+        video.Dislikes = response?.Dislikes.length || 0;
+        video.Views = response?.Views.length || 0;
+        await DatabaseFunctions.saveData(video)
         return ResponseFunctions.likeDislikeRemoveRes(<Responses.likeDislikeRemoveResponse>{ Dislikes: response?.Dislikes.length, Likes: response?.Likes.length, message: "Success", status: 200 })
     } catch (e) {
+        console.log(e)
         return ResponseFunctions.likeDislikeRemoveRes(<Responses.likeDislikeRemoveResponse>{ message: "Internal Server Error", status: 500 })
     }
 }

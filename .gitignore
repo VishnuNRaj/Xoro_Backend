@@ -1,2 +1,7 @@
 node_modules/
 .env
+Public/
+Xoro_Stream/
+Xoro/
+sample.html
+sample.js

@@ -20,13 +20,21 @@ const VideoSchema = new Schema<PostVideo>({
         type: Number,
         default: 0,
     },
-    Description:String,
-    VideoLink:String,
-    Uploaded:{
-        type:Boolean,
-        default:false,
+    Likes: {
+        type: Number,
+        default: 0,
     },
-    Key:String,
+    Dislikes: {
+        type: Number,
+        default: 0,
+    },
+    Description: String,
+    VideoLink: String,
+    Uploaded: {
+        type: Boolean,
+        default: false,
+    },
+    Key: String,
 })
 
 const Videos = model<PostVideo>('videos', VideoSchema)

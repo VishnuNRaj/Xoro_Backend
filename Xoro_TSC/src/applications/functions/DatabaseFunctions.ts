@@ -12,6 +12,7 @@ import ChannelModel from '../../frameworks/database/models/Channels'
 import Reactions from '../../frameworks/database/models/Reactions'
 import Notifications from '../../frameworks/database/models/Notifications'
 import CommentModel from '../../frameworks/database/models/Comments'
+import CategoryModel from "../../frameworks/database/models/Category"
 export const findOneData: Function = async (Db: any, query: object): Promise<any> => {
     return await Db.findOne(query)
 }
@@ -52,7 +53,7 @@ export const pullReactions = async (Db: any, id: any, UserId: ObjectId) => {
 }
 
 export const pullVideoReactions = async (id: ObjectId, UserId: ObjectId) => {
-    return await Reactions.findOneAndUpdate({ PostId: id }, {
+    return await Reactions.findByIdAndUpdate(id, {
         $pull: {
             Likes: UserId,
             Dislikes: UserId
@@ -151,9 +152,17 @@ export const likeDislikePost: Function = async (id: ObjectId, value: ObjectId, f
     return await Reactions.findByIdAndUpdate(id, { $addToSet: { [field1]: value }, $pull: { [field2]: value } }, { upsert: true })
 }
 
-export const likeDislikeVideo: Function = async (id: ObjectId, value: ObjectId, field1: string, field2: string) => {
-    return await Reactions.findOneAndUpdate({ PostId: id }, { $addToSet: { [field1]: value }, $pull: { [field2]: value } }, { upsert: true })
-}
+export const likeDislikeVideo = async (id: ObjectId, value: ObjectId, field1: string, field2: string) => {
+    try {
+        console.log(value, field1, field2,id)
+        const result = await Reactions.findByIdAndUpdate(id, { $addToSet: { [field1]: value }, $pull: { [field2]: value } });
+        console.log(result)
+        return result;
+    } catch (error) {
+        console.error('Error updating reactions:', error);
+        return null
+    }
+};
 
 export const countDocuments: Function = async (Db: any, id: ObjectId, key: string): Promise<number> => {
     return Db.countDocuments({ [key]: id })
@@ -186,6 +195,29 @@ export const searchData = async (search: string): Promise<{
             channel: []
         };
     }
+};
+
+export const getCategory = async (search: string | null, skip: number) => {
+    const pipeline = [];
+
+    if (search) {
+        pipeline.push({
+            $match: {
+                Name: { $regex: search, $options: 'i' }
+            }
+        });
+    }
+
+    pipeline.push(
+        {
+            $skip: skip,
+        },
+        {
+            $limit: 10,
+        },
+    );
+
+    return await CategoryModel.aggregate(pipeline);
 };
 
 
@@ -324,10 +356,8 @@ export const checkChat: Function = async (UserIds: string[]) => {
     }
 }
 
-export const getPosts = async (UserIds: ObjectId[], skip: number, limit: number = 10): Promise<PostImage[] | null> => {
+export const getPosts = async (UserIds: ObjectId[], skip: number, limit: number = 12): Promise<PostImage[] | null> => {
     try {
-        console.log(UserIds);
-
         const posts: PostImage[] = await PostImages.aggregate([
             { $match: { UserId: { $in: UserIds } } },
             { $skip: skip },

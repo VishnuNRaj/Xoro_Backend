@@ -8,6 +8,8 @@ dotenv_1.default.config();
 const config = {
     PORT: parseInt(process.env.PORT || '3000'),
     MONGO: process.env.MONGO || '',
-    BASE: process.env.BASE || ''
+    BASE: process.env.BASE || '',
+    RTMP: process.env.RTMP || "",
+    LIVE: process.env.HTTP || ""
 };
 exports.default = config;

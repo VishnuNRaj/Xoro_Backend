@@ -44,3 +44,11 @@ export interface UsermanageResponse {
 export interface addCategoryResponse extends normals {
     Category:CategoryInterface;
 }
+
+export interface deleteCategoryResponse extends normals {
+    CategoryId:string;
+}
+
+export interface getCategoryResponse extends normals {
+    Category:CategoryInterface[];
+}

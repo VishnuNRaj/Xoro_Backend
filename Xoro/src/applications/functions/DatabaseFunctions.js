@@ -35,7 +35,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getChannel = exports.getComment = exports.getComments = exports.getPosts = exports.checkChat = exports.getFollowers = exports.getChat = exports.getChats = exports.searchData = exports.countDocuments = exports.likeDislikeVideo = exports.likeDislikePost = exports.saveData = exports.deleteMany = exports.deleteUsingId = exports.findUsersObjectId = exports.findUsers = exports.getUnReadNotifications = exports.findData = exports.checkObjectId = exports.executeBulkWrite = exports.pullVideoReactions = exports.pullReactions = exports.findAndPull = exports.findOneAndUpdate = exports.updateByData = exports.updateById = exports.insertData = exports.findUsingId = exports.findOneData = void 0;
+exports.getChannel = exports.getComment = exports.getComments = exports.getPosts = exports.checkChat = exports.getFollowers = exports.getChat = exports.getChats = exports.getCategory = exports.searchData = exports.countDocuments = exports.likeDislikeVideo = exports.likeDislikePost = exports.saveData = exports.deleteMany = exports.deleteUsingId = exports.findUsersObjectId = exports.findUsers = exports.getUnReadNotifications = exports.findData = exports.checkObjectId = exports.executeBulkWrite = exports.pullVideoReactions = exports.pullReactions = exports.findAndPull = exports.findOneAndUpdate = exports.updateByData = exports.updateById = exports.insertData = exports.findUsingId = exports.findOneData = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const User_1 = __importDefault(require("../../frameworks/database/models/User"));
 const ImagesPost_1 = __importDefault(require("../../frameworks/database/models/ImagesPost"));
@@ -45,6 +45,7 @@ const Channels_1 = __importDefault(require("../../frameworks/database/models/Cha
 const Reactions_1 = __importDefault(require("../../frameworks/database/models/Reactions"));
 const Notifications_1 = __importDefault(require("../../frameworks/database/models/Notifications"));
 const Comments_1 = __importDefault(require("../../frameworks/database/models/Comments"));
+const Category_1 = __importDefault(require("../../frameworks/database/models/Category"));
 const findOneData = (Db, query) => __awaiter(void 0, void 0, void 0, function* () {
     return yield Db.findOne(query);
 });
@@ -83,7 +84,7 @@ const pullReactions = (Db, id, UserId) => __awaiter(void 0, void 0, void 0, func
 });
 exports.pullReactions = pullReactions;
 const pullVideoReactions = (id, UserId) => __awaiter(void 0, void 0, void 0, function* () {
-    return yield Reactions_1.default.findOneAndUpdate({ PostId: id }, {
+    return yield Reactions_1.default.findByIdAndUpdate(id, {
         $pull: {
             Likes: UserId,
             Dislikes: UserId
@@ -177,7 +178,16 @@ const likeDislikePost = (id, value, field1, field2) => __awaiter(void 0, void 0,
 });
 exports.likeDislikePost = likeDislikePost;
 const likeDislikeVideo = (id, value, field1, field2) => __awaiter(void 0, void 0, void 0, function* () {
-    return yield Reactions_1.default.findOneAndUpdate({ PostId: id }, { $addToSet: { [field1]: value }, $pull: { [field2]: value } }, { upsert: true });
+    try {
+        console.log(value, field1, field2, id);
+        const result = yield Reactions_1.default.findByIdAndUpdate(id, { $addToSet: { [field1]: value }, $pull: { [field2]: value } });
+        console.log(result);
+        return result;
+    }
+    catch (error) {
+        console.error('Error updating reactions:', error);
+        return null;
+    }
 });
 exports.likeDislikeVideo = likeDislikeVideo;
 const countDocuments = (Db, id, key) => __awaiter(void 0, void 0, void 0, function* () {
@@ -210,6 +220,23 @@ const searchData = (search) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.searchData = searchData;
+const getCategory = (search, skip) => __awaiter(void 0, void 0, void 0, function* () {
+    const pipeline = [];
+    if (search) {
+        pipeline.push({
+            $match: {
+                Name: { $regex: search, $options: 'i' }
+            }
+        });
+    }
+    pipeline.push({
+        $skip: skip,
+    }, {
+        $limit: 10,
+    });
+    return yield Category_1.default.aggregate(pipeline);
+});
+exports.getCategory = getCategory;
 const getChats = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const data = yield Chat_1.default.aggregate([
@@ -347,9 +374,8 @@ const checkChat = (UserIds) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.checkChat = checkChat;
-const getPosts = (UserIds_1, skip_1, ...args_1) => __awaiter(void 0, [UserIds_1, skip_1, ...args_1], void 0, function* (UserIds, skip, limit = 10) {
+const getPosts = (UserIds_1, skip_1, ...args_1) => __awaiter(void 0, [UserIds_1, skip_1, ...args_1], void 0, function* (UserIds, skip, limit = 12) {
     try {
-        console.log(UserIds);
         const posts = yield ImagesPost_1.default.aggregate([
             { $match: { UserId: { $in: UserIds } } },
             { $skip: skip },

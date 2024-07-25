@@ -60,6 +60,7 @@ const AdminLoginRepository = (_a) => __awaiter(void 0, [_a], void 0, function* (
             });
         }
         const VerificationLink = CommonFunctions.OTPgenerate();
+        console.log(VerificationLink);
         yield (0, SendMail_1.SendVerificationOTP)(Email, VerificationLink);
         const LinkTimeout = CommonFunctions.CalculateTime(2);
         yield DatabaseFunctions.updateById(Admin_1.default, admin._id, { VerificationLink: VerificationLink, LinkTimeout: LinkTimeout });
@@ -109,17 +110,18 @@ const AdminOTPVerifyRepository = (_b) => __awaiter(void 0, [_b], void 0, functio
                 status: 203
             });
         }
+        const token = yield (0, JWT_1.CreatePayload)({
+            Payload: {
+                UserId: admin._id,
+                Email: admin.Email,
+                Admin: true
+            }, RememberMe: RememberMe
+        });
         return yield ResponseFunctions.AdminOTPVerifyRes({
             message: 'OTP Verified',
             admin: admin,
             status: 200,
-            token: yield (0, JWT_1.CreatePayload)({
-                Payload: {
-                    UserId: admin._id,
-                    Email: admin.Email,
-                    Admin: true
-                }, RememberMe: RememberMe
-            })
+            token
         });
     }
     catch (e) {

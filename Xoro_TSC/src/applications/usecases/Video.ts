@@ -5,6 +5,7 @@ import * as Repository from '../repository/Video/UserVideoRepository';
 import * as UserFunctions from '../functions/UserFunctions';
 import UserDocument from '../../entities/ModelsInterface/User';
 import { checkObjectId } from '../functions/DatabaseFunctions';
+import config from '../../config/config';
 
 export const uploadVideo: Function = async (data: VideoEntity.uploadVideo): Promise<Responses.uploadVideoResponse> => {
     try {
@@ -23,7 +24,6 @@ export const uploadVideo: Function = async (data: VideoEntity.uploadVideo): Prom
             status: 201,
         }
         const Links = {
-            Video: `${data.user.Channel}/${new Date()}-${data.Video.originalname}`,
             Thumbnail: await UserFunctions.uploadBase64Image(data.Thumbnail)
         }
         return Repository.uploadVideoRepository({ ...data, Links: Links })

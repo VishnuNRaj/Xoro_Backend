@@ -152,11 +152,12 @@ const updateShortsLink = (videoId, link) => __awaiter(void 0, void 0, void 0, fu
 exports.updateShortsLink = updateShortsLink;
 const getRandomVideos = (skip, random) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const totalVideos = yield Videos_1.default.countDocuments({});
+        const totalVideos = yield Videos_1.default.countDocuments({ "Settings.ListedContent": true });
         const videos = yield Videos_1.default.aggregate([
-            { $sample: { size: totalVideos } },
+            { $match: { "Settings.ListedContent": true } },
+            // { $sample: { size: totalVideos } },
             { $skip: skip },
-            { $limit: 10 },
+            { $limit: 12 },
             {
                 $lookup: {
                     from: 'channels',
@@ -184,6 +185,7 @@ const getRandomVideos = (skip, random) => __awaiter(void 0, void 0, void 0, func
 exports.getRandomVideos = getRandomVideos;
 const getVideo = (VideoLink, UserId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        console.log(UserId);
         const [video] = yield Videos_1.default.aggregate([
             { $match: { VideoLink: VideoLink } },
             {
@@ -204,13 +206,13 @@ const getVideo = (VideoLink, UserId) => __awaiter(void 0, void 0, void 0, functi
             },
             {
                 $addFields: {
-                    LikesCount: { $length: "$reactions.Likes" },
-                    DislikesCount: { $length: "$reactions.Dislikes" },
                     Liked: { $in: [UserId, "$reactions.Likes"] },
-                    Disliked: { $in: [UserId, "$reactions.Dislikes"] }
+                    Disliked: { $in: [UserId, "$reactions.Dislikes"] },
+                    Viewed: { $in: [UserId, "$reactions.Views"] }
                 }
             }
         ]);
+        console.log(video);
         return video;
     }
     catch (error) {

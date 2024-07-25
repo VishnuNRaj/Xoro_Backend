@@ -40,6 +40,7 @@ const jsonwebtoken_1 = __importStar(require("jsonwebtoken"));
 const auth_1 = __importDefault(require("../../config/auth"));
 const CreatePayload = ({ Payload, RememberMe }) => {
     try {
+        console.log(Payload);
         const { JWT_EXPIRES_IN, JWT_REMEMBER_ME, JWT_SECRET } = auth_1.default;
         return jsonwebtoken_1.default.sign(Payload, JWT_SECRET, { expiresIn: RememberMe ? JWT_REMEMBER_ME : JWT_EXPIRES_IN });
     }

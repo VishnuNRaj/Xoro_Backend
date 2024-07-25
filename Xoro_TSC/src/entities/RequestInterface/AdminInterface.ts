@@ -31,3 +31,10 @@ export interface addCategory {
     AdminId:ObjectId;
     Name:string;
 }
+
+export interface editCategory {
+    Name:string;
+    AdminId:ObjectId;
+    CategoryId:string;
+}
+

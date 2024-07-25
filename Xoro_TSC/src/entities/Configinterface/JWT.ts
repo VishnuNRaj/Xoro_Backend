@@ -2,7 +2,7 @@ export interface JWTCreate {
     Payload: {
         UserId: string;
         Email: string;
-        Admin: Boolean
+        Admin: boolean;
     };
     RememberMe: boolean;
 }

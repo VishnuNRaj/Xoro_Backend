@@ -7,9 +7,9 @@ postRouter.get('/', VerifyUserAuth, Middleware.ShowPostImages)
 postRouter.get('/:skip', VerifyUserAuth, Middleware.GetPosts)
 postRouter.post('/add-post', upload.array('Media'),VerifyUserAuth, Middleware.PostImages)
 postRouter.get('/delete/:PostId',VerifyUserAuth, Middleware.DeletePost)
-postRouter.patch('/like/:PostId',VerifyUserAuth, Middleware.LikePost)
-postRouter.patch('/dislike/:PostId',VerifyUserAuth, Middleware.DislikePost)
-postRouter.patch('/remove/:PostId',VerifyUserAuth, Middleware.RemoveReactions)
+postRouter.patch('/reactions/like/:PostId',VerifyUserAuth, Middleware.LikePost)
+postRouter.patch('/reactions/dislike/:PostId',VerifyUserAuth, Middleware.DislikePost)
+postRouter.patch('/reactions/remove/:PostId',VerifyUserAuth, Middleware.RemoveReactions)
 postRouter.post('/report/:PostId',VerifyUserAuth, Middleware.RemoveReactions)
 
 

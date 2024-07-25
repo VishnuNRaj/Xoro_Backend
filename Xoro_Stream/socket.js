@@ -3,47 +3,63 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const ws_1 = require("ws");
-const fluent_ffmpeg_1 = __importDefault(require("fluent-ffmpeg"));
-const stream_1 = require("stream");
+const express_1 = __importDefault(require("express"));
 const path_1 = __importDefault(require("path"));
-const fs_1 = __importDefault(require("fs"));
-const outputPath = path_1.default.join(__dirname, "Live/stream.flv");
-console.log(outputPath);
-if (!fs_1.default.existsSync(path_1.default.join(__dirname, 'Live'))) {
-    fs_1.default.mkdirSync(path_1.default.join(__dirname, 'Live'));
-}
-const wss = new ws_1.Server({ port: 8080 });
-console.log("WebSocket server started on port 8080");
-wss.on('connection', (ws) => {
-    console.log('Client connected');
-    const ffmpegStream = new stream_1.PassThrough();
-    const ffmpegProcess = (0, fluent_ffmpeg_1.default)(ffmpegStream)
-        .inputFormat('flv')
-        .videoCodec('copy')
-        .audioCodec('copy')
-        .on('start', (commandLine) => {
-        console.log('Spawned FFmpeg with command: ' + commandLine);
-    })
-        .on('progress', (progress) => {
-        console.log('Processing: ' + progress.frames + ' frames completed');
-    })
-        .on('end', () => {
-        console.log('File has been converted successfully');
-    })
-        .on('error', (err) => {
-        console.error('An error occurred: ' + err.message);
-    })
-        .save(outputPath);
-    ws.on('message', (message) => {
-        console.log(`Received message of length: ${typeof message}`);
-        ffmpegStream.write(message);
+const cors_1 = __importDefault(require("cors"));
+const child_process_1 = require("child_process");
+const app = (0, express_1.default)();
+app.use((0, cors_1.default)());
+app.use(express_1.default.json());
+const maxConcurrentProcesses = 5;
+let runningProcesses = 0;
+const processQueue = [];
+const startFFmpegProcess = (videoPath, streamingUrl, res) => {
+    const ffmpegCommand = 'ffmpeg';
+    const args = [
+        '-re',
+        '-analyzeduration', '100M',
+        '-probesize', '100M',
+        '-i', videoPath,
+        '-c:v', 'libx264',
+        '-preset', 'veryfast',
+        '-maxrate', '3000k',
+        '-bufsize', '6000k',
+        '-vf', 'scale=-2:720',
+        '-c:a', 'aac',
+        '-b:a', '128k',
+        '-f', 'flv',
+        streamingUrl
+    ];
+    const ffmpegProcess = (0, child_process_1.spawn)(ffmpegCommand, args);
+    ffmpegProcess.stdout.on('data', (data) => {
+        console.log(`FFmpeg stdout: ${data}`);
     });
-    ws.on('close', () => {
-        ffmpegStream.end();
-        console.log('Client disconnected');
+    ffmpegProcess.stderr.on('data', (data) => {
+        console.error(`FFmpeg stderr: ${data}`);
     });
-    ws.on('error', (err) => {
-        console.error('WebSocket error:', err);
+    ffmpegProcess.on('close', (code) => {
+        console.log(`FFmpeg process exited with code ${code}`);
+        runningProcesses--;
+        if (processQueue.length > 0) {
+            const nextTask = processQueue.shift();
+            if (nextTask)
+                nextTask();
+        }
     });
+    runningProcesses++;
+    res.json({ streamingUrl });
+};
+app.get('/abc', (_req, res) => {
+    const videoFile = 'file_1720980310767.mp4';
+    const streamingUrl = `rtmp://localhost/live/${videoFile}`;
+    const videoPath = path_1.default.join(__dirname, 'Public', videoFile);
+    if (runningProcesses < maxConcurrentProcesses) {
+        startFFmpegProcess(videoPath, streamingUrl, res);
+    }
+    else {
+        processQueue.push(() => startFFmpegProcess(videoPath, streamingUrl, res));
+    }
+});
+app.listen(6707, () => {
+    console.log('Server is running on port 6707');
 });

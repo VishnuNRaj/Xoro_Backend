@@ -20,6 +20,14 @@ const VideoSchema = new mongoose_1.Schema({
         type: Number,
         default: 0,
     },
+    Likes: {
+        type: Number,
+        default: 0,
+    },
+    Dislikes: {
+        type: Number,
+        default: 0,
+    },
     Description: String,
     VideoLink: String,
     Uploaded: {

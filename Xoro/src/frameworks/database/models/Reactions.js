@@ -1,19 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
-const mongodb_1 = require("mongodb");
 const ReactionsSchema = new mongoose_1.Schema({
-    PostId: { type: mongodb_1.ObjectId, required: true },
+    PostId: { type: mongoose_1.Types.ObjectId, required: true },
     Likes: {
-        type: [mongodb_1.ObjectId],
+        type: [mongoose_1.Types.ObjectId],
         default: []
     },
     Dislikes: {
-        type: [mongodb_1.ObjectId],
+        type: [mongoose_1.Types.ObjectId],
         default: []
     },
     Views: {
-        type: [mongodb_1.ObjectId],
+        type: [mongoose_1.Types.ObjectId],
         default: []
     }
 });

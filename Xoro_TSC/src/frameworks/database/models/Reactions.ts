@@ -1,20 +1,19 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, Types } from "mongoose";
 import { ReactionsInterface } from "../../../entities/ModelsInterface/Reactions";
-import { ObjectId } from "mongodb";
 
 
 const ReactionsSchema = new Schema<ReactionsInterface>({
-    PostId: { type: ObjectId, required: true },
+    PostId: { type: Types.ObjectId, required: true },
     Likes: {
-        type: [ObjectId],
+        type: [Types.ObjectId],
         default: []
     },
     Dislikes: {
-        type: [ObjectId],
+        type: [Types.ObjectId],
         default: []
     },
     Views: {
-        type: [ObjectId],
+        type: [Types.ObjectId],
         default: []
     }
 })

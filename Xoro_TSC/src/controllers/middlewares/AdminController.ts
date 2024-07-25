@@ -27,6 +27,7 @@ export const AdminVerifyOTP: Middleware = async (req, res) => {
     try {
         const { UserId, OTP, RememberMe }: AdminEntity.AdminOTP = req.body
         const result: Responses.AdminOTPResponse = await UseCases.AdminOTPVerify({ UserId, OTP, RememberMe })
+        console.log(result)
         return res.status(result.status).json(result)
     } catch (e) {
         return res.status(500).json({ message: 'Internal Server Error' });
@@ -46,15 +47,19 @@ export const ResendOTP: Middleware = async (req, res) => {
 
 export const VerifyAdminAuth: Middleware = async (req, res, next) => {
     try {
-        const token:string = req.cookies.admin
-        const result: Responses.AdminVerifyAuthResponse = await UseCases.VerifyAdmin({ token })
-        console.log(result,token)
-        req.result = result
-        if (result.status === 200) {
-            req.result = result 
-            return next()
+        const token: string | undefined = req.headers.authorization || req.cookies.admin
+        console.log(token)
+        if (token) {
+            const result: Responses.AdminVerifyAuthResponse = await UseCases.VerifyAdmin({ token })
+            console.log(result)
+            req.result = result
+            if (result.status === 200) {
+                req.result = result
+                return next()
+            }
+            else return res.status(result.status).json(result)
         }
-        else return res.status(result.status).json(result)
+        return res.status(202).json({ status: true, message: "Invalid Data" })
     } catch (e) {
         return res.status(500).json({ status: true })
     }
@@ -86,7 +91,7 @@ export const ManageUsers: Middleware = async (req, res) => {
     try {
         const { Admin, Terminate, Suspended, SuspendedTill }: AdminEntity.AdminUserManagement = req.body
         const { UserId } = req.params
-        console.log(req.body,UserId)
+        console.log(req.body, UserId)
         const result: Responses.UsermanageResponse = await UseCases.ManageUser({ UserId, Admin, Terminate, Suspended, SuspendedTill })
         return res.status(result.status).json(result)
     } catch (e) {
@@ -95,10 +100,46 @@ export const ManageUsers: Middleware = async (req, res) => {
     }
 }
 
-export const addCategory: Middleware = async (req,res) => {
+export const addCategory: Middleware = async (req, res) => {
     try {
-        const result = req.result        
+        const result = req.result
+        const { Name } = req.body
+        const data = await UseCases.addCategory({ AdminId: result?.admin?._id, Name })
+        return res.status(data.status).json({ data })
     } catch (e) {
-        
+        return res.status(500).json({ message: 'Internal Server Error' })
+    }
+}
+
+export const deleteCategory: Middleware = async (req, res) => {
+    try {
+        const result = req.result
+        const { CategoryId } = req.params
+        const data = await UseCases.deleteCategory({ AdminId: result?.admin?._id, CategoryId })
+        return res.status(data.status).json({ data })
+    } catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' })
+    }
+}
+export const editCategory: Middleware = async (req, res) => {
+    try {
+        const result = req.result
+        const { Name } = req.body
+        const { CategoryId } = req.params
+        const data = await UseCases.editCategory({ AdminId: result?.admin?._id, Name,CategoryId })
+        return res.status(data.status).json({ data })
+    } catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' })
+    }
+}
+
+export const getategory: Middleware = async (req, res) => {
+    try {
+        const result = req.result
+        const { search,skip } = req.params
+        const data = await UseCases.getCategory(search,skip)
+        return res.status(data.status).json({ ...data,admin:result?.admin })
+    } catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' })
     }
 }

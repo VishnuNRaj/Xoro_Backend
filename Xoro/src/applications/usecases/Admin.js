@@ -32,10 +32,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addCategory = exports.ManageUser = exports.getUsers = exports.VerifyAdmin = exports.ResendAdminOTP = exports.AdminOTPVerify = exports.AdminLogin = void 0;
+exports.getCategory = exports.deleteCategory = exports.editCategory = exports.addCategory = exports.ManageUser = exports.getUsers = exports.VerifyAdmin = exports.ResendAdminOTP = exports.AdminOTPVerify = exports.AdminLogin = void 0;
 const Validations = __importStar(require("../validations/UserValidation"));
 const Repository = __importStar(require("../repository/Admin/AdminAuthRepository"));
 const AdminUserRepository = __importStar(require("../repository/Admin/AdminUserManagementRepository"));
+const AdminCategoryRepository = __importStar(require("../repository/Admin/AdminCategoryManagement"));
 const DatabaseFunctions_1 = require("../functions/DatabaseFunctions");
 const AdminLogin = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Email, Password }) {
     try {
@@ -95,6 +96,7 @@ const ResendAdminOTP = (_c) => __awaiter(void 0, [_c], void 0, function* ({ User
 exports.ResendAdminOTP = ResendAdminOTP;
 const VerifyAdmin = (_d) => __awaiter(void 0, [_d], void 0, function* ({ token }) {
     try {
+        console.log(token);
         if (!token || typeof token !== 'string') {
             return {
                 message: 'Invalid Credentials',
@@ -149,10 +151,66 @@ const ManageUser = (_e) => __awaiter(void 0, [_e], void 0, function* ({ UserId, 
     }
 });
 exports.ManageUser = ManageUser;
-const addCategory = (_f) => __awaiter(void 0, [_f], void 0, function* ({}) {
+const addCategory = (_f) => __awaiter(void 0, [_f], void 0, function* ({ AdminId, Name }) {
     try {
+        if (!Name || Name.length < 1)
+            return {
+                message: "Invalid Credentials",
+                status: 201,
+            };
+        return yield AdminCategoryRepository.addCategory({ AdminId, Name });
     }
     catch (e) {
+        return {
+            message: 'Internal Server Error',
+            status: 500
+        };
     }
 });
 exports.addCategory = addCategory;
+const editCategory = (_g) => __awaiter(void 0, [_g], void 0, function* ({ AdminId, Name, CategoryId }) {
+    try {
+        if (!Name || Name.length < 1)
+            return {
+                message: "Invalid Credentials",
+                status: 201,
+            };
+        return yield AdminCategoryRepository.editCategory({ AdminId, Name, CategoryId });
+    }
+    catch (e) {
+        return {
+            message: 'Internal Server Error',
+            status: 500
+        };
+    }
+});
+exports.editCategory = editCategory;
+const deleteCategory = (_h) => __awaiter(void 0, [_h], void 0, function* ({ AdminId, CategoryId }) {
+    try {
+        if (!CategoryId || CategoryId.length < 10)
+            return {
+                message: "Invalid Credentials",
+                status: 201,
+            };
+        return yield AdminCategoryRepository.deleteCategory({ AdminId, CategoryId });
+    }
+    catch (e) {
+        return {
+            message: 'Internal Server Error',
+            status: 500
+        };
+    }
+});
+exports.deleteCategory = deleteCategory;
+const getCategory = (search, skip) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        return yield AdminCategoryRepository.getCategory(search, skip);
+    }
+    catch (e) {
+        return {
+            message: 'Internal Server Error',
+            status: 500
+        };
+    }
+});
+exports.getCategory = getCategory;

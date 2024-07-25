@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AdminUserManagementRes = exports.AdminUserDataRes = exports.AdminVerifyAuthRes = exports.AdminResendOTPRes = exports.AdminOTPVerifyRes = exports.AdminLoginRes = void 0;
+exports.addCategoryRes = exports.AdminUserManagementRes = exports.AdminUserDataRes = exports.AdminVerifyAuthRes = exports.AdminResendOTPRes = exports.AdminOTPVerifyRes = exports.AdminLoginRes = void 0;
 const AdminLoginRes = (data) => __awaiter(void 0, void 0, void 0, function* () {
     return {
         message: data.message,
@@ -58,3 +58,11 @@ const AdminUserManagementRes = (data) => {
     };
 };
 exports.AdminUserManagementRes = AdminUserManagementRes;
+const addCategoryRes = (data) => {
+    return {
+        Category: data.Category,
+        message: data.message,
+        status: data.status,
+    };
+};
+exports.addCategoryRes = addCategoryRes;

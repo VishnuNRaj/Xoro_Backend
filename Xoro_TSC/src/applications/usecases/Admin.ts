@@ -3,6 +3,7 @@ import * as AdminEntity from '../../entities/RequestInterface/AdminInterface';
 import * as Responses from '../../entities/ResponseInterface/AdminResponseInterface';
 import * as Repository from '../repository/Admin/AdminAuthRepository';
 import * as AdminUserRepository from '../repository/Admin/AdminUserManagementRepository'
+import * as AdminCategoryRepository from "../repository/Admin/AdminCategoryManagement"
 import { checkObjectId } from '../functions/DatabaseFunctions';
 
 
@@ -62,6 +63,7 @@ export const ResendAdminOTP: Function = async ({ UserId }: AdminEntity.AdminRese
 
 export const VerifyAdmin: Function = async ({ token }: AdminEntity.AdminVerifyAuth): Promise<Responses.AdminVerifyAuthResponse> => {
     try {
+        console.log(token)
         if (!token || typeof token !== 'string') {
             return <Responses.AdminVerifyAuthResponse>{
                 message: 'Invalid Credentials',
@@ -113,10 +115,58 @@ export const ManageUser: Function = async ({ UserId, Admin, Suspended, Suspended
     }
 }
 
-export const addCategory : Function = async ({}) => {
+export const addCategory: Function = async ({ AdminId, Name }: AdminEntity.addCategory) => {
     try {
-        
+        if (!Name || Name.length < 1) return <Responses.addCategoryResponse>{
+            message: "Invalid Credentials",
+            status: 201,
+        }
+        return await AdminCategoryRepository.addCategory({ AdminId, Name })
     } catch (e) {
-        
+        return <Responses.UsermanageResponse>{
+            message: 'Internal Server Error',
+            status: 500
+        }
+    }
+}
+
+export const editCategory: Function = async ({ AdminId, Name, CategoryId }: AdminEntity.editCategory) => {
+    try {
+        if (!Name || Name.length < 1) return <Responses.addCategoryResponse>{
+            message: "Invalid Credentials",
+            status: 201,
+        }
+        return await AdminCategoryRepository.editCategory({ AdminId, Name, CategoryId })
+    } catch (e) {
+        return <Responses.UsermanageResponse>{
+            message: 'Internal Server Error',
+            status: 500
+        }
+    }
+}
+
+export const deleteCategory: Function = async ({ AdminId, CategoryId }: AdminEntity.editCategory) => {
+    try {
+        if (!CategoryId || CategoryId.length < 10) return <Responses.addCategoryResponse>{
+            message: "Invalid Credentials",
+            status: 201,
+        }
+        return await AdminCategoryRepository.deleteCategory({ AdminId, CategoryId })
+    } catch (e) {
+        return <Responses.UsermanageResponse>{
+            message: 'Internal Server Error',
+            status: 500
+        }
+    }
+}
+
+export const getCategory: Function = async (search: string, skip: number) => {
+    try {
+        return await AdminCategoryRepository.getCategory(search, skip)
+    } catch (e) {
+        return <Responses.UsermanageResponse>{
+            message: 'Internal Server Error',
+            status: 500
+        }
     }
 }

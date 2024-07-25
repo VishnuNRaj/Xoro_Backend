@@ -44,7 +44,7 @@ const Videos_1 = __importDefault(require("../../../frameworks/database/models/Vi
 const Reactions_1 = __importDefault(require("../../../frameworks/database/models/Reactions"));
 const Comments_1 = __importDefault(require("../../../frameworks/database/models/Comments"));
 const MQ_1 = require("../../functions/MQ");
-const s3bucket_1 = require("../../../config/s3bucket");
+const config_1 = __importDefault(require("../../../config/config"));
 const uploadVideoRepository = (_a) => __awaiter(void 0, [_a], void 0, function* ({ Caption, Video, Duration, Hashtags, RelatedTags, Description, Restriction, Settings, Links, user }) {
     try {
         const [video] = yield DatabaseFunctions.insertData(Videos_1.default, {
@@ -56,12 +56,14 @@ const uploadVideoRepository = (_a) => __awaiter(void 0, [_a], void 0, function* 
             Restriction: Restriction,
             Settings: Settings,
             Thumbnail: Links.Thumbnail,
-            Video: Links.Video,
+            Video: ``,
             Postdate: new Date(),
             Description: Description,
             VideoLink: yield CommonFunctions.generateVerificationLink(),
             Key: Links.Video,
         });
+        video.Video = `${config_1.default.LIVE}/videos/${video._id}/index.m3u8`;
+        yield DatabaseFunctions.saveData(video);
         yield Promise.all([
             yield (0, MQ_1.uploadVideoToMQ)({
                 key: Links.Video,
@@ -71,6 +73,7 @@ const uploadVideoRepository = (_a) => __awaiter(void 0, [_a], void 0, function* 
                 video: Video
             }),
             yield DatabaseFunctions.insertData(Reactions_1.default, {
+                _id: video._id,
                 PostId: video._id
             }),
         ]);
@@ -91,23 +94,11 @@ exports.uploadVideoRepository = uploadVideoRepository;
 const getVideosRepository = (user, skip, random) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const videoData = yield (0, UserFunctions_1.getRandomVideos)(skip, random);
-        const today = new Date();
-        const updated = videoData.map((video) => {
-            const date = new Date(video.Postdate);
-            date.setDate(date.getDate() + 7);
-            if (today > date) {
-                (0, s3bucket_1.generatePresignedUrl)('xoro-stream.online', video.Key).then((url) => {
-                    video.Video = url;
-                });
-            }
-            return video;
-        });
-        console.log(updated);
         return ResponseFunctions.getVideoRes({
             message: 'Found',
             status: 200,
             user: user,
-            Videos: updated,
+            Videos: videoData,
         });
     }
     catch (e) {
@@ -142,23 +133,32 @@ const getVideoRepository = (VideoLink, user) => __awaiter(void 0, void 0, void 0
 exports.getVideoRepository = getVideoRepository;
 const LikeVideoRepository = (_b) => __awaiter(void 0, [_b], void 0, function* ({ UserId, VideoId }) {
     try {
-        const video = yield DatabaseFunctions.findUsingId(VideoId);
+        const video = yield DatabaseFunctions.findUsingId(Videos_1.default, VideoId);
         if (!video)
             return ResponseFunctions.likeDislikeRemoveRes({ message: "Invalid Credentials", status: 201 });
         const response = yield DatabaseFunctions.likeDislikeVideo(video._id, UserId, "Likes", "Dislikes");
+        video.Likes = response.Likes.length;
+        video.Dislikes = response.Dislikes.length;
+        video.Views = response.Views.length;
+        yield DatabaseFunctions.saveData(video);
         return ResponseFunctions.likeDislikeRemoveRes({ Dislikes: response.Dislikes.length, Likes: response.Likes.length, message: "Video Added to Liked Videos", status: 200 });
     }
     catch (e) {
+        console.log(e);
         return ResponseFunctions.likeDislikeRemoveRes({ message: "Internal Server Error", status: 500 });
     }
 });
 exports.LikeVideoRepository = LikeVideoRepository;
 const DislikeVideoRepository = (_c) => __awaiter(void 0, [_c], void 0, function* ({ UserId, VideoId }) {
     try {
-        const video = yield DatabaseFunctions.findUsingId(VideoId);
+        const video = yield DatabaseFunctions.findUsingId(Videos_1.default, VideoId);
         if (!video)
             return ResponseFunctions.likeDislikeRemoveRes({ message: "Invalid Credentials", status: 201 });
         const response = yield DatabaseFunctions.likeDislikeVideo(video._id, UserId, "Dislikes", "Likes");
+        video.Likes = response.Likes.length;
+        video.Dislikes = response.Dislikes.length;
+        video.Views = response.Views.length;
+        yield DatabaseFunctions.saveData(video);
         return ResponseFunctions.likeDislikeRemoveRes({ Dislikes: response.Dislikes.length, Likes: response.Likes.length, message: "Success", status: 200 });
     }
     catch (e) {
@@ -168,13 +168,19 @@ const DislikeVideoRepository = (_c) => __awaiter(void 0, [_c], void 0, function*
 exports.DislikeVideoRepository = DislikeVideoRepository;
 const RemoveReactionRepository = (_d) => __awaiter(void 0, [_d], void 0, function* ({ UserId, VideoId }) {
     try {
-        const video = yield DatabaseFunctions.findUsingId(VideoId);
+        const video = yield DatabaseFunctions.findUsingId(Videos_1.default, VideoId);
         if (!video)
             return ResponseFunctions.likeDislikeRemoveRes({ message: "Invalid Credentials", status: 201 });
         const response = yield DatabaseFunctions.pullVideoReactions(video._id, UserId);
+        console.log(response);
+        video.Likes = (response === null || response === void 0 ? void 0 : response.Likes.length) || 0;
+        video.Dislikes = (response === null || response === void 0 ? void 0 : response.Dislikes.length) || 0;
+        video.Views = (response === null || response === void 0 ? void 0 : response.Views.length) || 0;
+        yield DatabaseFunctions.saveData(video);
         return ResponseFunctions.likeDislikeRemoveRes({ Dislikes: response === null || response === void 0 ? void 0 : response.Dislikes.length, Likes: response === null || response === void 0 ? void 0 : response.Likes.length, message: "Success", status: 200 });
     }
     catch (e) {
+        console.log(e);
         return ResponseFunctions.likeDislikeRemoveRes({ message: "Internal Server Error", status: 500 });
     }
 });

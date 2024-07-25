@@ -10,7 +10,17 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const express_mongo_sanitize_1 = __importDefault(require("express-mongo-sanitize"));
 const helmet_1 = __importDefault(require("helmet"));
 const cors_2 = __importDefault(require("../../config/cors"));
+// import { rateLimit } from "express-rate-limit"
+// import path from "path";
 const expressConfig = (app) => {
+    // app.use(rateLimit({
+    //     windowMs: 10000,
+    //     limit: 1,
+    //     standardHeaders: 'draft-7',
+    //     legacyHeaders: false, 
+    //     statusCode:201,
+    //     message:"Too Many Requests",
+    // }))
     app.use(express_1.default.json({ limit: '10mb' }));
     app.use(express_1.default.urlencoded({ limit: '100mb', extended: true }));
     app.use((0, morgan_1.default)('dev'));
@@ -18,5 +28,6 @@ const expressConfig = (app) => {
     app.use((0, express_mongo_sanitize_1.default)());
     app.use((0, cookie_parser_1.default)());
     app.use((0, cors_1.default)(cors_2.default));
+    // app.use("/public", express.static(path.join(__dirname,"../../../../Public")))
 };
 exports.default = expressConfig;

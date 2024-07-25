@@ -73,9 +73,10 @@ export const LikeDislikeRemoveVideo: Middleware = async (req, res) => {
         const { VideoId, type } = req.params;
         const array = ["like", "dislike", "remove"]
         if (!array.find((value) => value === type)) return res.status(201).json({ message: "Invalid Credentials" });
-        const data = UseCases.likeDislikeRemove({ VideoId, type, UserId: result?.user?._id })
+        const data = await UseCases.likeDislikeRemove({ VideoId, type, UserId: result?.user?._id })
         return res.status(data.status).json(data)
     } catch (e) {
+        console.log(e)
         return res.status(500).json({ message: "Internal Server Error" })
     }
 

@@ -94,10 +94,11 @@ const LikeDislikeRemoveVideo = (req, res) => __awaiter(void 0, void 0, void 0, f
         const array = ["like", "dislike", "remove"];
         if (!array.find((value) => value === type))
             return res.status(201).json({ message: "Invalid Credentials" });
-        const data = UseCases.likeDislikeRemove({ VideoId, type, UserId: (_a = result === null || result === void 0 ? void 0 : result.user) === null || _a === void 0 ? void 0 : _a._id });
+        const data = yield UseCases.likeDislikeRemove({ VideoId, type, UserId: (_a = result === null || result === void 0 ? void 0 : result.user) === null || _a === void 0 ? void 0 : _a._id });
         return res.status(data.status).json(data);
     }
     catch (e) {
+        console.log(e);
         return res.status(500).json({ message: "Internal Server Error" });
     }
 });

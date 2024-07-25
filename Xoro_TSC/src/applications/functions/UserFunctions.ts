@@ -136,12 +136,13 @@ export const updateShortsLink: Function = async (videoId: string, link: string) 
 
 export const getRandomVideos = async (skip: number, random: number): Promise<PostVideo[]> => {
     try {
-        const totalVideos = await Videos.countDocuments({});
+        const totalVideos = await Videos.countDocuments({ "Settings.ListedContent": true });
 
         const videos: PostVideo[] = await Videos.aggregate([
-            { $sample: { size: totalVideos } },
+            { $match: { "Settings.ListedContent": true } },
+            // { $sample: { size: totalVideos } },
             { $skip: skip },
-            { $limit: 10 },
+            { $limit: 12 },
             {
                 $lookup: {
                     from: 'channels',
@@ -170,6 +171,7 @@ export const getRandomVideos = async (skip: number, random: number): Promise<Pos
 
 export const getVideo = async (VideoLink: string, UserId: ObjectId): Promise<PostVideo> => {
     try {
+        console.log(UserId)
         const [video]: PostVideo[] = await Videos.aggregate([
             { $match: { VideoLink: VideoLink } },
             {
@@ -190,17 +192,17 @@ export const getVideo = async (VideoLink: string, UserId: ObjectId): Promise<Pos
             },
             {
                 $addFields: {
-                    LikesCount: { $length: "$reactions.Likes" },
-                    DislikesCount: { $length: "$reactions.Dislikes" },
                     Liked: { $in: [UserId, "$reactions.Likes"] },
-                    Disliked: { $in: [UserId, "$reactions.Dislikes"] }
+                    Disliked: { $in: [UserId, "$reactions.Dislikes"] },
+                    Viewed: { $in: [UserId, "$reactions.Views"] }
                 }
             }
         ]);
 
+        console.log(video);
         return video;
     } catch (error) {
         console.error('Error fetching video:', error);
         throw error;
     }
-}; 
+};

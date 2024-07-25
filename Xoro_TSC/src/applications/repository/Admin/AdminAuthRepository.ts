@@ -28,6 +28,7 @@ export const AdminLoginRepository: Function = async ({ Email, Password }: AdminE
             })
         }
         const VerificationLink = CommonFunctions.OTPgenerate()
+        console.log(VerificationLink)
         await SendVerificationOTP(Email, VerificationLink)
         const LinkTimeout: Date = CommonFunctions.CalculateTime(2)
         await DatabaseFunctions.updateById(Admin, admin._id, { VerificationLink: VerificationLink, LinkTimeout: LinkTimeout })
@@ -77,17 +78,18 @@ export const AdminOTPVerifyRepository: Function = async ({ OTP, UserId, Remember
                 status: 203
             })
         }
+        const token: string = await CreatePayload({
+            Payload: {
+                UserId: admin._id,
+                Email: admin.Email,
+                Admin: true
+            }, RememberMe: RememberMe
+        })
         return await ResponseFunctions.AdminOTPVerifyRes(<Responses.AdminOTPResponse>{
             message: 'OTP Verified',
             admin: admin,
             status: 200,
-            token: await CreatePayload({
-                Payload: {
-                    UserId: admin._id,
-                    Email: admin.Email,
-                    Admin: true
-                }, RememberMe: RememberMe
-            })
+            token
         })
     } catch (e) {
         console.log(e)
@@ -134,7 +136,7 @@ export const ResendOTPRepository: Function = async ({ UserId }: AdminEntity.Admi
 
 export const VerifyAdminRepository: Function = async ({ token }: AdminEntity.AdminVerifyAuth): Promise<Responses.AdminVerifyAuthResponse> => {
     try {
-        const result:any = await VerifyPayloadAdmin({ token,refresh:token })
+        const result: any = await VerifyPayloadAdmin({ token, refresh: token })
         console.log(result)
         if (!result.status) {
             return ResponseFunctions.AdminVerifyAuthRes(<Responses.AdminVerifyAuthResponse>{
@@ -147,7 +149,7 @@ export const VerifyAdminRepository: Function = async ({ token }: AdminEntity.Adm
                 message: 'Invalid Credentials',
                 status: 202
             })
-        } 
+        }
         const admin: AdminDocument = await DatabaseFunctions.findUsingId(Admin, result.user.UserId)
         console.log(admin)
         if (!admin) {

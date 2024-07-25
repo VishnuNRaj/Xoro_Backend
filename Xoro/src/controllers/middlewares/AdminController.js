@@ -32,7 +32,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addCategory = exports.ManageUsers = exports.getUsers = exports.verifyAccountResponse = exports.VerifyAdminAuth = exports.ResendOTP = exports.AdminVerifyOTP = exports.AdminLogin = void 0;
+exports.getategory = exports.editCategory = exports.deleteCategory = exports.addCategory = exports.ManageUsers = exports.getUsers = exports.verifyAccountResponse = exports.VerifyAdminAuth = exports.ResendOTP = exports.AdminVerifyOTP = exports.AdminLogin = void 0;
 const UseCases = __importStar(require("../../applications/usecases/Admin"));
 const console_1 = require("console");
 const AdminLogin = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -51,6 +51,7 @@ const AdminVerifyOTP = (req, res) => __awaiter(void 0, void 0, void 0, function*
     try {
         const { UserId, OTP, RememberMe } = req.body;
         const result = yield UseCases.AdminOTPVerify({ UserId, OTP, RememberMe });
+        console.log(result);
         return res.status(result.status).json(result);
     }
     catch (e) {
@@ -71,16 +72,20 @@ const ResendOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.ResendOTP = ResendOTP;
 const VerifyAdminAuth = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const token = req.cookies.admin;
-        const result = yield UseCases.VerifyAdmin({ token });
-        console.log(result, token);
-        req.result = result;
-        if (result.status === 200) {
+        const token = req.headers.authorization || req.cookies.admin;
+        console.log(token);
+        if (token) {
+            const result = yield UseCases.VerifyAdmin({ token });
+            console.log(result);
             req.result = result;
-            return next();
+            if (result.status === 200) {
+                req.result = result;
+                return next();
+            }
+            else
+                return res.status(result.status).json(result);
         }
-        else
-            return res.status(result.status).json(result);
+        return res.status(202).json({ status: true, message: "Invalid Data" });
     }
     catch (e) {
         return res.status(500).json({ status: true });
@@ -126,10 +131,54 @@ const ManageUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 });
 exports.ManageUsers = ManageUsers;
 const addCategory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     try {
         const result = req.result;
+        const { Name } = req.body;
+        const data = yield UseCases.addCategory({ AdminId: (_a = result === null || result === void 0 ? void 0 : result.admin) === null || _a === void 0 ? void 0 : _a._id, Name });
+        return res.status(data.status).json({ data });
     }
     catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' });
     }
 });
 exports.addCategory = addCategory;
+const deleteCategory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _b;
+    try {
+        const result = req.result;
+        const { CategoryId } = req.params;
+        const data = yield UseCases.deleteCategory({ AdminId: (_b = result === null || result === void 0 ? void 0 : result.admin) === null || _b === void 0 ? void 0 : _b._id, CategoryId });
+        return res.status(data.status).json({ data });
+    }
+    catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+exports.deleteCategory = deleteCategory;
+const editCategory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c;
+    try {
+        const result = req.result;
+        const { Name } = req.body;
+        const { CategoryId } = req.params;
+        const data = yield UseCases.editCategory({ AdminId: (_c = result === null || result === void 0 ? void 0 : result.admin) === null || _c === void 0 ? void 0 : _c._id, Name, CategoryId });
+        return res.status(data.status).json({ data });
+    }
+    catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+exports.editCategory = editCategory;
+const getategory = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const result = req.result;
+        const { search, skip } = req.params;
+        const data = yield UseCases.getCategory(search, skip);
+        return res.status(data.status).json(Object.assign(Object.assign({}, data), { admin: result === null || result === void 0 ? void 0 : result.admin }));
+    }
+    catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+});
+exports.getategory = getategory;

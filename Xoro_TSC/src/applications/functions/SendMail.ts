@@ -11,7 +11,7 @@ export const SendVerificationLink: Function = async (Email: string, Verification
         const text = "Welcome to Xoro Online, where gaming and social media collide to create an electrifying digital experience. Immerse yourself in the world of live game streaming, where you can watch your favorite gamers in action, cheer them on, and engage with fellow enthusiasts in real-time. With a diverse array of gaming content and an active community of gamers, Xoro Online is the ultimate destination for anyone passionate about gaming culture. As you embark on your journey with Xoro Online, rest assured that your security and privacy are our top priorities. To ensure the authenticity of user accounts and protect against unauthorized access, we employ a rigorous verification process. Upon registration, a verification link will be sent to your email address. Simply click on the link to verify your email and activate your account securely. With our robust verification measures in place, you can explore the world of Xoro Online with confidence and peace of mind. Join us today and elevate your gaming experience to new heights.";
 
         const footer = `Link : ${VerificationLink} . Also note that the link will expire in 2 minutes`;
-
+        const html = ``
         const mailOptions = {
             from: Mailer.user,
             to: Email,
