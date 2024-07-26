@@ -5,15 +5,21 @@ import { ObjectId } from 'mongodb'
 
 export const PostSchema = new Schema<Post>({
     Caption: String,
-    UserId:ObjectId,
+    UserId: ObjectId,
     Images: [{
         postType: String,
         link: String,
     }],
     Postdate: Date,
     Tags: [String],
-    CommentsOn: Boolean,
-    Hidden: Boolean,
+    CommentsOn: {
+        type: Boolean,
+        default: true
+    },
+    Hidden: {
+        type: Boolean,
+        default: false
+    },
     Likes: Number,
     Dislikes: Number,
     Comments: Number,
@@ -25,9 +31,9 @@ export const PostSchema = new Schema<Post>({
         type: Boolean,
         default: true
     },
-    Banned:{
-        type:Boolean,
-        default:false
+    Banned: {
+        type: Boolean,
+        default: false
     }
 });
 

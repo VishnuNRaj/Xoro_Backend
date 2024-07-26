@@ -36,9 +36,13 @@ const socketRoutes = (io: SocketIOServer): SocketIOServer => {
       console.log(typing, Username)
       socket.to(RoomId).emit("typing", { typing, Username })
     })
-    socket.on("get-channel",async (ChannelId:string)=>{
+    socket.on("get-channel", async (ChannelId: string) => {
       const channel = await ChannelModel.findById(ChannelId)
       socket.send(channel)
+    })
+    socket.on("getCategory", async (search: string) => {
+      const category = await SocketFunctions.getCategory(search)
+      socket.send(category)
     })
   });
 

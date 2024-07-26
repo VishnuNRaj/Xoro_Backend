@@ -11,7 +11,7 @@ interface PostVideo extends Document {
         CommentsOn: boolean;
         PremiumContent: boolean;
         ListedContent: boolean;
-    },
+    };
     Restriction: number;
     Hashtags: string[];
     RelatedTags: string;

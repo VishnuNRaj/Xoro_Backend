@@ -136,22 +136,21 @@ export const ResendOTPRepository: Function = async ({ UserId }: AdminEntity.Admi
 
 export const VerifyAdminRepository: Function = async ({ token }: AdminEntity.AdminVerifyAuth): Promise<Responses.AdminVerifyAuthResponse> => {
     try {
-        const result: any = await VerifyPayloadAdmin({ token, refresh: token })
+        const result: any = await VerifyPayloadAdmin(token)
         console.log(result)
         if (!result.status) {
-            return ResponseFunctions.AdminVerifyAuthRes(<Responses.AdminVerifyAuthResponse>{
+            return await ResponseFunctions.AdminVerifyAuthRes(<Responses.AdminVerifyAuthResponse>{
                 message: result.error,
                 status: 202
             })
         }
         if (!result.user.Admin) {
-            return ResponseFunctions.AdminVerifyAuthRes(<Responses.AdminVerifyAuthResponse>{
+            return await ResponseFunctions.AdminVerifyAuthRes(<Responses.AdminVerifyAuthResponse>{
                 message: 'Invalid Credentials',
                 status: 202
             })
         }
         const admin: AdminDocument = await DatabaseFunctions.findUsingId(Admin, result.user.UserId)
-        console.log(admin)
         if (!admin) {
             return ResponseFunctions.AdminVerifyAuthRes(<Responses.AdminVerifyAuthResponse>{
                 message: 'No User Found',

@@ -48,7 +48,7 @@ export const ResendOTP: Middleware = async (req, res) => {
 export const VerifyAdminAuth: Middleware = async (req, res, next) => {
     try {
         const token: string | undefined = req.headers.authorization || req.cookies.admin
-        console.log(token)
+        console.log(token, "____")
         if (token) {
             const result: Responses.AdminVerifyAuthResponse = await UseCases.VerifyAdmin({ token })
             console.log(result)
@@ -105,7 +105,7 @@ export const addCategory: Middleware = async (req, res) => {
         const result = req.result
         const { Name } = req.body
         const data = await UseCases.addCategory({ AdminId: result?.admin?._id, Name })
-        return res.status(data.status).json({ data })
+        return res.status(data.status).json(data)
     } catch (e) {
         return res.status(500).json({ message: 'Internal Server Error' })
     }
@@ -115,8 +115,9 @@ export const deleteCategory: Middleware = async (req, res) => {
     try {
         const result = req.result
         const { CategoryId } = req.params
+        console.log(CategoryId)
         const data = await UseCases.deleteCategory({ AdminId: result?.admin?._id, CategoryId })
-        return res.status(data.status).json({ data })
+        return res.status(data.status).json(data)
     } catch (e) {
         return res.status(500).json({ message: 'Internal Server Error' })
     }
@@ -126,8 +127,8 @@ export const editCategory: Middleware = async (req, res) => {
         const result = req.result
         const { Name } = req.body
         const { CategoryId } = req.params
-        const data = await UseCases.editCategory({ AdminId: result?.admin?._id, Name,CategoryId })
-        return res.status(data.status).json({ data })
+        const data = await UseCases.editCategory({ AdminId: result?.admin?._id, Name, CategoryId })
+        return res.status(data.status).json(data)
     } catch (e) {
         return res.status(500).json({ message: 'Internal Server Error' })
     }
@@ -136,9 +137,10 @@ export const editCategory: Middleware = async (req, res) => {
 export const getategory: Middleware = async (req, res) => {
     try {
         const result = req.result
-        const { search,skip } = req.params
-        const data = await UseCases.getCategory(search,skip)
-        return res.status(data.status).json({ ...data,admin:result?.admin })
+        const { search, skip } = req.params
+        const data = await UseCases.getCategory(search !== "null" ? search : "", parseInt(skip))
+        console.log(data)
+        return res.status(data.status).json({ ...data, admin: result?.admin })
     } catch (e) {
         return res.status(500).json({ message: 'Internal Server Error' })
     }

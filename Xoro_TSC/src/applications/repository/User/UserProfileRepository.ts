@@ -119,8 +119,8 @@ export const ProfileSettingsRepository: Function = async ({ user, Private, Notif
 
 export const EditProfileData: Function = async ({ Name, user, Username, Description }: UserEntity.EditProfileData) => {
     try {
-        const response = await DatabaseFunctions.findOneData(User,{Username:Username,ProfileLink:{$ne:user.ProfileLink}})
-        if(response) return ResponseFunctions.EditProfileDataRes(<Responses.EditProfileDataResponse>{
+        const response = await DatabaseFunctions.findOneData(User, { Username: Username, ProfileLink: { $ne: user.ProfileLink } })
+        if (response) return ResponseFunctions.EditProfileDataRes(<Responses.EditProfileDataResponse>{
             user: user,
             status: 201,
             message: 'Username Already Exists'
@@ -398,6 +398,7 @@ export const CreateChannelRepository: Function = async ({ Name, Description, Typ
             })
         }
         const [newChannel]: ChannelInterface[] = await DatabaseFunctions.insertData(Channels, {
+            _id: user._id,
             Name, Description, Type, UserId: user._id, Logo: Link, ChannelLink: generateVerificationLink()
         })
         user.Channel = newChannel._id

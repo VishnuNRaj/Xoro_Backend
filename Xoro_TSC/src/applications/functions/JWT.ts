@@ -70,10 +70,10 @@ export const VerifyPayload = async ({ token, refresh }: JWTVerify): Promise<JWTV
 };
 
 
-export const VerifyPayloadAdmin = async ({ token }: JWTVerify): Promise<JWTVerifyResponse> => {
+export const VerifyPayloadAdmin = async (token: string): Promise<JWTVerifyResponse> => {
     const { JWT_SECRET }: AuthInterface = auth;
     try {
-        const decodedToken = jwt.verify(token, JWT_SECRET);
+        const decodedToken = await jwt.verify(token, JWT_SECRET);
         return <JWTVerifyResponse>{
             status: true,
             user: decodedToken as {
@@ -87,8 +87,8 @@ export const VerifyPayloadAdmin = async ({ token }: JWTVerify): Promise<JWTVerif
         console.error(error);
         if (error instanceof TokenExpiredError) {
             return <JWTVerifyResponse>{
-                error:"Session Expired",
-                status:false,
+                error: "Session Expired",
+                status: false,
             }
         }
         return <JWTVerifyResponse>{

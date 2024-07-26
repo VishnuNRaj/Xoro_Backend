@@ -20,7 +20,7 @@ export const uploadVideoRepository: Function = async ({ Caption, Video, Duration
 
         const [video]: PostVideo[] = await DatabaseFunctions.insertData(Videos, {
             Caption: Caption,
-            UserId: user.Channel,
+            UserId: user._id,
             Duration: Duration,
             Hashtags: Hashtags,
             RelatedTags: RelatedTags,
@@ -34,8 +34,6 @@ export const uploadVideoRepository: Function = async ({ Caption, Video, Duration
             Key: Links.Video,
         })
 
-        video.Video = `${config.LIVE}/videos/${video._id}/index.m3u8`
-        await DatabaseFunctions.saveData(video)
 
         await Promise.all([
             await uploadVideoToMQ(<videoUpload>{

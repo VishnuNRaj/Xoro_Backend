@@ -1,5 +1,7 @@
 import { Socket } from "socket.io";
 import { setMarkAsRead } from "../../frameworks/database/Functions/ChatFunctions";
+import CategoryModel from "../../frameworks/database/models/Category";
+import Notifications from "../../frameworks/database/models/Notifications";
 
 export const joinUserId: Function = async (socket: Socket, userId: string) => {
     socket.join(userId)
@@ -20,6 +22,14 @@ export const markAsRead: Function = async ({ RoomId, UserId }: { RoomId: string;
     await setMarkAsRead(RoomId, UserId)
 }
 
-export const getUnReadNotifications: Function = (UserId:string) => {
-    const notifications = getUnReadNotifications
+export const getUnReadNotifications =  async (UserId: string) => {
+    const notifications = await Notifications.find({ UserId: UserId })
+    return notifications
+}
+
+
+export const getCategory = async (search: string) => {
+    const regex = new RegExp(search, "i")
+    const category = await CategoryModel.find({ Name: { $regex: regex } })
+    return category
 }

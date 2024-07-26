@@ -3,6 +3,7 @@ import * as VideoEntity from '../../entities/RequestInterface/VideoInterface';
 import * as Responses from '../../entities/ResponseInterface/VideoResponseInterface';
 import * as Repository from '../repository/Video/UserVideoRepository';
 import * as UserFunctions from '../functions/UserFunctions';
+import * as CommonFunctions from "../functions/CommonFunctions"
 import UserDocument from '../../entities/ModelsInterface/User';
 import { checkObjectId } from '../functions/DatabaseFunctions';
 import config from '../../config/config';
@@ -24,7 +25,8 @@ export const uploadVideo: Function = async (data: VideoEntity.uploadVideo): Prom
             status: 201,
         }
         const Links = {
-            Thumbnail: await UserFunctions.uploadBase64Image(data.Thumbnail)
+            Thumbnail: await UserFunctions.uploadBase64Image(data.Thumbnail),
+            Key:CommonFunctions.generateVerificationLink()
         }
         return Repository.uploadVideoRepository({ ...data, Links: Links })
     } catch (e) {

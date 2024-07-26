@@ -27,25 +27,22 @@ export const addCategory: Function = async ({ AdminId, Name }: CategoryEntity.ad
     }
 }
 
-export const editCategory: Function = async ({ AdminId, Name, CategoryId }: CategoryEntity.editCategory): Promise<Responses.addCategoryResponse> => {
+export const editCategory: Function = async ({ Name, CategoryId }: CategoryEntity.editCategory): Promise<Responses.addCategoryResponse> => {
     try {
         const ctgry: CategoryInterface = await DatabaseFunctions.findUsingId(CategoryModel, CategoryId)
         if (!ctgry) return ResponseFunctions.addCategoryRes(<Responses.addCategoryResponse>{
             message: "No Category Found",
             status: 201
         })
-        if (ctgry.CreatedBy !== AdminId) return ResponseFunctions.addCategoryRes(<Responses.addCategoryResponse>{
-            message: "Cannot Edit Category Created by Other",
-            status: 201
-        })
-        const value = await DatabaseFunctions.findOneData(CategoryModel, { Name: Name, _id: ctgry._id })
+        const value = await DatabaseFunctions.findOneData(CategoryModel, { Name: Name, _id: { $ne: ctgry._id } })
         if (value) return ResponseFunctions.addCategoryRes(<Responses.addCategoryResponse>{
             message: "Category Already Exists",
             status: 201
         })
-        const response: CategoryInterface = await DatabaseFunctions.updateById(CategoryModel, ctgry._id, { Name: Name })
+        ctgry.Name = Name
+        await DatabaseFunctions.saveData(ctgry)
         return ResponseFunctions.addCategoryRes(<Responses.addCategoryResponse>{
-            Category: response,
+            Category: ctgry,
             message: "Category Edited Successfully",
             status: 200
         })
@@ -65,14 +62,10 @@ export const deleteCategory: Function = async ({ AdminId, CategoryId }: Category
             message: "No Category Found",
             status: 201
         })
-        if (ctgry.CreatedBy !== AdminId) return ResponseFunctions.addCategoryRes(<Responses.addCategoryResponse>{
-            message: "Cannot Edit Category Created by Other",
-            status: 201
-        })
         await ctgry.deleteOne()
         return ResponseFunctions.addCategoryRes(<Responses.deleteCategoryResponse>{
             CategoryId: CategoryId,
-            message: "Category Edited Successfully",
+            message: "Category Deleted Successfully",
             status: 200
         })
     } catch (e) {
@@ -86,11 +79,12 @@ export const deleteCategory: Function = async ({ AdminId, CategoryId }: Category
 
 export const getCategory: Function = async (search: string, skip: number): Promise<Responses.getCategoryResponse> => {
     try {
-        const category = await DatabaseFunctions.getCategory(search.length > 1 ? search : null, skip)
+        const { category, total }: any = await DatabaseFunctions.getCategory(search.length > 1 ? search : null, skip * 10)
         return {
             Category: category,
             message: "Found",
-            status: 200
+            status: 200,
+            total
         }
     } catch (e) {
         console.log(e)

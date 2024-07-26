@@ -51,4 +51,5 @@ export interface deleteCategoryResponse extends normals {
 
 export interface getCategoryResponse extends normals {
     Category:CategoryInterface[];
+    total?:number;
 }

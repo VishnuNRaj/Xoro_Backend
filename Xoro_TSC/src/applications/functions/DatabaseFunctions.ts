@@ -153,15 +153,7 @@ export const likeDislikePost: Function = async (id: ObjectId, value: ObjectId, f
 }
 
 export const likeDislikeVideo = async (id: ObjectId, value: ObjectId, field1: string, field2: string) => {
-    try {
-        console.log(value, field1, field2, id)
-        const result = await Reactions.findByIdAndUpdate(id, { $addToSet: { [field1]: value }, $pull: { [field2]: value } }, { upsert: true });
-        console.log(result)
-        return result;
-    } catch (error) {
-        console.error('Error updating reactions:', error);
-        return null
-    }
+    return await Reactions.findByIdAndUpdate(id, { $addToSet: { [field1]: value }, $pull: { [field2]: value } }, { upsert: true });
 };
 
 export const countDocuments: Function = async (Db: any, id: ObjectId, key: string): Promise<number> => {
@@ -199,15 +191,16 @@ export const searchData = async (search: string): Promise<{
 
 export const getCategory = async (search: string | null, skip: number) => {
     const pipeline = [];
-
+    const irx: any = {}
     if (search) {
+        irx.Name = { $regex: search, $options: 'i' }
         pipeline.push({
             $match: {
                 Name: { $regex: search, $options: 'i' }
             }
         });
     }
-
+    const total = await CategoryModel.countDocuments(irx)
     pipeline.push(
         {
             $skip: skip,
@@ -215,9 +208,24 @@ export const getCategory = async (search: string | null, skip: number) => {
         {
             $limit: 10,
         },
+        {
+            $lookup: {
+                from: "videos",
+                foreignField: "RelatedTags",
+                localField: "Name",
+                as: "videos"
+            }
+        },
+        {
+            $project: {
+                _id: 1,
+                Name: 1,
+                CreatedAt: 1,
+                Videos: { $size: "$videos" }
+            }
+        }
     );
-
-    return await CategoryModel.aggregate(pipeline);
+    return { category: await CategoryModel.aggregate(pipeline), total }
 };
 
 
@@ -358,8 +366,10 @@ export const checkChat: Function = async (UserIds: string[]) => {
 
 export const getPosts = async (UserIds: ObjectId[], skip: number, limit: number = 12): Promise<PostImage[] | null> => {
     try {
-        const posts: PostImage[] = await PostImages.aggregate([
-            { $match: { UserId: { $in: UserIds } } },
+        let match = []
+        if (UserIds.length > 2) match.push({ $match: { UserId: { $in: UserIds }, Banned: false, $or: [{ Hidden: { $exists: false } }, { Hidden: false }] } })
+        else match.push({ $match: { Banned: false, $or: [{ Hidden: { $exists: false } }, { Hidden: false }] } })
+        match.push(
             { $skip: skip },
             { $limit: limit },
             {
@@ -441,9 +451,9 @@ export const getPosts = async (UserIds: ObjectId[], skip: number, limit: number 
                         $mergeObjects: ['$doc', { comments: '$comments' }]
                     }
                 }
-            }
-        ]);
-
+            })
+        const posts: PostImage[] = await PostImages.aggregate(match);
+        console.log(posts)
         return posts;
     } catch (e) {
         console.error('Error fetching posts:', e);
