@@ -1,24 +1,42 @@
 import { Job, Worker } from "bullmq"
-import uploadVideoToS3, { generatePresignedUrl } from '../../../config/s3bucket';
+import fs from "fs"
 import { createNotification } from "../../../applications/functions/UserFunctions"
 import ShortVideos from "../../database/models/Shorts";
 import { Notification } from "../../../entities/ModelsInterface/Notification"
 import Notifications from "../../database/models/Notifications";
+import User from "../../database/models/User"
 import { updateShortsLink } from "../../../applications/functions/UserFunctions"
 import { shortsUpload } from "../interfaces/shortsUpload"
-import { emitNotification } from "../../../controllers/Socket/SocketEmits"
+import startFFmpegProcess from "../../system/FFmpeg";
+import path from "path";
+import config from "../../../config/config";
 
-export const uploadShorts: Function = async ({ bucket, video, key, userId }: shortsUpload): Promise<string | null> => {
+export const uploadShorts = async ({ video, key, userId }: shortsUpload) => {
     try {
-        const data = await ShortVideos.findOne({ Key: key })
-        await uploadVideoToS3(bucket, video, key);
-        if (!data) {
-            throw new Error("Aah shit here we go again")
-        } else {
-            await createNotification(<Notification>{ Message: "Video Uploaded Successfully", Link: "", Seen: false, Time: new Date(), Type: "official" }, userId)
+        const videoData = await ShortVideos.findOne({ Key: key })
+        const user = await User.findById(userId)
+        if (videoData) {
+            const videoDir = path.join(__dirname, '../../../../../Public/videos', userId.toString());
+            const videoPath = path.join(videoDir, `${key}.flv`);
+            if (!fs.existsSync(videoDir)) {
+                fs.mkdirSync(videoDir, { recursive: true });
+            }
+            const fileBuffer = fs.readFileSync(video.path);
+            fs.writeFileSync(videoPath, fileBuffer);
+            const response: string = await startFFmpegProcess(videoPath, `${config.RTMP}/shorts/${videoData.Key}`, videoData.toString(), true);
+            const notification = {
+                SenderId: userId,
+                Link: user?.Profile,
+                Time: new Date(),
+                Message: response ? 'Video Uploaded Successfully' : 'Video Upload Failed',
+            };
+            await createNotification(notification, userId);
+            if (response) {
+                await updateShortsLink(videoData._id, videoPath);
+            }
+
+            return response;
         }
-        const url = await generatePresignedUrl(bucket, key)
-        return url
     } catch (e) {
         await createNotification(<Notification>{ Message: "Video Uploaded Successfully", Link: "", Seen: false, Time: new Date(), Type: "official" }, userId)
         return null
@@ -26,12 +44,7 @@ export const uploadShorts: Function = async ({ bucket, video, key, userId }: sho
 }
 const worker = new Worker("shortsUpload", async (job: Job<shortsUpload>) => {
     try {
-        const response: string | null = await uploadShorts(job.data);
-        if (response) {
-            await updateShortsLink(job.data.videoId, response)
-        }
-        const notify: any = await Notifications.aggregate([{ $match: { UserId: job.data.userId } }, { $project: { Messages: 1 } }, { $project: { LastMessage: { $arrayElemAt: ["$Messages", -1] } } }])
-        await emitNotification(notify.LastMessage, job.data.userId)
+        await uploadShorts(job.data);
         return true
     } catch (e) {
         console.log(e)

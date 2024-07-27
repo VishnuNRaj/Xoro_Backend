@@ -2,7 +2,8 @@ import { Router } from 'express';
 const userRouter: Router = Router()
 import * as Middleware from '../middlewares/UserController'
 import upload from '../other/Multer';
-
+import TrimVideo from "../../frameworks/system/TrimVideo"
+ 
 userRouter.post('/register', Middleware.Register)
 userRouter.post('/login', Middleware.Login)
 userRouter.get('/verify-account/:VerificationLink/:UserId', Middleware.VerifyAccount)
@@ -12,5 +13,7 @@ userRouter.get('/verify', Middleware.VerifyUserAuth, Middleware.VerifyUserRespon
 userRouter.post('/resendotp/:UserId', Middleware.ResendOTP)
 userRouter.post('/get-twostep', Middleware.VerifyUserAuth,Middleware.getSecurity)
 userRouter.post('/set-twostep', Middleware.VerifyUserAuth,Middleware.setSecurity)
+userRouter.post("/trim",Middleware.VerifyUserAuth,TrimVideo)
+userRouter.get("/category/:search",Middleware.VerifyUserAuth,Middleware.getCategoryData)
 
 export default userRouter

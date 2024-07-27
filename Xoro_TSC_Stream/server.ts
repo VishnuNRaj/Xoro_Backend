@@ -1,26 +1,5 @@
 import NodeMediaServer from 'node-media-server';
 import path from 'path';
-// import fs from 'fs';
-// import ffmpeg from 'fluent-ffmpeg';
-
-
-// const saveStreamAsMP4 = (streamPath: string, outputPath: string) => {
-//   ffmpeg(streamPath)
-//     .outputOptions('-c copy')
-//     .outputFormat('mp4')
-//     .outputOptions([
-//       '-movflags faststart',
-//       '-movflags frag_keyframe+empty_moov',
-//     ])
-//     .addOption('-bsf:a', 'aac_adtstoasc')
-//     .on('error', (err) => {
-//       console.error(`Error during conversion: ${err.message}`);
-//     })
-//     .on('end', () => {
-//       console.log('Stream saved as MP4 successfully');
-//     })
-//     .save(outputPath);
-// }
 
 const config = {
   rtmp: {
@@ -53,6 +32,19 @@ const config = {
         dvrFlags: '[segment_time=10:break_non_keyframes=1]',
         fission: true,
         hlsKeep: true,
+      }, {
+        app: 'shorts',
+        vc: 'copy', 
+        ac: 'copy',  
+        rtmp: true,
+        hls: true,
+        hlsFlags: '[hls_time=10:hls_list_size=0:hls_flags=delete_segments]',
+        dash: true,
+        dashFlags: '[seg_duration=10]',
+        dvr: true,
+        dvrFlags: '[segment_time=10:break_non_keyframes=1]',
+        fission: true,
+        hlsKeep: true,
       }
     ],
     mediaRoot: path.join(__dirname, "../Public")
@@ -66,57 +58,48 @@ const config = {
         saveType: 'flv',
         saveMode: 'append',
       },
-    ],
-  },
-  fission: {
-    ffmpeg: "/usr/bin/ffmpeg",
-    tasks: [
       {
-        rule: "videos/*",
-        model: [
-          {
-            ab: "128k",
-            vb: "1500k",
-            vs: "1280x720",
-            vf: "30",
-          },
-          {
-            ab: "96k",
-            vb: "1000k",
-            vs: "854x480",
-            vf: "24",
-          },
-          {
-            ab: "96k",
-            vb: "600k",
-            vs: "640x360",
-            vf: "20",
-          },
-        ],
+        app: 'shorts',
+        root: path.join(__dirname, '../Public'),
+        saveType: 'flv',
+        saveMode: 'append',
       },
     ],
   },
+  // fission: {
+  //   ffmpeg: "/usr/bin/ffmpeg",
+  //   tasks: [
+  //     // {
+  //     //   rule: "videos/*",
+  //     //   model: [
+  //     //     {
+  //     //       ab: "128k",
+  //     //       vb: "1500k",
+  //     //       vs: "1280x720",
+  //     //       vf: "30",
+  //     //     },
+  //     //     {
+  //     //       ab: "96k",
+  //     //       vb: "1000k",
+  //     //       vs: "854x480",
+  //     //       vf: "24",
+  //     //     },
+  //     //     {
+  //     //       ab: "96k",
+  //     //       vb: "600k",
+  //     //       vs: "640x360",
+  //     //       vf: "20",
+  //     //     },
+  //     //   ],
+  //     // },
+  //   ],
+  // },
 };
 // hls_flags=program_date_time:playlist_type=event:
 const nms = new NodeMediaServer(config);
 
 nms.on('donePublish', (_id, StreamPath, _args) => {
   console.log(`[donePublish] StreamPath: ${StreamPath}`);
-  // if (StreamPath.startsWith("/uploading")) {
-  //   const m3u8Path = path.join(__dirname, '../Public', StreamPath, 'index.m3u8');
-  //   if (fs.existsSync(m3u8Path)) {
-  //     const outputPath = path.join(__dirname, '../Public/videos', `${StreamPath}.mp4`);
-  //     fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-  //     console.log(`Saving stream to flv: ${outputPath}`);
-  //     saveStreamAsMP4(m3u8Path, outputPath);
-  //   } else {
-  //     console.error(`Invalid .m3u8 file path: ${m3u8Path}`);
-  //     const outputPath = path.join(__dirname, '../Public/videos', `${StreamPath}.mp4`);
-  //     fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-  //     console.log(`Saving stream to flv: ${outputPath}`);
-  //     saveStreamAsMP4(m3u8Path, outputPath);
-  //   }
-  // }
 });
 
 nms.on('postPublish', (_id, StreamPath, _args) => {
@@ -132,6 +115,3 @@ nms.on('doneDVR', (_id, StreamPath, _args) => {
 });
 
 nms.run();
-// import("http").then((response) => {
-//   response.createServer(app).listen(8080, () => console.log("...Server running at port 8080..."))
-// })

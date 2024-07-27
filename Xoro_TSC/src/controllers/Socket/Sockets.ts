@@ -2,6 +2,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import * as SocketFunctions from './SocketFunctions';
 import { saveChat } from "../../frameworks/database/Functions/ChatFunctions"
 import ChannelModel from '../../frameworks/database/models/Channels';
+import { CategoryInterface } from '../../entities/ModelsInterface/Category';
 
 const socketRoutes = (io: SocketIOServer): SocketIOServer => {
   if (!io) {
@@ -40,11 +41,7 @@ const socketRoutes = (io: SocketIOServer): SocketIOServer => {
       const channel = await ChannelModel.findById(ChannelId)
       socket.send(channel)
     })
-    socket.on("getCategory", async (search: string) => {
-      const category = await SocketFunctions.getCategory(search)
-      socket.send(category)
-    })
-  });
+  }); 
 
   return io;
 };

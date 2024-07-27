@@ -3,6 +3,7 @@ import * as UserEntity from "../../entities/RequestInterface/UserInterfaces";
 import * as UseCases from '../../applications/usecases/User'
 import * as Responses from '../../entities/ResponseInterface/UserResponsesInterface';
 import { emitNotification } from '../Socket/SocketEmits';
+import { getCategory } from '../Socket/SocketFunctions';
 interface CustomRequest extends Request {
     result?: Responses.VerifyUserAuthResponse;
 }
@@ -131,5 +132,15 @@ export const setSecurity: Middleware = async (req, res) => {
         return res.status(data.status)
     } catch (e) {
         return res.status(500).json({ messsage: 'Internal Server Error' })
+    }
+}
+
+export const getCategoryData: Middleware = async (req, res) => {
+    try {
+        const { search } = req.params;
+        const result = await getCategory(search)
+        return res.status(200).json({ category: result })
+    } catch (e) {
+        return res.status(500).json({ category: [] })
     }
 }

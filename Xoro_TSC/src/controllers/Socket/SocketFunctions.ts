@@ -22,7 +22,7 @@ export const markAsRead: Function = async ({ RoomId, UserId }: { RoomId: string;
     await setMarkAsRead(RoomId, UserId)
 }
 
-export const getUnReadNotifications =  async (UserId: string) => {
+export const getUnReadNotifications = async (UserId: string) => {
     const notifications = await Notifications.find({ UserId: UserId })
     return notifications
 }

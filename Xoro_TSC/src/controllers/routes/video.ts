@@ -9,5 +9,4 @@ videoRouter.get('/:skip', VerifyUserAuth, Middleware.getVideos)
 videoRouter.get('/videos/:skip', Middleware.getVideos)
 videoRouter.get('/video/:VideoLink', VerifyUserAuth, Middleware.getVideo)
 videoRouter.patch("/reactions/:type/:VideoId", VerifyUserAuth, Middleware.LikeDislikeRemoveVideo)
-videoRouter.get("/category/:search")
 export default videoRouter;
