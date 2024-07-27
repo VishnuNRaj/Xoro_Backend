@@ -47,8 +47,8 @@ export const ResendOTP: Middleware = async (req, res) => {
 
 export const VerifyAdminAuth: Middleware = async (req, res, next) => {
     try {
-        const token: string | undefined = req.headers.authorization || req.cookies.admin
-        console.log(token, "____")
+        const token: string | undefined = req.headers.authorization
+        console.log(req.headers, "____")
         if (token) {
             const result: Responses.AdminVerifyAuthResponse = await UseCases.VerifyAdmin({ token })
             console.log(result)
