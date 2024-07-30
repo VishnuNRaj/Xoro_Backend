@@ -35,7 +35,7 @@ const uploadVideo = async ({ userId, video, thumbnail, videoId, channelId }: vid
             };
             await createNotification(notification, userId);
             if (response) {
-                await updateVideoLink(videoId, `${config.RTMP}/videos/${videoData.Key}.flv`);
+                await updateVideoLink(videoId, `${config.BASE}/videos/${videoData.Key}.flv`);
             }
             sendPushNotifications({ ...notification, type: "videos", Text: "Your Video Has Been Uploaded Successfully", Redirect: `/videos/${videoData.VideoLink}` }, userId)
             return response;
