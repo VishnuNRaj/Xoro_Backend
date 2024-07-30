@@ -38,7 +38,16 @@ const socketRoutes = (io: SocketIOServer): SocketIOServer => {
       const channel = await ChannelModel.findById(ChannelId)
       socket.send(channel)
     })
-  }); 
+
+    socket.on("subscribeChannel", async (userId: string, channelId: string) => {
+      const channel = await ChannelModel.findByIdAndUpdate(channelId, { $addToSet: { Subsribers: userId } }, { upsert: true })
+      return socket.to(userId).emit("subscribed", channel?.Subsribers.length)
+    })
+    socket.on("unsubscribeChannel", async (userId: string, channelId: string) => {
+      const channel = await ChannelModel.findByIdAndUpdate(channelId, { $pull: { Subsribers: userId } }, { upsert: true })
+      return socket.to(userId).emit("unsubscribed", channel?.Subsribers.length)
+    })
+  });
 
   return io;
 };

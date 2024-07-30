@@ -24,7 +24,7 @@ const expressConfig: Function = (app: Application) => {
     app.use(helmet({ xssFilter: true }));
     app.use(mongoSanitize());
     app.use(cors(CorsConfig));
-    app.use("/public", express.static(path.join(__dirname,"../../../../Public")))
+    app.use("/videos", express.static(path.join(__dirname,"../../../../Public/videos")))
 };
 
 export default expressConfig;
