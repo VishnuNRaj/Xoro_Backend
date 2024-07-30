@@ -92,18 +92,21 @@ export const uploadToFirebase: Function = async (file: Express.Multer.File, path
 
 export const createNotification: Function = async (data: Notification, UserId: ObjectId) => {
     try {
-        const datas = await Notifications.findOne({ UserId: UserId })
-        if (!datas) {
-            Notifications.insertMany([{ UserId: UserId, Messages: [data] }])
+        const notificationData = await Notifications.findOne({ UserId: UserId });
+
+        if (!notificationData) {
+            const newNotification = await Notifications.create({ UserId: UserId, Messages: [data] });
+            return newNotification.Messages.pop();
         } else {
-            datas.Messages.push(data)
-            await datas.save()
+            notificationData.Messages.push(data);
+            await notificationData.save();
+            return notificationData.Messages.pop();
         }
-        return true;
     } catch (e) {
-        return false
+        console.error(e);
+        return false;
     }
-}
+};
 
 export const sendNotifications: Function = async (Message: string, Type: string, userId: ObjectId[], SenderId: ObjectId, Link: string) => {
     try {

@@ -2,8 +2,6 @@ import { Server as SocketIOServer } from 'socket.io';
 import * as SocketFunctions from './SocketFunctions';
 import { saveChat } from "../../frameworks/database/Functions/ChatFunctions"
 import ChannelModel from '../../frameworks/database/models/Channels';
-import { CategoryInterface } from '../../entities/ModelsInterface/Category';
-
 const socketRoutes = (io: SocketIOServer): SocketIOServer => {
   if (!io) {
     throw new Error('Socket instance is undefined. Ensure initializeSocketServer is called.');
@@ -11,7 +9,6 @@ const socketRoutes = (io: SocketIOServer): SocketIOServer => {
 
   io.on('connection', (socket) => {
     console.log('Client connected');
-
 
 
     socket.on('join', (UserId) => SocketFunctions.joinUserId(socket, UserId));

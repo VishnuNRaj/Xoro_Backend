@@ -1,8 +1,8 @@
 import { Worker } from 'bullmq';
 import { videoUpload } from '../interfaces/videoUpload';
 import { createNotification, updateVideoLink } from '../../../applications/functions/UserFunctions';
-import { Notification } from '../../../entities/ModelsInterface/Notification';
-import { emitNotification } from '../../../controllers/Socket/SocketEmits';
+import { Messages, Notification } from '../../../entities/ModelsInterface/Notification';
+import sendPushNotifications from "../../system/Webpush"
 import startFFmpegProcess from "../../system/FFmpeg"
 import fs from "fs"
 import redis from '../../database/Redis'
@@ -15,18 +15,18 @@ redis.on('connect', () => {
 })
 
 
-const uploadVideo = async ({ userId, video, thumbnail, videoId }: videoUpload) => {
+const uploadVideo = async ({ userId, video, thumbnail, videoId, channelId }: videoUpload) => {
     try {
         const videoData = await Videos.findById(videoId)
         if (videoData) {
-            const videoDir = path.join(__dirname, '../../../../../Public/videos', userId.toString());
-            const videoPath = path.join(videoDir, `${videoId}.flv`);
+            const videoDir = path.join(__dirname, '../../../../../Public/videos', channelId.toString());
+            const videoPath = path.join(videoDir, `${videoData.Key}.flv`);
             if (!fs.existsSync(videoDir)) {
                 fs.mkdirSync(videoDir, { recursive: true });
             }
             const fileBuffer = fs.readFileSync(video.path);
             fs.writeFileSync(videoPath, fileBuffer);
-            const response = await startFFmpegProcess(videoPath, `${config.RTMP}/videos/${videoData.Key}`, videoData.toString(), true);
+            const response = await startFFmpegProcess(videoPath, `${config.RTMP}/videos/${videoData.Key}`);
             const notification = {
                 SenderId: userId,
                 Link: thumbnail,
@@ -35,9 +35,9 @@ const uploadVideo = async ({ userId, video, thumbnail, videoId }: videoUpload) =
             };
             await createNotification(notification, userId);
             if (response) {
-                await updateVideoLink(videoId, videoPath);
+                await updateVideoLink(videoId, `${config.RTMP}/videos/${videoData.Key}.flv`);
             }
-
+            sendPushNotifications({ ...notification, type: "videos", Text: "Your Video Has Been Uploaded Successfully", Redirect: `/videos/${videoData.VideoLink}` }, userId)
             return response;
         }
     } catch (e: any) {

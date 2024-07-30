@@ -21,4 +21,5 @@ export interface Shorts extends Document {
     UploadDate:Date;
     Duration:string;
     Uploaded:boolean;
+    VideoLink:string;
 };

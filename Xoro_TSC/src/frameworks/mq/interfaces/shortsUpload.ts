@@ -6,4 +6,5 @@ export interface shortsUpload {
     videoId:ObjectId;
     bucket:string;
     key:string;
+    channelId:ObjectId;
 }

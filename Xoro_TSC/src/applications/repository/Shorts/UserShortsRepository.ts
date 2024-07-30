@@ -10,14 +10,17 @@ export const uploadShortsRepository: Function = async ({ Caption, Context, Hasht
     try {
         const shorts = new ShortVideos({
             Caption,
-            Context, Hashtags, ChannelId: user.Channel, UploadDate: new Date(), Key: Link, Settings: { CommentsOn, Private }
+            Context, Hashtags, ChannelId: user.Channel, UploadDate: new Date(),VideoLink:Link ,Key: Link, Settings: { CommentsOn, Private }
         })
+
+        await shorts.save()
         await Promise.all([
             await uploadShortsToMQ(<shortsUpload>{
                 key: Link,
                 userId: user._id,
                 video: file,
-                videoId: shorts._id
+                videoId: shorts._id,
+                channelId:user.Channel
             }),
             await DatabaseFunctions.insertData(Reactions, { PostId: shorts._id })
         ])

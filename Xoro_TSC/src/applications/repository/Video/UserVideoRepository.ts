@@ -20,7 +20,7 @@ export const uploadVideoRepository: Function = async ({ Caption, Video, Duration
 
         const [video]: PostVideo[] = await DatabaseFunctions.insertData(Videos, {
             Caption: Caption,
-            UserId: user._id,
+            UserId: user.Channel,
             Duration: Duration,
             Hashtags: Hashtags,
             RelatedTags: RelatedTags,
@@ -30,7 +30,7 @@ export const uploadVideoRepository: Function = async ({ Caption, Video, Duration
             Video: ``,
             Postdate: new Date(),
             Description: Description,
-            VideoLink: await CommonFunctions.generateVerificationLink(),
+            VideoLink: CommonFunctions.generateVerificationLink(),
             Key: Links.Video,
         })
 
@@ -41,7 +41,8 @@ export const uploadVideoRepository: Function = async ({ Caption, Video, Duration
                 thumbnail: Links.Thumbnail,
                 userId: user._id,
                 videoId: video._id,
-                video: Video
+                video: Video,
+                channelId:user.Channel
             }),
             await DatabaseFunctions.insertData(Reactions, {
                 _id: video._id,

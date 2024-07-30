@@ -44,8 +44,8 @@ export async function generatePresignedUrl(bucketName: string, objectKey: string
             Bucket: bucketName,
             Key: objectKey,
         });
-        const url = await getSignedUrl(s3, command, { expiresIn: expiresIn });
-        return url;
+        // const url = await getSignedUrl(s3, command, { expiresIn: expiresIn });
+        // return url;
     } catch (err) {
         console.error("Error generating presigned URL:", err);
         throw err;

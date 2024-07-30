@@ -4,6 +4,7 @@ import * as UseCases from '../../applications/usecases/User'
 import * as Responses from '../../entities/ResponseInterface/UserResponsesInterface';
 import { emitNotification } from '../Socket/SocketEmits';
 import { getCategory } from '../Socket/SocketFunctions';
+import { saveSubscription } from "../../config/web-push"
 interface CustomRequest extends Request {
     result?: Responses.VerifyUserAuthResponse;
 }
@@ -142,5 +143,16 @@ export const getCategoryData: Middleware = async (req, res) => {
         return res.status(200).json({ category: result })
     } catch (e) {
         return res.status(500).json({ category: [] })
+    }
+}
+
+export const Subscribe: Middleware = async (req, res) => {
+    try {
+        const result = req.result
+        const sub = req.body
+        await saveSubscription(sub, result?.user?._id)
+        return res.status(200).json({ message: "Allowed Notifications" })
+    } catch (e) {
+        return res.status(500).json({ messsage: 'Internal Server Error' })
     }
 }

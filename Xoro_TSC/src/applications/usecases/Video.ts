@@ -26,7 +26,7 @@ export const uploadVideo: Function = async (data: VideoEntity.uploadVideo): Prom
         }
         const Links = {
             Thumbnail: await UserFunctions.uploadBase64Image(data.Thumbnail),
-            Key:CommonFunctions.generateVerificationLink()
+            Video:CommonFunctions.generateVerificationLink()
         }
         return Repository.uploadVideoRepository({ ...data, Links: Links })
     } catch (e) {

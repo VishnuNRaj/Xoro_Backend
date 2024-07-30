@@ -4,7 +4,7 @@ const io = getSocketInstance()
 
 export const emitNotification: Function = async (data: any, UserId: string) => {
     if (io) {
-        io.in(UserId).emit('notification', data)
+        io.to(UserId).emit('notification', data)
     }
 }
 

@@ -1,16 +1,17 @@
-import { config } from 'dotenv'
-config()
+import config from "./config";
 
 export interface buckets {
     bucketName: string;
     Videos: string;
     Live: string;
+    Shorts:string;
 }
 
 const bucketConfig: buckets = {
-    bucketName: process.env.AWS_ACCESS_BUCKET_NAME || '',
-    Live: 'live/',
-    Videos: 'videos/'
+    bucketName: config.LIVE || '',
+    Live: 'live',
+    Videos: 'videos',
+    Shorts:"shorts"
 }
 
 export default bucketConfig;

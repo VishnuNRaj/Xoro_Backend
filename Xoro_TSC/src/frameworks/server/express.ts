@@ -1,10 +1,11 @@
 import express, { Application } from "express";
 import morgan from 'morgan';
 import cors from 'cors';
-import cookies from "cookie-parser"
+import cookieParser,{CookieParseOptions} from "cookie-parser"
 import mongoSanitize from 'express-mongo-sanitize';
 import helmet from "helmet";
 import CorsConfig from "../../config/cors"
+import path from "path";
 // import { rateLimit } from "express-rate-limit"
 // import path from "path";
 const expressConfig: Function = (app: Application) => {
@@ -16,14 +17,18 @@ const expressConfig: Function = (app: Application) => {
     //     statusCode:201,
     //     message:"Too Many Requests",
     // }))
+    app.use(cookieParser())
     app.use(express.json({ limit: '50mb' }));
     app.use(express.urlencoded({ limit: '100mb', extended: true }));
     app.use(morgan('dev'));
     app.use(helmet({ xssFilter: true }));
     app.use(mongoSanitize());
-    app.use(cookies())
     app.use(cors(CorsConfig));
-    // app.use("/public", express.static(path.join(__dirname,"../../../../Public")))
+    app.use("/public", express.static(path.join(__dirname,"../../../../Public")))
 };
 
 export default expressConfig;
+
+ 
+
+

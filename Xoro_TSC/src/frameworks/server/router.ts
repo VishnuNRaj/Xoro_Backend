@@ -8,7 +8,7 @@ import videoRouter from './../../controllers/routes/video';
 import chatRouter from './../../controllers/routes/chat';
 import liveRouter from './../../controllers/routes/live';
 import commentRouter from './../../controllers/routes/comment';
-
+import shortsRouter from "./../../controllers/routes/shorts"
 const RouterConfig: Function = (app: Application) => {
     app.use('/user', userRouter)
     app.use('/admin', adminRouter)
@@ -19,6 +19,7 @@ const RouterConfig: Function = (app: Application) => {
     app.use('/chat', chatRouter)
     app.use('/live',liveRouter)
     app.use('/comment',commentRouter)
+    app.use("/shorts",shortsRouter)
     app.get("/hello",(req,res)=>{
         return res.send("Vannu Gooys")
     })

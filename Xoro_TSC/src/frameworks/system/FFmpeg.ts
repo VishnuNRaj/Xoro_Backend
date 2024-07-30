@@ -1,6 +1,6 @@
 import { spawn } from "child_process";
 
-const startFFmpegProcess = (videoPath: string, streamingUrl: string, videoId: string, _save: boolean): Promise<string> => {
+const startFFmpegProcess = (videoPath: string, streamingUrl: string): Promise<string> => {
     return new Promise((resolve, reject) => {
         const ffmpegCommand = 'ffmpeg';
         const args = [
@@ -11,7 +11,6 @@ const startFFmpegProcess = (videoPath: string, streamingUrl: string, videoId: st
         ];
 
         const ffmpegProcess = spawn(ffmpegCommand, args);
-
         ffmpegProcess.stdout.on('data', (data) => {
             console.log(`FFmpeg stdout: ${data}`);
         });
@@ -23,7 +22,7 @@ const startFFmpegProcess = (videoPath: string, streamingUrl: string, videoId: st
         ffmpegProcess.on('close', (code) => {
             console.log(`FFmpeg process exited with code ${code}`);
             if (code === 0) {
-                resolve(`http://localhost:6067/videos/${videoId}`);
+                resolve(`${videoPath}`);
             } else {
                 reject(new Error(`FFmpeg process exited with code ${code}`));
             }

@@ -7,4 +7,5 @@ export interface videoUpload {
     bucket:string;
     thumbnail:string;
     videoId:ObjectId;
+    channelId:ObjectId;
 }
