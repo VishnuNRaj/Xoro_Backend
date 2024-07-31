@@ -16,5 +16,6 @@ userRouter.post('/set-twostep', Middleware.VerifyUserAuth,Middleware.setSecurity
 userRouter.post("/trim",Middleware.VerifyUserAuth,TrimVideo)
 userRouter.get("/category/:search",Middleware.VerifyUserAuth,Middleware.getCategoryData)
 userRouter.post("/subscribe",Middleware.VerifyUserAuth,Middleware.Subscribe)
+userRouter.get("/getChannel",Middleware.VerifyUserAuth,Middleware.GetChannel)
 
 export default userRouter

@@ -416,12 +416,13 @@ export const CreateChannelRepository: Function = async ({ Name, Description, Typ
     }
 }
 
-export const editChannelRepository: Function = async ({ ChannelId, Description, Name, Type }: UserEntity.editChannel) => {
+export const editChannelRepository: Function = async ({ ChannelId, Description, Name, Type, Logo }: UserEntity.editChannel) => {
     try {
         const channel: ChannelInterface = await DatabaseFunctions.findUsingId(Channels, ChannelId)
-        channel.Name = Name,
-            channel.Description = Description
-        channel.Type = Type
+        channel.Name = Name
+        channel.Description = Description
+        channel.Type = Type;
+        if (Logo) channel.Logo = Logo;
         await DatabaseFunctions.saveData(channel)
         return ResponseFunctions.editChannelRes(<Responses.editChannel>{
             Channel: channel,

@@ -121,4 +121,5 @@ export interface editChannel {
     Type:string[];
     Description:string;
     ChannelId:ObjectId;
+    Logo:string | null;
 }

@@ -240,7 +240,7 @@ export const CreateChannel: Function = async ({ Description, Name, Type, Logo }:
             };
         }
         const Link: string = await uploadFileToFirebase(Logo, `/logos/${user._id}/`)
-        return Repository.CreateChannelRepository({ Description, Name, Type }, user,Link)
+        return Repository.CreateChannelRepository({ Description, Name, Type }, user, Link)
     } catch (e) {
         return <Responses.createChannelResponse>{
             message: 'Internal Server Error',
@@ -249,25 +249,29 @@ export const CreateChannel: Function = async ({ Description, Name, Type, Logo }:
     }
 }
 
-export const editChannel: Function = async ({ChannelId,Description,Name,Type}:UserEntity.editChannel) => {
+export const editChannel: Function = async ({ ChannelId, Description, Name, Type, Logo }: UserEntity.editChannel) => {
     try {
-        if(!Name || !Description || Type.length < 1) {
-            return<Responses.editChannel>{
-                message:"Enter Essential Details",
-                status:201
+        if (!Name || !Description || Type.length < 1) {
+            return <Responses.editChannel>{
+                message: "Enter Essential Details",
+                status: 201
             }
         }
-        if(!ChannelId) {
-            return<Responses.editChannel>{
-                message:"No Channel Created",
-                status:201
+        let Link:string | null = null
+        if(Logo) {
+            Link = await UserFunctions.uploadBase64Image(Logo)
+        }
+        if (!ChannelId) {
+            return <Responses.editChannel>{
+                message: "No Channel Created",
+                status: 201
             }
         }
-        return await Repository.editChannelRepository({ChannelId,Description,Name,Type})
+        return await Repository.editChannelRepository({ ChannelId, Description, Name, Type, Logo:Link })
     } catch (e) {
-        return<Responses.editChannel>{
-            message:"Internal Server Error",
-            status:500
+        return <Responses.editChannel>{
+            message: "Internal Server Error",
+            status: 500
         }
     }
 }

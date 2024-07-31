@@ -135,8 +135,8 @@ export const CreateChannel: Middleware = async (req, res) => {
 export const editChannel: Middleware = async (req, res) => {
     try {
         const result = req.result
-        const { Name, Type, Description } = req.body
-        const data = await UseCases.editChannel({ Name, Description, Type, ChannelId: result?.user?.Channel })
+        const { Name, Type, Description,Logo } = req.body
+        const data = await UseCases.editChannel({ Name, Description, Type, ChannelId: result?.user?.Channel,Logo })
         return res.status(data.status).json(data)
     } catch (e) {
         return res.status(500).json({ message: 'Internal Server Error' })

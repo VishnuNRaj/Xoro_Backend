@@ -34,10 +34,6 @@ const socketRoutes = (io: SocketIOServer): SocketIOServer => {
       console.log(typing, Username)
       socket.to(RoomId).emit("typing", { typing, Username })
     })
-    socket.on("get-channel", async (ChannelId: string) => {
-      const channel = await ChannelModel.findById(ChannelId)
-      socket.send(channel)
-    })
 
     socket.on("subscribeChannel", async (userId: string, channelId: string) => {
       const channel = await ChannelModel.findByIdAndUpdate(channelId, { $addToSet: { Subsribers: userId } }, { upsert: true })
