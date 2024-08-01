@@ -13,6 +13,7 @@ import Reactions from '../../frameworks/database/models/Reactions'
 import Notifications from '../../frameworks/database/models/Notifications'
 import CommentModel from '../../frameworks/database/models/Comments'
 import CategoryModel from "../../frameworks/database/models/Category"
+import ShortVideos from '../../frameworks/database/models/Shorts'
 export const findOneData: Function = async (Db: any, query: object): Promise<any> => {
     return await Db.findOne(query)
 }
@@ -80,6 +81,10 @@ export const executeBulkWrite = async (Db: any, bulkOperations: BulkOperation[])
 
 export const checkObjectId: Function = async (id: string) => {
     return await isObjectIdOrHexString(id)
+}
+
+export const makeObjectId = async (id: string) => {
+    return new Types.ObjectId(id)
 }
 
 export const findData: Function = async (Db: any, query: object) => {
@@ -640,5 +645,39 @@ export const getChannel = async (ChannelId: ObjectId, UserId: ObjectId) => {
         return null;
     }
 };
+
+export const getShorts = async (ids: string[]) => {
+    try {
+        const total = await ShortVideos.countDocuments({ Banned: false, "Settings.Private": false })
+        if (total === ids.length) return {
+            total, shorts: []
+        }
+        const shorts = await ShortVideos.aggregate([
+            {
+                $match: { Banned: false, "Settings.Private": false, VideoLink: { $nin: ids } }
+            },
+            {
+                $sample: { size: total }
+            },
+            {
+                $limit: 10
+            },
+            {
+                $project: {
+                    VideoLink: 1
+                }
+            }
+        ])
+        console.log(shorts)
+        return {
+            shorts: shorts.map((value: any) => value.VideoLink), total
+        }
+    } catch (e) {
+        return {
+            total: 0,
+            shorts: []
+        }
+    }
+}
 
 

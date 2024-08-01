@@ -10,6 +10,7 @@ import { shortsUpload } from "../interfaces/shortsUpload"
 import startFFmpegProcess from "../../system/FFmpeg";
 import path from "path";
 import config from "../../../config/config";
+import sendPushNotifications from "../../system/Webpush";
 
 
 export const uploadShorts = async ({ video, key, userId, channelId, bucket }: shortsUpload) => {
@@ -33,8 +34,10 @@ export const uploadShorts = async ({ video, key, userId, channelId, bucket }: sh
             };
             await createNotification(notification, userId);
             if (response) {
-                await updateShortsLink(videoData._id, videoPath);
+                await updateShortsLink(videoData._id, `${config.URL}/${bucket}/${videoData.Key}`);
             }
+            sendPushNotifications({ ...notification, type: "shorts", Text: "Your Shorts Video Has Been Uploaded Successfully", Redirect: `/shorts/${videoData.VideoLink}` }, userId)
+
 
             return response;
         }

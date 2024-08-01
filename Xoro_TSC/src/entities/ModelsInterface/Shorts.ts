@@ -22,4 +22,5 @@ export interface Shorts extends Document {
     Duration:string;
     Uploaded:boolean;
     VideoLink:string;
+    Banned:boolean;
 };

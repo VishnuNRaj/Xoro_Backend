@@ -38,5 +38,14 @@ export const getSubscriptionsByUserId = async (userId: ObjectId) => {
     return await WebPush.find({ UserId: userId });
 };
 
+export const removeSubscription = async (endpoint:string) => {
+    try {
+        await WebPush.deleteOne({ endpoint });
+        console.log(`Removed expired subscription: ${endpoint}`);
+    } catch (error) {
+        console.error(`Failed to remove subscription: ${endpoint}`, error);
+    }
+};
+
 
 export default webPushConfig

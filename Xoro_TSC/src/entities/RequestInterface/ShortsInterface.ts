@@ -1,3 +1,4 @@
+import { ObjectId } from "mongoose";
 import UserDocument from "../ModelsInterface/User";
 
 export interface uploadShorts {
@@ -9,4 +10,10 @@ export interface uploadShorts {
     Context:string;
     Private:boolean;
     CommentsOn:boolean;
+}
+
+export interface likeDislikeRemove {
+    VideoId:string;
+    type:string;
+    UserId:ObjectId;
 }

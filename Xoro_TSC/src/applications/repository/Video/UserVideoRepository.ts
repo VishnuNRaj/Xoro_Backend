@@ -155,7 +155,7 @@ export const RemoveReactionRepository: Function = async ({ UserId, VideoId }: Vi
 
 export const deleteVideoRepository: Function = async ({ VideoId, UserId }: VideoEntity.likeDislikeRemove) => {
     try {
-        const video: PostVideo = await DatabaseFunctions.findUsingId(VideoId)
+        const video: PostVideo = await DatabaseFunctions.findUsingId(Videos,VideoId)
         if (!video) return ResponseFunctions.likeDislikeRemoveRes(<Responses.likeDislikeRemoveResponse>{ message: "Invalid Credentials", status: 201 })
         if (video.UserId !== UserId) return ResponseFunctions.likeDislikeRemoveRes(<Responses.likeDislikeRemoveResponse>{ message: "Unauthorized for Deletion", status: 201 })
         await DatabaseFunctions.deleteMany(Reactions, { PostId: video._id })

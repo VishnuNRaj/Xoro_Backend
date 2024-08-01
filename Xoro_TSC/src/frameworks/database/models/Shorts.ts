@@ -29,10 +29,11 @@ const SchemaData = new Schema<Shorts>({
         type: Number,
         default: 0
     },
-    Uploaded: { 
+    Uploaded: {
         type: Boolean,
         default: false
     },
+    Banned: { type: Boolean, default: false },
     VideoLink: String,
 })
 
