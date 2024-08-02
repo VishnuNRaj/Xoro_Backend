@@ -1,6 +1,9 @@
 import NodeMediaServer from 'node-media-server';
 import path from 'path';
-
+import mongooseConfig, { Live } from "../Mongoose"
+import { saveLiveStream } from './Functions';
+import ConfigFile from "../config" 
+mongooseConfig()
 const config = {
   rtmp: {
     port: 2520,
@@ -21,8 +24,8 @@ const config = {
     tasks: [
       {
         app: 'videos',
-        vc: 'copy', 
-        ac: 'copy',  
+        vc: 'copy',
+        ac: 'copy',
         rtmp: true,
         hls: true,
         hlsFlags: '[hls_time=10:hls_list_size=0:hls_flags=delete_segments]',
@@ -34,8 +37,21 @@ const config = {
         hlsKeep: true,
       }, {
         app: 'shorts',
-        vc: 'copy', 
-        ac: 'copy',  
+        vc: 'copy',
+        ac: 'copy',
+        rtmp: true,
+        hls: true,
+        hlsFlags: '[hls_time=10:hls_list_size=0:hls_flags=delete_segments]',
+        dash: true,
+        dashFlags: '[seg_duration=10]',
+        dvr: true,
+        dvrFlags: '[segment_time=10:break_non_keyframes=1]',
+        fission: true,
+        hlsKeep: true,
+      }, {
+        app: 'live',
+        vc: 'copy',
+        ac: 'copy',
         rtmp: true,
         hls: true,
         hlsFlags: '[hls_time=10:hls_list_size=0:hls_flags=delete_segments]',
@@ -62,6 +78,12 @@ const config = {
         app: 'shorts',
         root: path.join(__dirname, '../Public'),
         saveType: 'flv',
+        saveMode: 'append', 
+      },
+      {
+        app: 'live',
+        root: path.join(__dirname, '../Public'),
+        saveType: 'flv',
         saveMode: 'append',
       },
     ],
@@ -69,9 +91,21 @@ const config = {
 };
 const nms = new NodeMediaServer(config);
 
-nms.on('donePublish', (_id, StreamPath, _args) => {
+nms.on('donePublish', async (_id, StreamPath, _args) => {
   console.log(`[donePublish] StreamPath: ${StreamPath}`);
+  const Key = StreamPath.split("/")[2]
+  console.log(Key, "{{{{KEY}}}}")
+  if (StreamPath.startsWith("/live")) {
+    if (!Key) {
+      return console.log("No Key")
+    }
+    const savePath = path.join(__dirname, `../Public/saved/${Key}.flv`);
+    const hlsPath = path.join(__dirname, `../Public/live/${Key}/index.m3u8`);
+    saveLiveStream(hlsPath, savePath);
+    // await Live.findOneAndUpdate({ Key: Key }, { $set: { Completed: true, Live: false, Video: `${ConfigFile.BASE}/saved/${Key}.flv` } })
+  }
 });
+
 
 nms.on('postPublish', (_id, StreamPath, _args) => {
   console.log(`[postPublish] StreamPath: ${StreamPath}`);

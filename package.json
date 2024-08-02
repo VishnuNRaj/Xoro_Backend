@@ -9,8 +9,8 @@
     "build": "tsc -p Xoro_TSC -w",
     "create": "tsc -p Xoro_TSC_Stream -w ",
     "dev": "concurrently \"npm run start\" \"tsc -p Xoro_TSC -w\"",
-    "streamServer": "nodemon Xoro_Stream/server.js",
-    "wss": "nodemon Xoro_Stream/socket.js",
+    "streamServer": "nodemon Xoro_Stream/rtmp_server/server.js",
+    "wss": "nodemon Xoro_Stream/media_server/socket.js",
     "stream": "concurrently \"npm run streamServer\" \"npm run create\"",
     "lint": "eslint . --report-unused-disable-directives --max-warnings 0"
   },

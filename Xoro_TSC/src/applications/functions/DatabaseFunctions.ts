@@ -14,6 +14,7 @@ import Notifications from '../../frameworks/database/models/Notifications'
 import CommentModel from '../../frameworks/database/models/Comments'
 import CategoryModel from "../../frameworks/database/models/Category"
 import ShortVideos from '../../frameworks/database/models/Shorts'
+import Live from "../../frameworks/database/models/Live"
 export const findOneData: Function = async (Db: any, query: object): Promise<any> => {
     return await Db.findOne(query)
 }

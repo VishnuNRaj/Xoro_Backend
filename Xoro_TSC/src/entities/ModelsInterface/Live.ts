@@ -1,5 +1,5 @@
 import { Document, ObjectId } from "mongoose"
-
+import {ReactionsInterface} from "./Reactions"
 export default interface LiveInterface extends Document {
     Caption: string;
     Description: string;
@@ -14,7 +14,10 @@ export default interface LiveInterface extends Document {
     Dislikes: number;
     RelatedTags: string;
     UserId: ObjectId;
-    Listed: boolean;
-    Comments: boolean;
     Reports:number;
+    Thumbnail:string;
+    Restriction:number;
+    reactions:ReactionsInterface[];
+    from:string;
+    Video:string;
 }
