@@ -9,7 +9,7 @@
     },
     "include": [
         "*"
-, "rtmp_server/server.ts", "rtmp_server/Functions.ts", "media_server/socket.ts"    ],
+, "rtmp_server/server.ts", "rtmp_server/Functions.ts", "media_server/server.ts"    ],
     "exclude": [
         "node_modules"
     ]
