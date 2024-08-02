@@ -12,7 +12,7 @@ const config = {
     http: {
       port: parseInt(ConfigFile.HTTP),
       allow_origin: "*",
-      mediaroot: path.join(__dirname, '../Public'),
+      mediaroot: path.join(__dirname, '../../Public'),
       api: true,
     },
     trans: {
@@ -59,26 +59,26 @@ const config = {
           hlsKeep: true,
         }
       ],
-      mediaRoot: path.join(__dirname, "../Public")
+      mediaRoot: path.join(__dirname, "../../Public")
     },
     dvr: {
       ffmpeg: "/usr/bin/ffmpeg",
       tasks: [
         {
           app: 'videos',
-          root: path.join(__dirname, '../Public'),
+          root: path.join(__dirname, '../../Public'),
           saveType: 'flv',
           saveMode: 'append',
         },
         {
           app: 'shorts',
-          root: path.join(__dirname, '../Public'),
+          root: path.join(__dirname, '../../Public'),
           saveType: 'flv',
           saveMode: 'append', 
         },
         {
           app: 'live',
-          root: path.join(__dirname, '../Public'),
+          root: path.join(__dirname, '../../Public'),
           saveType: 'flv',
           saveMode: 'append',
         },
