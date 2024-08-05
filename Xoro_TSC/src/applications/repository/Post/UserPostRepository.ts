@@ -195,7 +195,7 @@ export const getPostsRepository: Function = async ({ UserId, skip }: PostEntity.
         }
         const connections: ConnectionsInterface = await DatabaseFunctions.getFollowers(UserId)
         const Idx: ObjectId[] = Array.from(new Set([...connections.Followers, ...connections.Following, UserId]));
-        const post: PostImage[] | null = await DatabaseFunctions.getPosts(skip >= 10 ? [] : Idx, skip)
+        const post: PostImage[] | null = await DatabaseFunctions.getPosts(Idx, skip)
 
         return ResponseFunctions.getPostRes(<Responses.getPostResponse>{
             connections: connections,
