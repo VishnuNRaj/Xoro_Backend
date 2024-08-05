@@ -68,6 +68,19 @@ const socketRoutes = (io: SocketIOServer): SocketIOServer => {
     socket.on("emptyMsg", async (userId: string) => {
       await Notifications.findOneAndUpdate({ UserId: new Types.ObjectId(userId) }, { $set: { Messages: [] } })
     })
+
+    socket.on("liked", (postId: string) => {
+      io.to(postId).emit("liked", postId)
+    })
+    socket.on("disliked", (postId: string) => {
+      io.to(postId).emit("disliked", postId)
+    })
+    socket.on("removedlike", (postId: string) => {
+      io.to(postId).emit("removedlike", postId)
+    })
+    socket.on("removeddislike", (postId: string) => {
+      io.to(postId).emit("removeddislike", postId)
+    })
   });
   return io;
 };
