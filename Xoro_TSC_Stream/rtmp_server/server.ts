@@ -3,6 +3,7 @@ import path from 'path';
 import mongooseConfig, { Live } from "../Mongoose"
 import { saveLiveStream } from './Functions';
 import config from "./rtmpConfig"
+import ConfigFile from '../config';
 mongooseConfig()
 
 const nms = new NodeMediaServer(config);
@@ -15,10 +16,10 @@ nms.on('donePublish', async (_id, StreamPath, _args) => {
     if (!Key) {
       return console.log("No Key")
     }
-    const savePath = path.join(__dirname, `../Public/saved/${Key}.flv`);
-    const hlsPath = path.join(__dirname, `../Public/live/${Key}/index.m3u8`);
+    const savePath = path.join(__dirname, `../../Public/saved/${Key}.flv`);
+    const hlsPath = path.join(__dirname, `../../Public/live/${Key}/index.m3u8`);
     saveLiveStream(hlsPath, savePath);
-    // await Live.findOneAndUpdate({ Key: Key }, { $set: { Completed: true, Live: false, Video: `${ConfigFile.BASE}/saved/${Key}.flv` } })
+    await Live.findOneAndUpdate({ Key: Key }, { $set: { Completed: true, Live: false, Video: `${ConfigFile.BASE}/saved/${Key}.flv` } })
   }
 });
 

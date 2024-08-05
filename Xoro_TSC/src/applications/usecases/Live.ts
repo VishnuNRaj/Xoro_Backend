@@ -7,7 +7,7 @@ import { ObjectId } from 'mongoose';
 import UserDocument from '../../entities/ModelsInterface/User';
 import { generateVerificationLink } from '../functions/CommonFunctions';
 
-export const createLive = async ({ Caption, Description, RelatedTags, Restriction, Thumbnail, user }: LiveEntity.createLive) => {
+export const createLive = async ({ Caption, Description, RelatedTags, Restriction, Thumbnail, user,Hashtags }: LiveEntity.createLive) => {
     try {
         if (!Thumbnail.mimetype.startsWith("image/")) return <Responses.createLiveResponse>{
             message: "Invalid Thumbnail",
@@ -15,7 +15,7 @@ export const createLive = async ({ Caption, Description, RelatedTags, Restrictio
         }
         const Link = await uploadFileToFirebase(Thumbnail, `/live`);
         const Key = generateVerificationLink()
-        return await Repository.createLive(<LiveEntity.createLive>{ Caption, Description, RelatedTags, Restriction, user, Link, Key })
+        return await Repository.createLive(<LiveEntity.createLive>{ Caption, Description, RelatedTags, Restriction, user, Link, Key,Hashtags })
     } catch (e) {
         return <Responses.createLiveResponse>{
             message: "Internal Server Error",

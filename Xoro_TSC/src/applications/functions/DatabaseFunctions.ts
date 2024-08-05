@@ -276,7 +276,8 @@ export const getChats: Function = async (userId: ObjectId) => {
                     latestMessage: 1,
                     Profile: "$chat.Profile"
                 }
-            }
+            },
+            { $sort: { 'latestMessage.Time': -1 } }
         ]);
 
         return data;
@@ -285,6 +286,7 @@ export const getChats: Function = async (userId: ObjectId) => {
         throw e;
     }
 };
+
 
 export const getChat: Function = async (RoomId: string) => {
     try {
@@ -500,8 +502,6 @@ export const getComments: Function = async (PostId: string, UserId: ObjectId) =>
                 }
             }
         ]);
-
-        console.log(comments);
         return comments;
     } catch (e) {
         console.log(e);
@@ -552,7 +552,7 @@ export const getComment: Function = async (CommentId: ObjectId) => {
 };
 
 
-export const getChannel = async (ChannelId: ObjectId, UserId: ObjectId) => {
+export const getChannel = async (ChannelId: ObjectId) => {
     try {
         const [response] = await ChannelModel.aggregate([
             {
@@ -560,86 +560,40 @@ export const getChannel = async (ChannelId: ObjectId, UserId: ObjectId) => {
             },
             {
                 $lookup: {
-                    from: "videos",
-                    localField: "_id",
-                    foreignField: "ChannelId",
-                    as: "videos"
-                }
-            },
-            {
-                $addFields: {
-                    subscribed: {
-                        $cond: {
-                            if: { $eq: [UserId, null] },
-                            then: false,
-                            else: {
-                                $gt: [
-                                    {
-                                        $size: {
-                                            $filter: {
-                                                input: "$subscribers",
-                                                as: "subscriber",
-                                                cond: { $eq: ["$$subscriber.UserId", UserId] }
-                                            }
-                                        }
-                                    },
-                                    0
-                                ]
-                            }
-                        }
-                    }
+                    from: 'users',
+                    let: { userId: '$UserId' },
+                    pipeline: [
+                        { $match: { $expr: { $eq: ['$_id', '$$userId'] } } },
+                        { $project: { Username: 1, Name: 1, Profile: 1, ProfileLink: 1, _id: 1 } }
+                    ],
+                    as: 'user'
                 }
             },
             {
                 $lookup: {
-                    from: "reactions",
-                    localField: "videos._id",
-                    foreignField: "VideoId",
-                    as: "reactions"
+                    from: "videos",
+                    foreignField: "UserId",
+                    localField: "_id",
+                    as: "videos"
                 }
             },
             {
-                $addFields: {
-                    totalLikes: {
-                        $size: {
-                            $filter: {
-                                input: "$reactions",
-                                as: "reaction",
-                                cond: { $eq: ["$$reaction.type", "like"] }
-                            }
-                        }
-                    },
-                    totalDislikes: {
-                        $size: {
-                            $filter: {
-                                input: "$reactions",
-                                as: "reaction",
-                                cond: { $eq: ["$$reaction.type", "dislike"] }
-                            }
-                        }
-                    },
-                    totalViews: {
-                        $size: {
-                            $filter: {
-                                input: "$reactions",
-                                as: "reaction",
-                                cond: { $eq: ["$$reaction.type", "view"] }
-                            }
-                        }
-                    }
+                $lookup: {
+                    from: "shorts",
+                    localField: "_id",
+                    foreignField: "ChannelId",
+                    as: "shorts"
                 }
             },
             {
-                $project: {
-                    videos: 1,
-                    subscribed: 1,
-                    totalLikes: 1,
-                    totalDislikes: 1,
-                    totalViews: 1
+                $lookup: {
+                    from: "lives",
+                    localField: "_id",
+                    foreignField: "UserId",
+                    as: "live"
                 }
-            }
+            },
         ]);
-
         return response;
     } catch (e) {
         console.log(e);

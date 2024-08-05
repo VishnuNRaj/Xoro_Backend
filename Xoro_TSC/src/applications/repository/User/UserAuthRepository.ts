@@ -12,10 +12,8 @@ import auth from '../../../config/auth'
 import UserDocument from '../../../entities/ModelsInterface/User';
 import { VerifyUser } from '../../functions/UserFunctions';
 import Connections from '../../../frameworks/database/models/Connetions';
-import { ConnectionsInterface } from '../../../entities/ModelsInterface/Connections';
 import Notifications from '../../../frameworks/database/models/Notifications';
-// import { Notification } from '../../../entities/ModelsInterface/Notification';
-// import { ObjectId } from 'mongodb';
+
 
 export const RegisterRepository: Function = async (data: UserEntity.Register): Promise<Responses.SignUpResponse> => {
     try {

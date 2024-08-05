@@ -7,6 +7,7 @@ export interface createLive {
     RelatedTags:string;
     Restriction:number;
     Description:string;
+    Hashtags:string[]
     Link:string;
     Key:string;
 }

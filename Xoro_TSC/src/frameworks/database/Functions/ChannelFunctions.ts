@@ -1,6 +1,7 @@
 import { ObjectId } from "mongoose";
 import ChannelModel from "../models/Channels"
 import ShortVideos from "../models/Shorts";
+import User from "../models/User";
 export const getChannel = async (ChannelId: ObjectId) => {
     try {
         const response = await ChannelModel.findById(ChannelId);
@@ -66,9 +67,9 @@ export const getShortsVideos = async (id: string) => {
             shorts: null
         };
         return {
-            message:"Found",
-            status:200,
-            shorts:response
+            message: "Found",
+            status: 200,
+            shorts: response
         };
     } catch (e) {
         console.error(e);
@@ -77,5 +78,51 @@ export const getShortsVideos = async (id: string) => {
             status: 201,
             shorts: null
         };
+    }
+};
+
+
+export const getRandomUser = async (userId:ObjectId) => {
+    try {
+        const users = await User.aggregate([
+            {
+                $match: {
+                    _id: userId
+                }
+            },
+            {
+                $lookup: {
+                    from: "connections",
+                    localField: "_id",
+                    foreignField: "UserId",
+                    as: "connections"
+                }
+            },
+            {
+                $lookup: {
+                    from: "connections",
+                    localField: "connections.UserId",
+                    foreignField: "UserId",
+                    as: "mutual"
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    let: { tagIds: { $setUnion: ['$mutual.Followers', '$mutual.Following'] } },
+                    pipeline: [
+                        { $match: { $expr: { $in: ['$_id', '$$tagIds'] } } },
+                        { $project: { Username: 1, Name: 1, Profile: 1, ProfileLink: 1, _id: 1 } }
+                    ],
+                    as: 'mutualUsers'
+                }
+            },
+            { $sample: { size: 1 } }
+        ]);
+
+        return users;
+    } catch (e) {
+        console.error(e);
+        return [];
     }
 };

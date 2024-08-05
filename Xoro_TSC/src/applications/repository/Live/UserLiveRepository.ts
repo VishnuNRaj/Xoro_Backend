@@ -9,7 +9,7 @@ import LiveInterface from "../../../entities/ModelsInterface/Live"
 import { ReactionsInterface } from "../../../entities/ModelsInterface/Reactions";
 
 
-export const createLive = async ({ Caption, Description, Link, RelatedTags, Restriction, user, Key }: LiveEntity.createLive) => {
+export const createLive = async ({ Caption, Description, Link, RelatedTags, Restriction, user, Key, Hashtags }: LiveEntity.createLive) => {
     try {
         const lives: LiveInterface[] = await DatabaseFunctions.findData(Live, { Live: true, UserId: user.Channel })
         if (lives.length > 0) {
@@ -22,9 +22,13 @@ export const createLive = async ({ Caption, Description, Link, RelatedTags, Rest
             RelatedTags,
             Caption, Description, Thumbnail: Link,
             Key, Restriction, UserId: user.Channel,
-            Live:true,
+            Live: true,
         })
         await DatabaseFunctions.saveData(live)
+        await DatabaseFunctions.insertData(Reactions, {
+            _id: live._id,
+            PostId: live._id
+        })
         return <Responses.createLiveResponse>{
             live, message: "Live Created", status: 200
         }

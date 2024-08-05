@@ -436,3 +436,29 @@ export const editChannelRepository: Function = async ({ ChannelId, Description, 
         })
     }
 }
+
+
+export const getChannelRepository = async (channelId: string) => {
+    try {
+        const id: any = await DatabaseFunctions.makeObjectId(channelId)
+        console.log(id)
+        const response: any = await DatabaseFunctions.getChannel(id)
+        console.log(response)
+        if (!response || response.user.Suspended || response.user.Terminated) {
+            return <Responses.getChannelResponse>{
+                message:"Sorry Channel Suspended",
+                status:201
+            }
+        } 
+        return <Responses.getChannelResponse>{
+             channel:response,
+             status:200,
+             message:"Found"
+        }
+    } catch (e) {
+        return ResponseFunctions.GetUserProfileRes(<Responses.getChannelResponse>{
+            message: 'Internal Server Error',
+            status: 500
+        })
+    }
+}

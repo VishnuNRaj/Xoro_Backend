@@ -6,6 +6,7 @@ import * as Repository from '../repository/User/UserProfileRepository';
 import * as UserFunctions from '../functions/UserFunctions';
 import UserDocument from '../../entities/ModelsInterface/User';
 import { uploadFileToFirebase } from '../../config/firebase';
+import { checkObjectId } from '../functions/DatabaseFunctions';
 
 
 export const EditBanner: Function = async ({ user, Image }: UserEntity.EditBanner) => {
@@ -257,8 +258,8 @@ export const editChannel: Function = async ({ ChannelId, Description, Name, Type
                 status: 201
             }
         }
-        let Link:string | null = null
-        if(Logo) {
+        let Link: string | null = null
+        if (Logo) {
             Link = await UserFunctions.uploadBase64Image(Logo)
         }
         if (!ChannelId) {
@@ -267,10 +268,28 @@ export const editChannel: Function = async ({ ChannelId, Description, Name, Type
                 status: 201
             }
         }
-        return await Repository.editChannelRepository({ ChannelId, Description, Name, Type, Logo:Link })
+        return await Repository.editChannelRepository({ ChannelId, Description, Name, Type, Logo: Link })
     } catch (e) {
         return <Responses.editChannel>{
             message: "Internal Server Error",
+            status: 500
+        }
+    }
+}
+
+export const getChannel = async (channelId: string) => {
+    try {
+        if (!await checkObjectId(channelId)) {
+            return <Responses.getChannelResponse>{
+                message: "No Channel Found",
+                status: 201
+            };
+        }
+        console.log("iveeeeeeedeee",channelId)
+        return await Repository.getChannelRepository(channelId)
+    } catch (e) {
+        return <Responses.getChannelResponse>{
+            message: 'Internal Server Error',
             status: 500
         }
     }

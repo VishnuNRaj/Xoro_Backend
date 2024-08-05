@@ -11,6 +11,8 @@ postRouter.patch('/reactions/like/:PostId',VerifyUserAuth, Middleware.LikePost)
 postRouter.patch('/reactions/dislike/:PostId',VerifyUserAuth, Middleware.DislikePost)
 postRouter.patch('/reactions/remove/:PostId',VerifyUserAuth, Middleware.RemoveReactions)
 postRouter.post('/report/:PostId',VerifyUserAuth, Middleware.RemoveReactions)
+postRouter.get("/find/:postId",VerifyUserAuth, Middleware.GetPost)
+postRouter.get("/random",VerifyUserAuth,Middleware.getRandomUsers)
 
 
 

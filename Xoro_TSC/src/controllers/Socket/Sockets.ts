@@ -2,6 +2,10 @@ import { Server as SocketIOServer } from 'socket.io';
 import * as SocketFunctions from './SocketFunctions';
 import { saveChat } from "../../frameworks/database/Functions/ChatFunctions"
 import ChannelModel from '../../frameworks/database/models/Channels';
+import WebPush from '../../frameworks/database/models/WebpushNotification';
+import { Types } from 'mongoose';
+import Notifications from '../../frameworks/database/models/Notifications';
+
 const socketRoutes = (io: SocketIOServer): SocketIOServer => {
   if (!io) {
     throw new Error('Socket instance is undefined. Ensure initializeSocketServer is called.');
@@ -43,8 +47,28 @@ const socketRoutes = (io: SocketIOServer): SocketIOServer => {
       const channel = await ChannelModel.findByIdAndUpdate(channelId, { $pull: { Subsribers: userId } }, { upsert: true })
       return socket.to(userId).emit("unsubscribed", channel?.Subsribers.length)
     })
-  });
+    socket.on("live_comment", (data: any) => {
+      console.log(data)
+      io.emit("new_comment", data)
+    })
 
+    socket.on("allowed", async (userId: string, endpoint: string) => {
+      const response = await WebPush.findOne({ UserId: new Types.ObjectId(userId), endpoint: endpoint })
+      if (response && response.send) return io.to(userId).emit("allow_notification", { send: response.send })
+      else return io.to(userId).emit("allow_notification", { send: false })
+    })
+
+    socket.on("disallow", async (userId: string, endpoint: string) => {
+      await WebPush.findOneAndUpdate({ UserId: new Types.ObjectId(userId), endpoint: endpoint }, { $set: { send: false } })
+    })
+    socket.on("allow", async (userId: string, endpoint: string) => {
+      await WebPush.findOneAndUpdate({ UserId: new Types.ObjectId(userId), endpoint: endpoint }, { $set: { send: true } })
+    })
+
+    socket.on("emptyMsg", async (userId: string) => {
+      await Notifications.findOneAndUpdate({ UserId: new Types.ObjectId(userId) }, { $set: { Messages: [] } })
+    })
+  });
   return io;
 };
 

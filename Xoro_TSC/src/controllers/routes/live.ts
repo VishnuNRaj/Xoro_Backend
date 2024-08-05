@@ -1,14 +1,11 @@
-import {Router} from 'express';
-const liveRouter:Router = Router();
+import { Router } from 'express';
+const liveRouter: Router = Router();
 import { VerifyUserAuth } from '../middlewares/UserController';
-import * as Middleware from './../middlewares/PostController';
+import * as Middleware from './../middlewares/LiveController';
 import upload from '../other/Multer';
-// import webSocket from '../../frameworks/server/websocket';
-
-
-liveRouter.get('/start-live',(req,res) => {
-    // webSocket()
-    res.status(200).json({message:'Socket Started Successfully'}) 
-}) 
+liveRouter.post("/create", upload.single("Thumbnail"), VerifyUserAuth, Middleware.createLive)
+liveRouter.post('/:category', VerifyUserAuth, Middleware.getLiveVideoFilter)
+liveRouter.post('/', VerifyUserAuth, Middleware.getLiveVideoFilter)
+liveRouter.get("/stream/:key", VerifyUserAuth, Middleware.getLivevideo)
 
 export default liveRouter;

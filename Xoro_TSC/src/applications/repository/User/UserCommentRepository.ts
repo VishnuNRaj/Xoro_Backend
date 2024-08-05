@@ -1,13 +1,7 @@
 import * as CommentEntity from '../../../entities/RequestInterface/CommentInterface';
 import * as DatabaseFunctions from '../../functions/DatabaseFunctions'
-import * as UserFunctions from '../../functions/UserFunctions'
-import UserAuth from '../../../frameworks/database/models/UnverifiedUsers';
 import * as ResponseFunctions from '../../responses/CommentResponse';
 import * as Responses from '../../../entities/ResponseInterface/CommentResponseInterface';
-import * as CommonFunctions from '../../functions/CommonFunctions';
-import UnverifiedUsers from '../../../entities/ModelsInterface/UnverifiedUsers';
-import User from '../../../frameworks/database/models/User';
-import auth from '../../../config/auth'
 import UserDocument from '../../../entities/ModelsInterface/User';
 import CommentModel, { CommentReplies } from "../../../frameworks/database/models/Comments"
 import { Comments, CommentReply } from '../../../entities/ModelsInterface/Comments';

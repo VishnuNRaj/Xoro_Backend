@@ -4,6 +4,7 @@ import CategoryModel from "../../frameworks/database/models/Category";
 import Notifications from "../../frameworks/database/models/Notifications";
 
 export const joinUserId: Function = async (socket: Socket, userId: string) => {
+    console.log(userId,"__________")
     socket.join(userId)
 }
 export const disconnect: Function = (socket: Socket) => {

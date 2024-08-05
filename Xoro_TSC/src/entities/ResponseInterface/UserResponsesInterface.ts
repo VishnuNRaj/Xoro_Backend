@@ -149,3 +149,9 @@ export interface createChannelResponse {
     message:string;
     status:number;
 }
+
+export interface getChannelResponse {
+    channel:ChannelInterface;
+    message:string;
+    status:number;
+}

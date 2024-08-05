@@ -6,6 +6,7 @@ import { emitNotification } from '../Socket/SocketEmits';
 import { getCategory } from '../Socket/SocketFunctions';
 import { saveSubscription } from "../../config/web-push"
 import { getChannel } from "../../frameworks/database/Functions/ChannelFunctions"
+import { getNotifications } from "../../frameworks/database/Functions/NotificationFunctions"
 interface CustomRequest extends Request {
     result?: Responses.VerifyUserAuthResponse;
 }
@@ -164,8 +165,21 @@ export const GetChannel: Middleware = async (req, res) => {
         if (result && result.user && result.user.Channel) {
             const channel = await getChannel(result.user.Channel);
             return res.status(200).json({ channel, status: 200 })
-        } else return res.status(201).json({ message: "No Channel Created",status:201 })
+        } else return res.status(201).json({ message: "No Channel Created", status: 201 })
     } catch (e) {
-        return res.status(500).json({ messsage: 'Internal Server Error',status:500 })
+        return res.status(500).json({ messsage: 'Internal Server Error', status: 500 })
     }
 }
+
+export const getNotification: Middleware = async (req, res) => {
+    const result = req.result;
+    try {
+        const { skip } = req.params
+        if (skip && !isNaN(parseInt(skip))) {
+            const notifications = await getNotifications(result?.user?._id as any, parseInt(skip))
+            return res.status(200).json({ notifications })
+        } else return res.status(201).json({ notifications: [] })
+    } catch (e) {
+        return res.status(500).json({ messsage: 'Internal Server Error', status: 500 })
+    }
+} 
