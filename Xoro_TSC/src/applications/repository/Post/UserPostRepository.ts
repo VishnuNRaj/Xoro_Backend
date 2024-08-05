@@ -195,7 +195,7 @@ export const getPostsRepository: Function = async ({ UserId, skip }: PostEntity.
         }
         const connections: ConnectionsInterface = await DatabaseFunctions.getFollowers(UserId)
         const Idx: ObjectId[] = Array.from(new Set([...connections.Followers, ...connections.Following, UserId]));
-        const post: PostImage[] | null = await DatabaseFunctions.getPosts(Idx, skip)
+        const post: PostImage[] | null = await DatabaseFunctions.getPosts(skip >= 10 ? [] : Idx, skip)
 
         return ResponseFunctions.getPostRes(<Responses.getPostResponse>{
             connections: connections,
@@ -216,9 +216,9 @@ export const ReportPostRepository: Function = async ({ Content, Message, PostId,
     try {
         const post: Post = await DatabaseFunctions.findUsingId(PostImages, PostId)
         if (!post) return await ResponseFunctions.reportPostRes({ message: "Invalid Credentials", status: 201 })
-        
+
         await DatabaseFunctions.insertData(VideoReport, { Message, PostId, Content, UserId })
-        
+
         return await ResponseFunctions.reportPostRes({ message: "Reported Successfully", status: 500 })
     } catch (e) {
         console.log(e)
