@@ -58,6 +58,11 @@ const userSchema = new Schema<UserDocument>({
     },
     ProfileLock: { type: Boolean, default: false },
     VIP: { type: Boolean, default: false },
+    Premium: {
+        Type: String,
+        Date: Date,
+        Till: Date,
+    }
 });
 
 const User = model<UserDocument>('users', userSchema);

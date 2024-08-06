@@ -10,3 +10,11 @@ export interface ChannelInterface extends Document {
     Logo:string;
     ChannelLink:string;
 }
+
+export interface PremiumUsersInterface extends Document {
+    ChannelId:ObjectId;
+    Users:{
+        UserId:ObjectId;
+        CreatedAt:Date;
+    }[]
+}

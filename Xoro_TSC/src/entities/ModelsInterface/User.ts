@@ -3,7 +3,7 @@ import { Notification } from "./Notification";
 
 export default interface UserDocument extends Document {
     Name: string;
-    Username:string;
+    Username: string;
     Followers: number;
     Following: number;
     Streams: ObjectId;
@@ -21,18 +21,23 @@ export default interface UserDocument extends Document {
     Gender?: string;
     Country?: string;
     Description?: string[];
-    ProfileLink:string;
-    Posts:number;
+    ProfileLink: string;
+    Posts: number;
     CreatedAt: Date;
-    Settings:{
-        Private:boolean,
-        BlockedUsers?:ObjectId,
+    Settings: {
+        Private: boolean,
+        BlockedUsers?: ObjectId,
         Favourites?: ObjectId,
-        Notifications:boolean,
+        Notifications: boolean,
     };
-    Banner:string;
-    Channel:ObjectId;
-    ProfileLock:boolean;
-    VIP:boolean;
-    notifications:Notification[];
+    Banner: string;
+    Channel: ObjectId;
+    ProfileLock: boolean;
+    VIP: boolean;
+    Premium: {
+        Type: string;
+        Date: Date;
+        Till: Date;
+    }
+    notifications: Notification[];
 }

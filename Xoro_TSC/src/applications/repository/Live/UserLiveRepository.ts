@@ -11,6 +11,10 @@ import { ReactionsInterface } from "../../../entities/ModelsInterface/Reactions"
 
 export const createLive = async ({ Caption, Description, Link, RelatedTags, Restriction, user, Key, Hashtags }: LiveEntity.createLive) => {
     try {
+        if (!user.Channel) return <Responses.createLiveResponse>{
+            message: "Please Create A Channel",
+            status: 201
+        };
         const lives: LiveInterface[] = await DatabaseFunctions.findData(Live, { Live: true, UserId: user.Channel })
         if (lives.length > 0) {
             return <Responses.createLiveResponse>{
