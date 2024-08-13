@@ -1,28 +1,26 @@
-import { Worker, } from 'bullmq';
+import { Job, Worker, } from 'bullmq';
 import redis from '../../database/Redis'
-import { chatupload } from '../interfaces/chatUpload';
-import { deleteChat, saveChat } from '../../database/Functions/ChatFunctions';
-import { Messages } from '../../../entities/ModelsInterface/Chat';
-import { sendChat } from "../../../controllers/Socket/SocketEmits"
+import { Credentials } from '../interfaces/notificationSend';
+import sendPushNotifications from '../../system/Webpush';
+
 redis.on('connect', () => {
     console.log('Connected')
 })
 
 
-const worker = new Worker('notification', async (job) => {
-    console.log('Processing job:', job.id);
-    const data: chatupload = job.data
-    const response: Messages | null = await saveChat(data)
-    if (response) {
-        await sendChat(response)
-    }
-}, {
-    connection: redis,
-});
+const worker = new Worker('notification', async (job: Job<Credentials>) => {
+    const { Text, notification, type, userIds, id } = job.data
+    const notifications = userIds.map(async (ids) => {
+        await sendPushNotifications({
+            ...notification,
+            type,
+            Text,
+            Redirect: `/${type}/${id ? id : ""}`
+        }, ids);
+    });
 
-export const deleteWorker = new Worker('chatdelete', async (job) => {
-    console.log('Processing job:', job.id);
-    await deleteChat(job.data)
+    await Promise.all(notifications);
+    console.log("All notifications sent successfully");
 }, {
     connection: redis,
 });

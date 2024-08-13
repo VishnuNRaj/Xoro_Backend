@@ -27,7 +27,7 @@ const uploadVideo = async ({ userId, video, thumbnail, videoId, channelId }: vid
             const fileBuffer = fs.readFileSync(video.path);
             fs.writeFileSync(videoPath, fileBuffer);
             const response = await startFFmpegProcess(videoPath, `${config.RTMP}/videos/${videoData.Key}`);
-            const notification = {
+            const notification = <Notification>{
                 SenderId: userId,
                 Link: thumbnail,
                 Time: new Date(),
@@ -35,7 +35,7 @@ const uploadVideo = async ({ userId, video, thumbnail, videoId, channelId }: vid
             };
             await createNotification(notification, userId);
             if (response) {
-                await updateVideoLink(videoId, `${config.BASE}/videos/${videoData.Key}.flv`);
+                await updateVideoLink(videoId.toString(), `${config.BASE}/videos/${videoData.Key}.flv`);
             }
             sendPushNotifications({ ...notification, type: "videos", Text: "Your Video Has Been Uploaded Successfully", Redirect: `/videos/${videoData.VideoLink}` }, userId)
             return response;

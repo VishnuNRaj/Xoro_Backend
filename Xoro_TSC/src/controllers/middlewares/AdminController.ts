@@ -116,7 +116,7 @@ export const deleteCategory: Middleware = async (req, res) => {
         const result = req.result
         const { CategoryId } = req.params
         console.log(CategoryId)
-        const data = await UseCases.deleteCategory({ AdminId: result?.admin?._id, CategoryId })
+        const data = await UseCases.deleteCategory(<any>{ AdminId: result?.admin?._id, CategoryId })
         return res.status(data.status).json(data)
     } catch (e) {
         return res.status(500).json({ message: 'Internal Server Error' })
@@ -141,6 +141,54 @@ export const getategory: Middleware = async (req, res) => {
         const data = await UseCases.getCategory(search !== "null" ? search : "", parseInt(skip))
         console.log(data)
         return res.status(data.status).json({ ...data, admin: result?.admin })
+    } catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' })
+    }
+}
+
+export const getVouchers: Middleware = async (req, res) => {
+    try {
+        const result = req.result;
+        const data = await UseCases.getVouchers()
+        return res.status(data.status).json({ ...data, admin: result?.admin })
+    } catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' })
+    }
+}
+
+export const addVouchers: Middleware = async (req, res) => {
+    try {
+        const result = req.result as Responses.AdminVerifyAuthResponse;
+        const { Name, From, End, Months, Description, Features, Price, Type, Discount } = req.body
+        const Image = req.file as Express.Multer.File
+        const data = await UseCases.addVouchers(<AdminEntity.addVouchers>{ Name, From, End, Months, Description, Features, Price, Type, Image, Id: result.admin?._id,Discount })
+        return res.status(data.status).json({ ...data })
+
+    } catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' })
+    }
+}
+
+export const editVouchers: Middleware = async (req, res) => {
+    try {
+        // const result = req.result as Responses.AdminVerifyAuthResponse;
+        const { id } = req.params
+        const { Name, End, Months, Description, Features, Price } = req.body
+        const Image = req.file as Express.Multer.File
+        const data = await UseCases.editVouchers(<AdminEntity.editVouchers>{ Name, End, Months, Description, Features, Price, Image, id })
+        return res.status(data.status).json({ ...data })
+
+    } catch (e) {
+        return res.status(500).json({ message: 'Internal Server Error' })
+    }
+}
+
+export const deleteVouchers: Middleware = async (req, res) => {
+    try {
+        const { id } = req.params
+        const data = await UseCases.deleteVouchers(id)
+        return res.status(data.status).json({ ...data })
+
     } catch (e) {
         return res.status(500).json({ message: 'Internal Server Error' })
     }

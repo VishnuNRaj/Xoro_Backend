@@ -1,10 +1,11 @@
 import { Queue } from 'bullmq';
 import redis from '../../database/Redis'
-export const chatUploadQueue = new Queue('notification', {
+const NotificationQueue = new Queue('notification', {
     connection: redis,
 });
 
-chatUploadQueue.on('waiting', () => {
+NotificationQueue.on('waiting', () => {
     console.log('chatUploadQueue is ready and connected to Redis');
 });
 
+export default NotificationQueue

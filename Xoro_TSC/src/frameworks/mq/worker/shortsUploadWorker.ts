@@ -26,7 +26,7 @@ export const uploadShorts = async ({ video, key, userId, channelId, bucket }: sh
             const fileBuffer = fs.readFileSync(video.path);
             fs.writeFileSync(videoPath, fileBuffer);
             const response: string = await startFFmpegProcess(videoPath, `${config.RTMP}/${bucket}/${videoData.Key}`);
-            const notification = {
+            const notification = <Notification>{
                 SenderId: userId,
                 Link: user?.Profile,
                 Time: new Date(),

@@ -15,7 +15,7 @@ import Connections from '../../../frameworks/database/models/Connetions';
 import Notifications from '../../../frameworks/database/models/Notifications';
 
 
-export const RegisterRepository: Function = async (data: UserEntity.Register): Promise<Responses.SignUpResponse> => {
+export const RegisterRepository = async (data: UserEntity.Register): Promise<Responses.SignUpResponse> => {
     try {
         const { Name, Email, Phone, Type, Profile }: UserEntity.Register = data
         let { Password }: UserEntity.Register = data
@@ -58,7 +58,7 @@ export const RegisterRepository: Function = async (data: UserEntity.Register): P
     }
 }
 
-export const LoginRepository: Function = async ({ Email, Password, Type }: UserEntity.Login): Promise<Responses.LoginResponse> => {
+export const LoginRepository = async ({ Email, Password, Type }: UserEntity.Login): Promise<Responses.LoginResponse> => {
     try {
         const user: UnverifiedUsers = await DatabaseFunctions.findOneData(UserAuth, { Email: Email })
         const userauth: any = await VerifyUser(user)
@@ -126,7 +126,7 @@ export const LoginRepository: Function = async ({ Email, Password, Type }: UserE
     }
 }
 
-export const VerifyAccountRepository: Function = async ({ VerificationLink, UserId }: UserEntity.VerifyAccount): Promise<Responses.VerifyAccountResponse> => {
+export const VerifyAccountRepository = async ({ VerificationLink, UserId }: UserEntity.VerifyAccount): Promise<Responses.VerifyAccountResponse> => {
     try {
         const result = await DatabaseFunctions.checkObjectId(UserId)
         console.log(result);
@@ -137,7 +137,7 @@ export const VerifyAccountRepository: Function = async ({ VerificationLink, User
                 status: 202
             })
         }
-        const user: UnverifiedUsers = await DatabaseFunctions.findUsingId(UserAuth, { _id: UserId })
+        const user: UnverifiedUsers = await DatabaseFunctions.findUsingId(UserAuth, UserId);
         console.log(user)
         if (!user || user.Suspended || user.Terminated || user.VerificationLink != VerificationLink || user.Verified) {
             return ResponseFunctions.VerifyAccountRes(<Responses.VerifyAccountResponse>{
@@ -200,7 +200,7 @@ export const VerifyAccountRepository: Function = async ({ VerificationLink, User
     }
 }
 
-export const AddProfilePicRepository: Function = async ({ file }: UserEntity.FilesSend, { Username, RememberMe }: UserEntity.AddProfileData, { UserId }: UserEntity.VerifyAccount): Promise<Responses.AddProfileResponse> => {
+export const AddProfilePicRepository = async ({ file }: UserEntity.FilesSend, { Username, RememberMe }: UserEntity.AddProfileData, { UserId }: UserEntity.VerifyAccount): Promise<Responses.AddProfileResponse> => {
     try {
         let result = DatabaseFunctions.checkObjectId(UserId)
         if (!result) {
@@ -252,7 +252,7 @@ export const AddProfilePicRepository: Function = async ({ file }: UserEntity.Fil
     }
 }
 
-export const OTPVerifyRepository: Function = async ({ OTP, RememberMe }: UserEntity.OTPData, { UserId }: UserEntity.UserIds): Promise<Responses.OTPVerifyResponse> => {
+export const OTPVerifyRepository = async ({ OTP, RememberMe }: UserEntity.OTPData, { UserId }: UserEntity.UserIds): Promise<Responses.OTPVerifyResponse> => {
     try {
         const check = DatabaseFunctions.checkObjectId(UserId)
         if (!check) {
@@ -308,7 +308,7 @@ export const OTPVerifyRepository: Function = async ({ OTP, RememberMe }: UserEnt
     }
 }
 
-export const verifyUserAuthRepository: Function = async (token: string, refresh: string): Promise<Responses.VerifyUserAuthResponse> => {
+export const verifyUserAuthRepository = async (token: string, refresh: string): Promise<Responses.VerifyUserAuthResponse> => {
     try {
         const result: any = await VerifyPayload({ token, refresh })
         if (!result.status) {
@@ -351,7 +351,7 @@ export const verifyUserAuthRepository: Function = async (token: string, refresh:
     }
 }
 
-export const ResendOTP: Function = async ({ UserId }: UserEntity.UserOTP): Promise<Responses.UserOTPResponse> => {
+export const ResendOTP = async ({ UserId }: UserEntity.UserOTP): Promise<Responses.UserOTPResponse> => {
     try {
         const result = await DatabaseFunctions.checkObjectId(UserId)
         if (!result) {
@@ -388,7 +388,7 @@ export const ResendOTP: Function = async ({ UserId }: UserEntity.UserOTP): Promi
 }
 
 
-export const getTwoStep: Function = async ({ user }: UserEntity.GetSecurity): Promise<Responses.GetSecurityResponse> => {
+export const getTwoStep = async ({ user }: UserEntity.GetSecurity): Promise<Responses.GetSecurityResponse> => {
     try {
         const { TwoStepVerification }: UnverifiedUsers = await DatabaseFunctions.findUsingId(UserAuth, user._id)
         return ResponseFunctions.GetSecurityRes(<Responses.GetSecurityResponse>{
@@ -407,9 +407,9 @@ export const getTwoStep: Function = async ({ user }: UserEntity.GetSecurity): Pr
     }
 }
 
-export const setTwoStep: Function = async ({ user }: UserEntity.setSecurity): Promise<Responses.setTwoStepResponse> => {
+export const setTwoStep = async ({ user }: UserEntity.setSecurity): Promise<Responses.setTwoStepResponse> => {
     try {
-        const userData: UnverifiedUsers = await DatabaseFunctions.findUsingId(UserAuth, user)
+        const userData: UnverifiedUsers = await DatabaseFunctions.findUsingId(UserAuth, user.toString())
         userData.TwoStepVerification = !userData.TwoStepVerification
         await DatabaseFunctions.saveData(userData)
         return ResponseFunctions.setTwoStepRes(<Responses.setTwoStepResponse>{

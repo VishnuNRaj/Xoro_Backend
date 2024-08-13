@@ -1,6 +1,5 @@
 import { Messages } from "../../../entities/ModelsInterface/Chat";
 import { ConnectionsInterface } from "../../../entities/ModelsInterface/Connections";
-import { chatDelete, chatupload } from "../../mq/interfaces/chatUpload";
 import Connections from "../models/Connetions";
 import Message from "../models/Messages";
 import User from "../models/User";
@@ -16,7 +15,7 @@ export const saveChat: Function = async (data: any) => {
     }
 }
 
-export const deleteChat: Function = async ({ id }: chatDelete) => {
+export const deleteChat: Function = async ({ id }: { id: string }) => {
     try {
         await Message.findByIdAndDelete(id)
         return true;

@@ -103,7 +103,7 @@ export const AddProfileUser: Function = async ({ file }: UserEntity.FilesSend, {
                 token: ''
             }
         }
-        return Repository.AddProfilePicRepository({ file: result }, { Username, RememberMe }, { UserId })
+        return Repository.AddProfilePicRepository({ file: result }, <UserEntity.AddProfileData>{ Username, RememberMe }, <UserEntity.VerifyAccount>{ UserId })
     } catch (e) {
         return <Responses.AddProfileResponse>{
             message: 'Internal Server Error',

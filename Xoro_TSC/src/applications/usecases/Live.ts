@@ -2,9 +2,6 @@ import * as Responses from '../../entities/ResponseInterface/LiveResponseInterfa
 import * as Repository from '../repository/Live/UserLiveRepository';
 import * as LiveEntity from '../../entities/RequestInterface/LiveInterface';
 import { uploadFileToFirebase } from '../../config/firebase';
-import * as DatabaseFunctions from '../functions/DatabaseFunctions';
-import { ObjectId } from 'mongoose';
-import UserDocument from '../../entities/ModelsInterface/User';
 import { generateVerificationLink } from '../functions/CommonFunctions';
 
 export const createLive = async ({ Caption, Description, RelatedTags, Restriction, Thumbnail, user,Hashtags }: LiveEntity.createLive) => {

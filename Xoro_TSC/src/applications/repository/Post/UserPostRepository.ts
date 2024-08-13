@@ -97,7 +97,7 @@ export const LikePostRepository: Function = async ({ PostId, UserId }: PostEntit
     try {
         const responses: boolean[] = await Promise.all([
             await DatabaseFunctions.checkObjectId(PostId),
-            await DatabaseFunctions.checkObjectId(UserId),
+            await DatabaseFunctions.checkObjectId(UserId.toString()),
         ])
         console.log(responses)
         if (!responses[0] || !responses[1]) {
@@ -108,7 +108,7 @@ export const LikePostRepository: Function = async ({ PostId, UserId }: PostEntit
         }
         const post: Post = await DatabaseFunctions.findUsingId(PostImages, PostId)
         // 👎
-        const result: ReactionsInterface = await DatabaseFunctions.likeDislikePost(post.Reactions, UserId, 'Likes', 'Dislikes')
+        const result: any = await DatabaseFunctions.likeDislikePost(post.Reactions, UserId, 'Likes', 'Dislikes')
         post.Likes = result.Likes.length
         post.Dislikes = result.Dislikes.length
         await DatabaseFunctions.saveData(post)
@@ -128,7 +128,7 @@ export const DislikePostRepository: Function = async ({ PostId, UserId }: PostEn
     try {
         const responses: boolean[] = await Promise.all([
             await DatabaseFunctions.checkObjectId(PostId),
-            await DatabaseFunctions.checkObjectId(UserId),
+            await DatabaseFunctions.checkObjectId(UserId.toString()),
         ])
         if (!responses[0] || !responses[1]) {
             return ResponseFunctions.deletePostRes(<Responses.deletePostResponse>{
@@ -137,7 +137,7 @@ export const DislikePostRepository: Function = async ({ PostId, UserId }: PostEn
             })
         }
         const post: Post = await DatabaseFunctions.findUsingId(PostImages, PostId)
-        const result: ReactionsInterface = await DatabaseFunctions.likeDislikePost(post.Reactions, UserId, 'Dislikes', 'Likes')
+        const result: any = await DatabaseFunctions.likeDislikePost(post.Reactions, UserId, 'Dislikes', 'Likes')
         post.Likes = result.Likes.length
         post.Dislikes = result.Dislikes.length
         await DatabaseFunctions.saveData(post)
@@ -158,7 +158,7 @@ export const RemoveReactions: Function = async ({ PostId, UserId }: PostEntity.L
     try {
         const responses: boolean[] = await Promise.all([
             await DatabaseFunctions.checkObjectId(PostId),
-            await DatabaseFunctions.checkObjectId(UserId),
+            await DatabaseFunctions.checkObjectId(UserId.toString()),
         ])
         if (!responses[0] || !responses[1]) {
             return ResponseFunctions.deletePostRes(<Responses.deletePostResponse>{
@@ -185,7 +185,7 @@ export const RemoveReactions: Function = async ({ PostId, UserId }: PostEntity.L
 
 export const getPostsRepository: Function = async ({ UserId, skip }: PostEntity.getPost): Promise<Responses.getPostResponse> => {
     try {
-        const responses: boolean = await DatabaseFunctions.checkObjectId(UserId)
+        const responses: boolean = await DatabaseFunctions.checkObjectId(UserId.toString())
         if (!responses) {
             return ResponseFunctions.getPostRes(<Responses.getPostResponse>{
                 message: 'Invalid Credentials',

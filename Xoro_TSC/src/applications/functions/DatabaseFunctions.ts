@@ -15,19 +15,19 @@ import CommentModel from '../../frameworks/database/models/Comments'
 import CategoryModel from "../../frameworks/database/models/Category"
 import ShortVideos from '../../frameworks/database/models/Shorts'
 import Live from "../../frameworks/database/models/Live"
-export const findOneData: Function = async (Db: any, query: object): Promise<any> => {
+export const findOneData = async (Db: any, query: object): Promise<any> => {
     return await Db.findOne(query)
 }
 
-export const findUsingId: Function = async (Db: any, query: string): Promise<any> => {
+export const findUsingId = async (Db: any, query: string | undefined | ObjectId): Promise<any> => {
     return await Db.findById(query)
 }
 
-export const insertData: Function = async (Db: any, data: object): Promise<any> => {
+export const insertData = async (Db: any, data: object): Promise<any> => {
     return await Db.insertMany(data)
 }
 
-export const updateById: Function = async (Db: any, id: string, data: object) => {
+export const updateById = async (Db: any, id: string, data: object) => {
     return await Db.findByIdAndUpdate(id, { $set: data })
 }
 
@@ -80,7 +80,7 @@ export const executeBulkWrite = async (Db: any, bulkOperations: BulkOperation[])
     }
 };
 
-export const checkObjectId: Function = async (id: string) => {
+export const checkObjectId = async (id: string | ObjectId | undefined) => {
     return await isObjectIdOrHexString(id)
 }
 
@@ -88,11 +88,11 @@ export const makeObjectId = async (id: string) => {
     return new Types.ObjectId(id)
 }
 
-export const findData: Function = async (Db: any, query: object) => {
+export const findData = async (Db: any, query: object) => {
     return await Db.find(query)
 }
 
-export const getUnReadNotifications: Function = async (UserId: ObjectId) => {
+export const getUnReadNotifications = async (UserId: ObjectId) => {
     try {
         const notifications = await Notifications.aggregate([
             { $match: { UserId: UserId } },
@@ -136,25 +136,25 @@ export const getUnReadNotifications: Function = async (UserId: ObjectId) => {
     }
 }
 
-export const findUsers: Function = async (userId: { UserId: string, Admin: boolean }[]) => {
+export const findUsers = async (userId: { UserId: string, Admin: boolean }[]) => {
     const objectIdArray = userId.map(id => new Types.ObjectId(id.UserId.toString()));
     return await User.find({ _id: { $in: objectIdArray } })
 }
 
-export const findUsersObjectId: Function = async (userId: string[]) => {
+export const findUsersObjectId = async (userId: string[]) => {
     const objectIdArray = userId.map(UserId => new Types.ObjectId(UserId.toString()));
     return await User.find({ _id: { $in: objectIdArray } }, { _id: 1 })
 }
 
-export const deleteUsingId: Function = async (Db: any, id: string) => await Db.findByIdAndDelete(id)
+export const deleteUsingId = async (Db: any, id: string) => await Db.findByIdAndDelete(id)
 
-export const deleteMany: Function = async (db: any, query: object) => {
+export const deleteMany = async (db: any, query: object) => {
     return db.deleteMany(query)
 }
 
-export const saveData: Function = async (data: Document) => await data.save()
+export const saveData = async (data: Document) => await data.save()
 
-export const likeDislikePost: Function = async (id: ObjectId, value: ObjectId, field1: string, field2: string) => {
+export const likeDislikePost = async (id: ObjectId, value: ObjectId, field1: string, field2: string) => {
     return await Reactions.findByIdAndUpdate(id, { $addToSet: { [field1]: value }, $pull: { [field2]: value } }, { upsert: true })
 }
 
@@ -162,7 +162,7 @@ export const likeDislikeVideo = async (id: ObjectId, value: ObjectId, field1: st
     return await Reactions.findByIdAndUpdate(id, { $addToSet: { [field1]: value }, $pull: { [field2]: value } }, { upsert: true });
 };
 
-export const countDocuments: Function = async (Db: any, id: ObjectId, key: string): Promise<number> => {
+export const countDocuments = async (Db: any, id: ObjectId, key: string): Promise<number> => {
     return Db.countDocuments({ [key]: id })
 }
 
@@ -235,7 +235,7 @@ export const getCategory = async (search: string | null, skip: number) => {
 };
 
 
-export const getChats: Function = async (userId: ObjectId) => {
+export const getChats = async (userId: ObjectId) => {
     try {
         const data = await Chats.aggregate([
             { $match: { 'Users.UserId': { $in: [userId] } } },
@@ -288,7 +288,7 @@ export const getChats: Function = async (userId: ObjectId) => {
 };
 
 
-export const getChat: Function = async (RoomId: string) => {
+export const getChat = async (RoomId: string) => {
     try {
         const [data] = await Chats.aggregate([{ $match: { 'RoomId': RoomId } },
         {
@@ -313,7 +313,7 @@ export const getChat: Function = async (RoomId: string) => {
     }
 }
 
-export const getFollowers: Function = async (UserId: ObjectId) => {
+export const getFollowers = async (UserId: ObjectId) => {
     try {
         const [response]: ConnectionsInterface[] = await Connections.aggregate([
             { $match: { UserId: UserId } },
@@ -355,11 +355,11 @@ export const getFollowers: Function = async (UserId: ObjectId) => {
         return response;
     } catch (e) {
         console.error('Error fetching followers:', e);
-        return null;
+        throw e
     }
 }
 
-export const checkChat: Function = async (UserIds: string[]) => {
+export const checkChat = async (UserIds: string[]) => {
     try {
 
         return await Chats.findOne({
@@ -470,7 +470,7 @@ export const getPosts = async (UserIds: ObjectId[], skip: number, limit: number 
 };
 
 
-export const getComments: Function = async (PostId: string, UserId: ObjectId) => {
+export const getComments = async (PostId: string) => {
     try {
         const comments = await CommentModel.aggregate([
             { $match: { PostId: new Types.ObjectId(PostId) } },
@@ -510,7 +510,7 @@ export const getComments: Function = async (PostId: string, UserId: ObjectId) =>
 };
 
 
-export const getComment: Function = async (CommentId: ObjectId) => {
+export const getComment = async (CommentId: ObjectId) => {
     try {
         const comments = await CommentModel.aggregate([
             { $match: { _id: CommentId } },

@@ -17,7 +17,7 @@ export const AddComment: Function = async ({ Comment, PostId, user }: CommentEnt
             }
         }
         const filteredComment:string[] = Comment.filter((str, i, arr) => arr[i - 1] === "@" && DatabaseFunctions.checkObjectId(str))
-        const tags:ObjectId[] = filteredComment.length > 0 ? await DatabaseFunctions.findUsersObjectId(filteredComment) : []
+        const tags:any[] = filteredComment.length > 0 ? await DatabaseFunctions.findUsersObjectId(filteredComment) : []
         console.log(tags,filteredComment)
         return await Repository.addComment({tags,Comment,PostId,user})
     } catch (e) {
@@ -44,7 +44,7 @@ export const addCommentReply: Function = async ({ Comment, CommentId, UserId }: 
             }
         }
         const filteredComment:string[] = Comment.filter((str, i, arr) => arr[i - 1] === "@" && DatabaseFunctions.checkObjectId(str))
-        const tags:ObjectId[] = filteredComment.length > 0 ? await DatabaseFunctions.findUsersObjectId() : []
+        const tags:any[] = filteredComment.length > 0 ? await DatabaseFunctions.findUsersObjectId(filteredComment) : []
         return await Repository.addComment({tags,Comment,CommentId,UserId})
         
     } catch (e) {

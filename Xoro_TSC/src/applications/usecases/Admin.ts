@@ -4,11 +4,14 @@ import * as Responses from '../../entities/ResponseInterface/AdminResponseInterf
 import * as Repository from '../repository/Admin/AdminAuthRepository';
 import * as AdminUserRepository from '../repository/Admin/AdminUserManagementRepository'
 import * as AdminCategoryRepository from "../repository/Admin/AdminCategoryManagement"
+import * as AdminVoucherRepository from "../repository/Admin/AdminVoucherRepository"
+
 import { checkObjectId } from '../functions/DatabaseFunctions';
+import { uploadFileToFirebase } from '../../config/firebase';
 
 
 
-export const AdminLogin: Function = async ({ Email, Password }: AdminEntity.AdminLogin): Promise<Responses.AdminLoginResponse> => {
+export const AdminLogin = async ({ Email, Password }: AdminEntity.AdminLogin): Promise<Responses.AdminLoginResponse> => {
     try {
         const errors = await Validations.LoginValidate(<AdminEntity.AdminLogin>{ Email, Password })
         if (errors.length > 0) {
@@ -27,7 +30,7 @@ export const AdminLogin: Function = async ({ Email, Password }: AdminEntity.Admi
     }
 }
 
-export const AdminOTPVerify: Function = async ({ OTP, RememberMe, UserId }: AdminEntity.AdminOTP): Promise<Responses.AdminOTPResponse> => {
+export const AdminOTPVerify = async ({ OTP, RememberMe, UserId }: AdminEntity.AdminOTP): Promise<Responses.AdminOTPResponse> => {
     try {
         if (!OTP || isNaN(parseInt(OTP)) || OTP.length !== 6) {
             return <Responses.AdminOTPResponse>{
@@ -50,7 +53,7 @@ export const AdminOTPVerify: Function = async ({ OTP, RememberMe, UserId }: Admi
     }
 }
 
-export const ResendAdminOTP: Function = async ({ UserId }: AdminEntity.AdminResendOTP): Promise<Responses.AdminOTPResendResponse> => {
+export const ResendAdminOTP = async ({ UserId }: AdminEntity.AdminResendOTP): Promise<Responses.AdminOTPResendResponse> => {
     try {
         return await Repository.ResendOTPRepository({ UserId })
     } catch (e) {
@@ -61,7 +64,7 @@ export const ResendAdminOTP: Function = async ({ UserId }: AdminEntity.AdminRese
     }
 }
 
-export const VerifyAdmin: Function = async ({ token }: AdminEntity.AdminVerifyAuth): Promise<Responses.AdminVerifyAuthResponse> => {
+export const VerifyAdmin = async ({ token }: AdminEntity.AdminVerifyAuth): Promise<Responses.AdminVerifyAuthResponse> => {
     try {
         console.log(token)
         if (!token || typeof token !== 'string') {
@@ -79,7 +82,7 @@ export const VerifyAdmin: Function = async ({ token }: AdminEntity.AdminVerifyAu
     }
 }
 
-export const getUsers: Function = async () => {
+export const getUsers = async () => {
     try {
         return await AdminUserRepository.UserDataRepository()
     } catch (e) {
@@ -91,7 +94,7 @@ export const getUsers: Function = async () => {
     }
 }
 
-export const ManageUser: Function = async ({ UserId, Admin, Suspended, SuspendedTill, Terminate }: AdminEntity.AdminUserManagement) => {
+export const ManageUser = async ({ UserId, Admin, Suspended, SuspendedTill, Terminate }: AdminEntity.AdminUserManagement) => {
     try {
         const result = await checkObjectId(UserId)
         if (!result) {
@@ -115,7 +118,7 @@ export const ManageUser: Function = async ({ UserId, Admin, Suspended, Suspended
     }
 }
 
-export const addCategory: Function = async ({ AdminId, Name }: AdminEntity.addCategory) => {
+export const addCategory = async ({ AdminId, Name }: AdminEntity.addCategory) => {
     try {
         if (!Name || Name.length < 1) return <Responses.addCategoryResponse>{
             message: "Invalid Credentials",
@@ -130,7 +133,7 @@ export const addCategory: Function = async ({ AdminId, Name }: AdminEntity.addCa
     }
 }
 
-export const editCategory: Function = async ({ AdminId, Name, CategoryId }: AdminEntity.editCategory) => {
+export const editCategory = async ({ AdminId, Name, CategoryId }: AdminEntity.editCategory) => {
     try {
         if (!Name || Name.length < 1) return <Responses.addCategoryResponse>{
             message: "Invalid Credentials",
@@ -145,7 +148,7 @@ export const editCategory: Function = async ({ AdminId, Name, CategoryId }: Admi
     }
 }
 
-export const deleteCategory: Function = async ({ AdminId, CategoryId }: AdminEntity.editCategory) => {
+export const deleteCategory = async ({ AdminId, CategoryId }: AdminEntity.editCategory) => {
     try {
         if (!CategoryId || CategoryId.length < 10) return <Responses.addCategoryResponse>{
             message: "Invalid Credentials",
@@ -160,9 +163,53 @@ export const deleteCategory: Function = async ({ AdminId, CategoryId }: AdminEnt
     }
 }
 
-export const getCategory: Function = async (search: string, skip: number) => {
+export const getCategory = async (search: string, skip: number) => {
     try {
         return await AdminCategoryRepository.getCategory(search, skip)
+    } catch (e) {
+        return <Responses.UsermanageResponse>{
+            message: 'Internal Server Error',
+            status: 500
+        }
+    }
+}
+
+export const getVouchers = async () => {
+    try {
+        return await AdminVoucherRepository.getVouchers()
+    } catch (e) {
+        return <Responses.UsermanageResponse>{
+            message: 'Internal Server Error',
+            status: 500
+        }
+    }
+}
+
+export const addVouchers = async ({ Description, End, Features, From, Id, Image, Months, Name, Price, Type, Discount }: AdminEntity.addVouchers) => {
+    try {
+        const Thumbnail = await uploadFileToFirebase(Image, `voucher/${new Date}`)
+        return await AdminVoucherRepository.addVouchers(<AdminEntity.addVouchers>{ Description, End, Features, Discount, From, Id, Thumbnail, Months, Name, Price, Type })
+    } catch (e) {
+        return <Responses.UsermanageResponse>{
+            message: 'Internal Server Error',
+            status: 500
+        }
+    }
+}
+export const editVouchers = async ({ Description, End, Features, Months, Name, Price, id, Image }: AdminEntity.editVouchers) => {
+    try {
+        const Thumbnail = await uploadFileToFirebase(Image, `voucher/${new Date}`)
+        return await AdminVoucherRepository.editVouchers(<AdminEntity.editVouchers>{ Description, End, Features, id, Thumbnail, Months, Name, Price })
+    } catch (e) {
+        return <Responses.UsermanageResponse>{
+            message: 'Internal Server Error',
+            status: 500
+        }
+    }
+}
+export const deleteVouchers = async (id: string) => {
+    try {
+        return await AdminVoucherRepository.deleteVouchers(id)
     } catch (e) {
         return <Responses.UsermanageResponse>{
             message: 'Internal Server Error',

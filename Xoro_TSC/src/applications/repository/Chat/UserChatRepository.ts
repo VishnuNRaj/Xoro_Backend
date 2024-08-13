@@ -13,7 +13,7 @@ import { ConnectionsInterface } from "../../../entities/ModelsInterface/Connecti
 export const getChats: Function = async (user: UserDocument): Promise<Responses.getChats> => {
     try {
         const data: Chat[] = await DatabaseFunctions.getChats(user._id)
-        const users: ConnectionsInterface = await DatabaseFunctions.getFollowers(user._id)
+        const users: any = await DatabaseFunctions.getFollowers(user._id)
         return await ResponseFunctions.getChats(<Responses.getChats>{
             user: user,
             message: 'Welcome',

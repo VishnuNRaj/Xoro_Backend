@@ -1,8 +1,9 @@
 import { ObjectId } from "mongoose";
+import UserDocument from "../ModelsInterface/User";
 
 export interface Premium {
     PaymentId: string;
-    UserId: ObjectId;
+    user:UserDocument;
     Type: string;
 
 }
@@ -16,5 +17,7 @@ export interface SuperChat {
 
 export interface JoinNow {
     ChannelId: string;
-    UserId: ObjectId;
+    user:UserDocument;
+    PaymentId:string;
 }
+

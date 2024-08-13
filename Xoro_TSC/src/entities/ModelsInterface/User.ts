@@ -35,7 +35,7 @@ export default interface UserDocument extends Document {
     ProfileLock: boolean;
     VIP: boolean;
     Premium: {
-        Type: string;
+        Type: "Monthly" | "Yearly" | "Bi Monthly" | "Special";
         Date: Date;
         Till: Date;
     }

@@ -2,7 +2,6 @@ import * as CommentEntity from '../../../entities/RequestInterface/CommentInterf
 import * as DatabaseFunctions from '../../functions/DatabaseFunctions'
 import * as ResponseFunctions from '../../responses/CommentResponse';
 import * as Responses from '../../../entities/ResponseInterface/CommentResponseInterface';
-import UserDocument from '../../../entities/ModelsInterface/User';
 import CommentModel, { CommentReplies } from "../../../frameworks/database/models/Comments"
 import { Comments, CommentReply } from '../../../entities/ModelsInterface/Comments';
 
@@ -40,7 +39,7 @@ export const addCommentReply: Function = async ({ Comment, CommentId, UserId, ta
     }
 }
 
-export const getComments: Function = async (PostId: string, user: UserDocument) => {
+export const getComments: Function = async (PostId: string) => {
     try {
         const allComments: Comments[] = await DatabaseFunctions.getComments(PostId)
         return ResponseFunctions.getCommentsRes(<Responses.getCommentsResponse>{
@@ -58,7 +57,7 @@ export const getComments: Function = async (PostId: string, user: UserDocument) 
 
 export const deleteComment: Function = async ({ CommentId, UserId }: CommentEntity.deleteComment) => {
     try {
-        const comment: Comments = await DatabaseFunctions.findUsingId(CommentId)
+        const comment: Comments = await DatabaseFunctions.findUsingId(CommentModel, CommentId)
         if (!comment || comment.UserId !== UserId) {
             return ResponseFunctions.deleteCommentRes(<Responses.deleteCommentResponse>{ message: "UnAuthorized", status: 201 })
         }

@@ -24,15 +24,16 @@ const ChannelSchema = new Schema<ChannelInterface>({
 
 const PremiumChannelSchema = new Schema<PremiumUsersInterface>({
     ChannelId: Types.ObjectId,
+    Price:Number,
     Users: [{
         UserId: Types.ObjectId,
-        CreatedAt: Date,
+        CreatedAt: { type: Date, expires: '30d', default: Date.now }
     }]
-})
+});
 
-
-// PremiumChannelSchema.pre("")
 
 const ChannelModel = model<ChannelInterface>('channels', ChannelSchema);
+export const Premium = model<PremiumUsersInterface>('premium_users', PremiumChannelSchema);
+
 
 export default ChannelModel;

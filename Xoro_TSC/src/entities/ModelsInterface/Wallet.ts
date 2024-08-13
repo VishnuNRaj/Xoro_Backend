@@ -17,7 +17,8 @@ export interface TransactionInterface extends Document {
     Sender: ObjectId;
     Reciever: ObjectId;
     Recieved: boolean;
-    Type: string;
-    paymentid: string;
+    Type: "Premium" | "Superchat" | "Content" | "Advertisement" | "";
+    PaymentId: string;
     State: "Captured" | "Refunded";
+    Expense:number;
 }

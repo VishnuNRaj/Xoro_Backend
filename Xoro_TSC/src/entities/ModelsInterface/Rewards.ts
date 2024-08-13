@@ -24,6 +24,7 @@ export interface RewardsInterface extends Document {
     Description:string;
     Start:Date;
     End:Date;
+    Counts:number;
     Reward:{
         CoinId:string;
         Count:number;
@@ -31,7 +32,7 @@ export interface RewardsInterface extends Document {
     Completed:{
         Date:Date;
         UserId:[]
-    }[];
+    }
 }
 
 

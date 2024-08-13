@@ -1,6 +1,5 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HttpServer } from 'http';
-import config from '../../config/config';
 import socketRoutes from '../../controllers/Socket/Sockets'
 const origin: string[] = []
 for (let i = 1; i <= 5; i++) {

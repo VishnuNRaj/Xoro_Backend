@@ -5,18 +5,18 @@ import UnverifiedUsers from '../../entities/ModelsInterface/UnverifiedUsers';
 import UserDocument from '../../entities/ModelsInterface/User';
 import firebase from '../../config/firebase'
 import { Bucket } from '@google-cloud/storage';
-import mongoose, { ObjectId, Types } from 'mongoose';
+import { ObjectId } from 'mongoose';
 import Notifications from '../../frameworks/database/models/Notifications'
-import { checkObjectId, findOneAndUpdate, makeObjectId, updateById } from './DatabaseFunctions';
+import { updateById } from './DatabaseFunctions';
 import { Notification } from '../../entities/ModelsInterface/Notification';
 import Videos from '../../frameworks/database/models/Videos';
 import ShortVideos from "../../frameworks/database/models/Shorts"
 import PostVideo from '../../entities/ModelsInterface/Videos';
 import PostImages from '../../frameworks/database/models/ImagesPost';
-import { PostImage } from '../../entities/ModelsInterface/PostImages';
-
-
-export const UploadFile: Function = async (file: Express.Multer.File) => {
+import { WalletAdmin } from '../../frameworks/database/models/Admin';
+import { TransactionInterface } from "../../entities/ModelsInterface/Wallet"
+import Payment from "../../frameworks/database/models/Transactions"
+export const UploadFile = async (file: Express.Multer.File) => {
     try {
         const fileBuffer = fs.readFileSync(file.path);
         const fileString = fileBuffer.toString('base64');
@@ -31,7 +31,7 @@ export const UploadFile: Function = async (file: Express.Multer.File) => {
     }
 };
 
-export const uploadBase64Image: Function = async (base64Image: string) => {
+export const uploadBase64Image = async (base64Image: string) => {
     try {
         const result = await cloudinaryv2.uploader.upload(base64Image, {
             folder: 'Post_Images',
@@ -44,7 +44,7 @@ export const uploadBase64Image: Function = async (base64Image: string) => {
 };
 
 
-export const VerifyUser: Function = async (user: UnverifiedUsers | UserDocument) => {
+export const VerifyUser = async (user: UnverifiedUsers | UserDocument) => {
     try {
         if (!user) return { message: "No User Found", status: false };
         if (user.Terminated) return { message: "Account Terminated", status: false };
@@ -68,7 +68,7 @@ export const VerifyUser: Function = async (user: UnverifiedUsers | UserDocument)
 }
 
 
-export const uploadToFirebase: Function = async (file: Express.Multer.File, path: string): Promise<string> => {
+export const uploadToFirebase = async (file: Express.Multer.File, path: string): Promise<string> => {
     try {
         const store: Bucket = firebase.storage().bucket()
         const buffer: Buffer = fs.readFileSync(file.path);
@@ -92,7 +92,7 @@ export const uploadToFirebase: Function = async (file: Express.Multer.File, path
     }
 };
 
-export const createNotification: Function = async (data: Notification, UserId: ObjectId) => {
+export const createNotification = async (data: Notification, UserId: ObjectId) => {
     try {
         const notificationData = await Notifications.findOne({ UserId: UserId });
 
@@ -110,7 +110,7 @@ export const createNotification: Function = async (data: Notification, UserId: O
     }
 };
 
-export const sendNotifications: Function = async (Message: string, Type: string, userId: ObjectId[], SenderId: ObjectId, Link: string) => {
+export const sendNotifications = async (Message: string, Type: string, userId: ObjectId[], SenderId: ObjectId, Link: string) => {
     try {
         const data = <Notification>{
             Message, Type, Link, SenderId, Time: new Date(),
@@ -121,7 +121,7 @@ export const sendNotifications: Function = async (Message: string, Type: string,
     }
 }
 
-export const updateVideoLink: Function = async (videoId: string, link: string) => {
+export const updateVideoLink = async (videoId: string, link: string) => {
     try {
         await updateById(Videos, videoId, { Video: link, Uploaded: true })
         return true
@@ -130,7 +130,7 @@ export const updateVideoLink: Function = async (videoId: string, link: string) =
     }
 }
 
-export const updateShortsLink: Function = async (videoId: string, link: string) => {
+export const updateShortsLink = async (videoId: string, link: string) => {
     try {
         await updateById(ShortVideos, videoId, { Video: link, Uploaded: true })
         return true
@@ -306,4 +306,24 @@ export const getPostUser = async (userId: ObjectId, my: boolean, postId: string 
         console.log(e)
         return []
     }
+}
+
+export const walletadmin = async (num: number, id: ObjectId) => {
+    try {
+        const count = await WalletAdmin.countDocuments()
+        if (count === 0) {
+            await WalletAdmin.insertMany([{ balance: num, transactions: [id] }])
+        } else await WalletAdmin.updateOne({ $inc: { balance: num }, $addToSet: { transactions: id } });
+        return true
+    } catch (e) {
+        return false;
+    }
+}
+
+export const transactionSave = async ({ Amount, PaymentId, State, Through, Type }: TransactionInterface) => {
+    return new Payment({
+        Amount, PaymentId, State, Through,
+        Recieved: true,
+        Type,
+    })
 }
