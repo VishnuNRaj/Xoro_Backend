@@ -7,5 +7,6 @@ liveRouter.post("/create", upload.single("Thumbnail"), VerifyUserAuth, Middlewar
 liveRouter.post('/:category', VerifyUserAuth, Middleware.getLiveVideoFilter)
 liveRouter.post('/', VerifyUserAuth, Middleware.getLiveVideoFilter)
 liveRouter.get("/stream/:key", VerifyUserAuth, Middleware.getLivevideo)
+liveRouter.patch('/reactions/:type/:VideoId',VerifyUserAuth,Middleware.LikeDislikeRemoveVideo)
 
 export default liveRouter;

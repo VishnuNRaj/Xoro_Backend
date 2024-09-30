@@ -9,7 +9,6 @@ webpush.setVapidDetails(subject, publicKey, privateKey)
 
 const sendPushNotifications = async (data: any, userId: ObjectId) => {
     try {
-        console.log(data);
         const users: WebpushInterface[] = await getSubscriptionsByUserId(userId);
         users.forEach(async (user) => {
             try {

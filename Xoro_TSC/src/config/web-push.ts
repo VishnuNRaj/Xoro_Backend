@@ -5,7 +5,7 @@ import { config } from "dotenv"
 import { env } from 'process';
 import User from '../frameworks/database/models/User';
 
-config()
+config()  
 export interface webPushSubscribe {
     subject: string;
     publicKey: string;

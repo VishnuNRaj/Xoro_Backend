@@ -40,6 +40,7 @@ const socketRoutes = (io: SocketIOServer): SocketIOServer => {
     })
 
     socket.on("subscribeChannel", async (userId: string, channelId: string) => {
+      console.log(channelId,userId)
       const channel = await ChannelModel.findByIdAndUpdate(channelId, { $addToSet: { Subsribers: userId } }, { upsert: true })
       return socket.to(userId).emit("subscribed", channel?.Subsribers.length)
     })
