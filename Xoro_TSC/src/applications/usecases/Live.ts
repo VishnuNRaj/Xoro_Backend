@@ -10,7 +10,7 @@ export const createLive = async ({ Caption, Description, RelatedTags, Restrictio
             message: "Invalid Thumbnail",
             status: 201
         }
-        const Link = await uploadFileToFirebase(Thumbnail, `/live`);
+        const Link = await uploadFileToFirebase(Thumbnail, `/live/${new Date().toISOString()}.${Thumbnail.mimetype.split("/")[1] || "png"}`);
         const Key = generateVerificationLink()
         return await Repository.createLive(<LiveEntity.createLive>{ Caption, Description, RelatedTags, Restriction, user, Link, Key,Hashtags })
     } catch (e) {
