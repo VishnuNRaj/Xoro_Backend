@@ -9,7 +9,7 @@ type Middleware = (req: customRequest, res: Response, next: NextFunction) => voi
 export const AddComment: Middleware = async (req, res) => {
     try {
         const result = req.result
-        const { PostId } = req.params
+        const { PostId } = req.params 
         const { Comment } = req.body
         const data = await UseCases.AddComment({ Comment, PostId, user: result?.user })
         console.log(data,"commenttttt")
